@@ -72,7 +72,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
             href={first.href}
             target={first.external ? '_blank' : undefined}
             rel={first.external ? 'noopener noreferrer' : undefined}
-            aria-label={`${first.name} — ${first.oneLiner}`}
+            aria-label={`${first.name}: ${first.oneLiner}`}
           >
             <span class="home-tile-tag" id="home-hero-tag">{first.tissue}</span>
             <span class="home-see-details" aria-hidden="true">See details &rarr;</span>
@@ -463,7 +463,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   function applyHero(item) {
     homeHeroEl.style.backgroundColor = item.color
     homeHeroEl.href = item.href
-    homeHeroEl.setAttribute('aria-label', `${item.name} — ${item.oneLiner}`)
+    homeHeroEl.setAttribute('aria-label', `${item.name}: ${item.oneLiner}`)
     if (item.external) {
       homeHeroEl.setAttribute('target', '_blank')
       homeHeroEl.setAttribute('rel', 'noopener noreferrer')

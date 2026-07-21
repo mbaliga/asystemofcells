@@ -1,0 +1,13 @@
+---
+import ProductLayout from '../layouts/ProductLayout.astro'
+import { getRoster } from '@asoc/roster'
+
+export function getStaticPaths() {
+  return getRoster()
+    .filter(cell => !cell.isHub)
+    .map(cell => ({ params: { slug: cell.slug }, props: { cell } }))
+}
+
+const { cell } = Astro.props
+---
+<ProductLayout cell={cell} />
