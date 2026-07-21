@@ -4,7 +4,7 @@ import Seo from '@asoc/kit/Seo.astro'
 import SiteHeader from '@asoc/kit/SiteHeader.astro'
 import SiteFooter from '@asoc/kit/SiteFooter.astro'
 
-const { title, description, canonical, jsonLd } = Astro.props
+const { title, description, canonical, jsonLd, noChrome = false } = Astro.props
 ---
 <!doctype html>
 <html lang="en">
@@ -14,10 +14,16 @@ const { title, description, canonical, jsonLd } = Astro.props
   <Seo title={title} description={description} canonical={canonical} jsonLd={jsonLd} />
 </head>
 <body>
-  <SiteHeader />
-  <main id="main">
+  {noChrome ? (
     <slot />
-  </main>
-  <SiteFooter />
+  ) : (
+    <>
+      <SiteHeader />
+      <main id="main">
+        <slot />
+      </main>
+      <SiteFooter />
+    </>
+  )}
 </body>
 </html>

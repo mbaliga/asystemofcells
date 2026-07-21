@@ -1,11 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import HomeCarousel from '../components/HomeCarousel.astro'
-import TrustStrip from '@asoc/kit/TrustStrip.astro'
-import CellCard from '@asoc/kit/CellCard.astro'
-import { groupedByTissue } from '@asoc/roster'
-
-const groups = groupedByTissue()
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -20,47 +15,7 @@ const jsonLd = {
   description="A family of small, lightweight, Android-first apps by one solo maker. Tiny, on-device, yours forever."
   canonical="https://asystemofcells.com/"
   jsonLd={jsonLd}
+  noChrome
 >
   <HomeCarousel />
-
-  <TrustStrip />
-
-  {groups.map(group => (
-    <section class="tissue" id={group.slug}>
-      <div class="shell">
-        <h2 class="tissue__title">{group.label}</h2>
-        <div class="tissue__grid">
-          {group.cells.map(cell => <CellCard cell={cell} />)}
-        </div>
-      </div>
-    </section>
-  ))}
-
-  <section class="faq">
-    <div class="shell faq__inner">
-      <h2>A short FAQ</h2>
-      <dl>
-        <dt>Is any of this open source?</dt>
-        <dd>Most of the plumbing is. A few engines are licensed underneath free, open clients: the client is the funnel, the engine license is the product.</dd>
-        <dt>Why no tracking, anywhere?</dt>
-        <dd>Because every layer being legible, including what leaves the device, is the whole point of this house.</dd>
-        <dt>Do you build for iOS?</dt>
-        <dd>Android first. Some categories, like live wallpapers, are not available on iOS at all regardless of intent.</dd>
-        <dt>What is Fonebrew?</dt>
-        <dd>The on-device AI environment this whole house was built with. It has its own site at fonebrew.dev.</dd>
-      </dl>
-    </div>
-  </section>
 </BaseLayout>
-
-<style>
-  .tissue { padding: 3.5rem 0; }
-  .tissue__title { font-size: 1.3rem; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 1.6rem; }
-  .tissue__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
-
-  .faq { padding: 4rem 0; border-top: 1px solid var(--hairline); }
-  .faq__inner { max-width: 640px; margin: 0 auto; }
-  .faq h2 { font-size: 1.2rem; margin: 0 0 1.5rem; }
-  .faq dt { font-weight: 600; margin-top: 1.1rem; }
-  .faq dd { margin: 0.3rem 0 0; color: var(--ink-muted); font-size: 0.9rem; line-height: 1.6; }
-</style>
