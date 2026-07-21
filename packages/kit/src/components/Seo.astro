@@ -1,0 +1,23 @@
+---
+// component: Seo
+// Complete per-page head. Every page passes its own title/description/canonical.
+const {
+  title,
+  description,
+  canonical,
+  ogType = 'website',
+  jsonLd = null,
+} = Astro.props
+---
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<meta name="robots" content="index,follow" />
+<meta property="og:type" content={ogType} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+{jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}

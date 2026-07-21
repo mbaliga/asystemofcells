@@ -1,0 +1,17 @@
+{
+  "name": "@asoc/kit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./src/styles/tokens.css",
+    "./TrustStrip.astro": "./src/components/TrustStrip.astro",
+    "./CellCard.astro": "./src/components/CellCard.astro",
+    "./SiteHeader.astro": "./src/components/SiteHeader.astro",
+    "./SiteFooter.astro": "./src/components/SiteFooter.astro",
+    "./Seo.astro": "./src/components/Seo.astro"
+  },
+  "peerDependencies": {
+    "astro": "^4.0.0"
+  }
+}

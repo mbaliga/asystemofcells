@@ -1,0 +1,30 @@
+---
+// component: SiteHeader
+---
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="shell site-header__row">
+    <a class="site-header__wordmark" href="/">a system of cells</a>
+    <nav class="site-header__nav" aria-label="Primary">
+      <a href="/#daily-cells">Daily</a>
+      <a href="/#ambient-cells">Ambient</a>
+      <a href="/#maker-cells">Maker</a>
+      <a href="/#connective-tissue">Connective</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .skip-link {
+    position: absolute; left: -999px; top: 0; z-index: 200;
+    background: var(--violet); color: #0b0b0c; padding: 0.6rem 1rem; border-radius: 0 0 6px 0;
+  }
+  .skip-link:focus { left: 0; }
+  .site-header { position: sticky; top: 0; z-index: 50; background: rgba(11,11,12,0.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--hairline); }
+  .site-header__row { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .site-header__wordmark { font-family: var(--font-mono); font-size: 0.82rem; letter-spacing: 0.04em; text-decoration: none; color: var(--ink); }
+  .site-header__nav { display: flex; gap: 1.4rem; }
+  .site-header__nav a { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-muted); }
+  .site-header__nav a:hover { color: var(--violet); }
+  @media (max-width: 560px) { .site-header__nav { gap: 0.9rem; } }
+</style>

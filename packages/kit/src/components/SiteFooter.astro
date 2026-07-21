@@ -1,0 +1,48 @@
+---
+// component: SiteFooter
+const cols = [
+  { title: 'Cells', links: [
+    { label: 'Daily cells', href: '/#daily-cells' },
+    { label: 'Ambient cells', href: '/#ambient-cells' },
+    { label: 'Maker cells', href: '/#maker-cells' },
+    { label: 'Connective tissue', href: '/#connective-tissue' },
+  ]},
+  { title: 'House', links: [
+    { label: 'The making of it', href: 'https://mdhv.xyz' },
+    { label: 'For developers', href: 'https://asystemofcells.dev' },
+  ]},
+  { title: 'Connect', links: [
+    { label: 'Ko-fi', href: '#' },
+    { label: 'Instagram', href: '#' },
+    { label: 'LinkedIn', href: '#' },
+    { label: 'mdhv', href: 'https://mdhv.xyz' },
+  ]},
+]
+---
+<footer class="site-footer">
+  <div class="shell site-footer__grid">
+    {cols.map(col => (
+      <div class="site-footer__col">
+        <span class="site-footer__title">{col.title}</span>
+        <ul>
+          {col.links.map(l => <li><a href={l.href}>{l.label}</a></li>)}
+        </ul>
+      </div>
+    ))}
+  </div>
+  <div class="shell site-footer__legal">
+    <span>cells interlinked within one stem</span>
+    <span>No analytics, no cookies, no trackers on this site.</span>
+  </div>
+</footer>
+
+<style>
+  .site-footer { padding: 3.5rem 0 2rem; border-top: 1px solid var(--hairline); }
+  .site-footer__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 2.5rem; }
+  .site-footer__title { display: block; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 0.8rem; }
+  .site-footer__col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .site-footer__col a { font-size: 0.84rem; text-decoration: none; color: var(--ink-muted); }
+  .site-footer__col a:hover { color: var(--violet); }
+  .site-footer__legal { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.04em; color: var(--ink-faint); padding-top: 1.5rem; border-top: 1px solid var(--hairline); }
+  @media (max-width: 720px) { .site-footer__grid { grid-template-columns: 1fr; gap: 1.6rem; } }
+</style>
