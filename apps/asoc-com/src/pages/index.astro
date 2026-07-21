@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import HomeCarousel from '../components/HomeCarousel.astro'
 import TrustStrip from '@asoc/kit/TrustStrip.astro'
 import CellCard from '@asoc/kit/CellCard.astro'
 import { groupedByTissue } from '@asoc/roster'
@@ -20,14 +21,7 @@ const jsonLd = {
   canonical="https://asystemofcells.com/"
   jsonLd={jsonLd}
 >
-  <section class="hero">
-    <div class="shell hero__inner">
-      <span class="hero__eyebrow">cells interlinked within one stem</span>
-      <h1 class="hero__title">A family of small, quiet apps.</h1>
-      <p class="hero__sub">Built by one person, on-device by default, with nothing that phones home.</p>
-      <a class="hero__cta" href="#daily-cells">See the cells &rarr;</a>
-    </div>
-  </section>
+  <HomeCarousel />
 
   <TrustStrip />
 
@@ -60,13 +54,6 @@ const jsonLd = {
 </BaseLayout>
 
 <style>
-  .hero { padding: 7rem 0 4rem; text-align: center; }
-  .hero__inner { max-width: 640px; margin: 0 auto; }
-  .hero__eyebrow { display: block; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; color: var(--violet); margin-bottom: 1rem; }
-  .hero__title { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 600; letter-spacing: -0.02em; margin: 0 0 1rem; }
-  .hero__sub { font-size: 1.05rem; color: var(--ink-muted); margin: 0 0 2rem; }
-  .hero__cta { display: inline-block; font-family: var(--font-mono); font-size: 0.82rem; color: var(--cyan); text-decoration: none; border-bottom: 1px solid var(--cyan); padding-bottom: 2px; }
-
   .tissue { padding: 3.5rem 0; }
   .tissue__title { font-size: 1.3rem; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 1.6rem; }
   .tissue__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }

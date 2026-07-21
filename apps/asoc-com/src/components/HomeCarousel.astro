@@ -1,0 +1,552 @@
+---
+// component: HomeCarousel
+//
+// The real asystemofcells.com landing mechanism — ported from the
+// owner-confirmed design reference (apple_style_reconstruction6.html's
+// "home" page, itself sourced from asoc_landing.html): a plinth-backed
+// card, one focused hero tile + a scrolling thumbnail strip, wheel-scrubbed
+// and looped infinitely via modulo indexing.
+//
+// Its visual language (Playfair Display / Space Mono / Archivo, a warm
+// off-white card on a stone-charcoal plinth) is deliberately its own thing,
+// scoped under [data-page="home"] with --home-* custom properties so it
+// never collides with the rest of the site's dark Hyle-derived token
+// system in packages/kit/src/styles/tokens.css.
+//
+// Data is the real roster (packages/roster), not the reference file's
+// placeholder Music/Fitness/TV demo items — see the mapping below for
+// which real field stands in for each slot in the reference's shape.
+import '@fontsource/playfair-display/600.css'
+import '@fontsource/space-mono/400.css'
+import '@fontsource/space-mono/700.css'
+import '@fontsource/archivo/400.css'
+import '@fontsource/archivo/500.css'
+import '@fontsource/archivo/600.css'
+import '@fontsource/archivo/700.css'
+import { getRoster, TISSUES } from '@asoc/roster'
+
+const tissueLabel = Object.fromEntries(TISSUES.map((t) => [t.slug, t.label]))
+const statusLabel = { live: 'Live', beta: 'Beta', soon: 'Soon' }
+
+function titleCase(slug) {
+  return slug
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
+
+const items = getRoster().map((cell) => ({
+  key: cell.slug,
+  name: titleCase(cell.slug),
+  // No real version numbers exist in the roster — status stands in for the
+  // small meta line the reference used a version string for.
+  status: statusLabel[cell.status] || cell.status,
+  tissue: tissueLabel[cell.tissue] || cell.tissue,
+  oneLiner: cell.oneLiner,
+  color: cell.accent,
+  href: cell.isHub ? cell.hubUrl : `/${cell.slug}`,
+  external: !!cell.isHub,
+}))
+
+const first = items[0]
+const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
+---
+
+<div class="home-outer" data-page="home">
+  <div class="home-stage">
+    <div class="home-plinth"></div>
+    <div class="home-card">
+      <div class="home-gallery" id="homeGallery">
+        <div class="home-focus-group" id="homeFocusGroup">
+          <div class="home-details" id="homeDetails">
+            <div class="hd-title-row">
+              <span class="hd-name" id="home-d-name">{first.name}</span>
+              <span class="hd-version" id="homeVersion">{first.status}</span>
+            </div>
+            <p class="hd-oneliner" id="homeOneLiner">{first.oneLiner}</p>
+          </div>
+          <a
+            class="home-hero"
+            id="homeHero"
+            style={`background:${first.color};`}
+            href={first.href}
+            target={first.external ? '_blank' : undefined}
+            rel={first.external ? 'noopener noreferrer' : undefined}
+            aria-label={`${first.name} — ${first.oneLiner}`}
+          >
+            <span class="home-tile-tag" id="home-hero-tag">{first.tissue}</span>
+            <span class="home-see-details" aria-hidden="true">See details &rarr;</span>
+            <span class="home-btn" aria-hidden="true">Explore</span>
+          </a>
+        </div>
+        <div id="homeThumbs" style="display:contents">
+          {
+            initialThumbs.map((it) => (
+              <a
+                class="home-thumb"
+                style={`background-color:${it.color};`}
+                data-index={it.idx}
+                href={it.href}
+                target={it.external ? '_blank' : undefined}
+                rel={it.external ? 'noopener noreferrer' : undefined}
+                aria-label={it.name}
+              >
+                <span class="home-tile-tag">{it.name}</span>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="home-foot">
+        <div class="home-brand">
+          <span class="home-brand-wordmark">a system of cells</span>
+        </div>
+        <div class="home-meta">
+          <div class="home-legal-links">
+            <a href="#">About</a>
+            <a href="#">Privacy policy</a>
+            <a href="#">Contact</a>
+            <span class="home-rights">&copy; 2026 A SYSTEM OF CELLS</span>
+            <button class="home-search-btn" type="button" aria-label="Search (coming soon)" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  /* Global (not Astro-scoped): the thumbnail strip is re-rendered client-side
+     on every carousel step via innerHTML, and elements created that way never
+     receive Astro's auto-injected data-astro-cid scoping attribute, so scoped
+     styles would silently stop matching them after the first cycle. Namespaced
+     instead the same way the reference does it: every selector below is under
+     [data-page="home"] or a home-*-prefixed class, so nothing here can collide
+     with packages/kit's tokens.css or component classes. */
+  [data-page='home'] {
+    --home-card: #efeeec;
+    --home-card-2: #e8e7e5;
+    --home-ink: #1a1a1a;
+    --home-muted: #6f6f6f;
+    --home-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .home-outer {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4vw;
+    font-family: 'Archivo', system-ui, sans-serif;
+    color: var(--home-ink);
+    background: linear-gradient(160deg, #8a8a88 0%, #6d6d6b 45%, #4a4a48 100%);
+    overflow: hidden;
+  }
+
+  .home-stage {
+    position: relative;
+    width: 100%;
+    max-width: 1180px;
+    aspect-ratio: 1180 / 812;
+  }
+
+  .home-plinth {
+    position: absolute;
+    left: 2%;
+    right: -2%;
+    bottom: -3%;
+    height: 34%;
+    background: repeating-linear-gradient(180deg, #161616 0 3px, #242424 3px 6px);
+    transform: perspective(900px) rotateX(46deg) skewX(-20deg);
+    transform-origin: bottom center;
+    border-radius: 2px;
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+    z-index: 0;
+  }
+  .home-plinth::after {
+    content: '';
+    position: absolute;
+    right: -8%;
+    top: -90%;
+    width: 24%;
+    height: 200%;
+    background: linear-gradient(120deg, #0d0d0d, #2a2a2a);
+    transform: skewX(-28deg);
+    border-radius: 2px;
+  }
+
+  .home-card {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--home-card), var(--home-card-2));
+    border-radius: 22px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 2;
+  }
+  .home-card::after {
+    content: '';
+    position: absolute;
+    right: -10%;
+    top: -20%;
+    width: 55%;
+    height: 160%;
+    background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.5) 50%, transparent 62%);
+    transform: rotate(8deg);
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .home-gallery {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 0 3.2%;
+    position: relative;
+    z-index: 3;
+    overflow: hidden;
+  }
+
+  .home-thumb {
+    flex: 0 0 auto;
+    width: min(130px, 11vw);
+    aspect-ratio: 3 / 4;
+    align-self: flex-end;
+    position: relative;
+    overflow: hidden;
+    opacity: 0.8;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s;
+  }
+  .home-thumb:hover,
+  .home-thumb:focus-visible {
+    opacity: 1;
+  }
+
+  .home-tile-tag {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-family: 'Space Mono', ui-monospace, monospace;
+    font-size: 7px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 4px 7px;
+    background: rgba(20, 20, 20, 0.6);
+    color: #f3f2ef;
+    border-radius: 2px;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .home-hero .home-tile-tag {
+    font-size: 8px;
+    padding: 5px 9px;
+  }
+
+  .home-focus-group {
+    flex: 0 0 auto;
+    align-self: flex-end;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .home-hero {
+    flex: 0 0 auto;
+    width: min(360px, 32vw);
+    min-width: 200px;
+    aspect-ratio: 3 / 4;
+    position: relative;
+    overflow: hidden;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .home-details {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(360px, 32vw);
+    min-width: 200px;
+  }
+  .home-details .hd-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .home-details .hd-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(15px, 1.7vw, 21px);
+  }
+  .home-details .hd-version {
+    font-family: 'Space Mono', ui-monospace, monospace;
+    font-size: clamp(8px, 0.9vw, 11px);
+    letter-spacing: 0.04em;
+    color: var(--home-muted);
+    white-space: nowrap;
+  }
+  .home-details .hd-oneliner {
+    margin: 0;
+    font-family: 'Archivo', system-ui, sans-serif;
+    font-weight: 500;
+    font-size: clamp(10px, 1.05vw, 13px);
+    line-height: 1.5;
+    color: var(--home-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .home-hero .home-see-details {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    font-family: 'Space Mono', ui-monospace, monospace;
+    font-size: clamp(7px, 0.85vw, 10px);
+    letter-spacing: 0.08em;
+    color: #f3f2ef;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  }
+  .home-hero .home-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 2;
+    font-family: 'Archivo', system-ui, sans-serif;
+    font-size: clamp(9px, 0.95vw, 12px);
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    background: #f3f2ef;
+    color: var(--home-ink);
+    border: none;
+    padding: 9px 18px;
+    transition: opacity 0.2s;
+  }
+  .home-hero:hover .home-btn {
+    opacity: 0.85;
+  }
+  .home-hero:focus-visible {
+    outline: 2px solid #f3f2ef;
+    outline-offset: 3px;
+  }
+
+  .home-foot {
+    z-index: 3;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 1.8% 3.4% 2.4%;
+    gap: 2%;
+  }
+  .home-brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .home-brand-wordmark {
+    font-family: 'Archivo', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: clamp(15px, 2vw, 26px);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .home-meta {
+    display: flex;
+    align-items: center;
+  }
+  .home-legal-links {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .home-legal-links a {
+    font-family: 'Space Mono', ui-monospace, monospace;
+    font-size: clamp(5px, 0.7vw, 9px);
+    letter-spacing: 0.1em;
+    color: var(--home-muted);
+    text-decoration: none;
+  }
+  .home-legal-links a:hover {
+    color: var(--home-ink);
+  }
+  .home-rights {
+    font-family: 'Space Mono', ui-monospace, monospace;
+    font-size: clamp(5px, 0.7vw, 9px);
+    letter-spacing: 0.14em;
+    color: var(--home-muted);
+    white-space: nowrap;
+  }
+  .home-search-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: not-allowed;
+    color: var(--home-muted);
+  }
+  .home-search-btn svg {
+    width: 13px;
+    height: 13px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+  }
+
+  @media (max-width: 720px) {
+    .home-outer {
+      min-height: auto;
+      padding: 6vw 4vw;
+    }
+    .home-stage {
+      aspect-ratio: auto;
+      min-height: 560px;
+    }
+    .home-hero,
+    .home-details {
+      width: min(260px, 58vw);
+    }
+    .home-thumb {
+      width: min(96px, 20vw);
+    }
+    .home-legal-links {
+      gap: 10px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-thumb {
+      transition: none;
+    }
+  }
+</style>
+
+<script define:vars={{ items }}>
+  const HOME_STEP_THRESHOLD = 60
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const fadeMs = reducedMotion ? 0 : 220
+
+  const homeGallery = document.getElementById('homeGallery')
+  const homeHeroEl = document.getElementById('homeHero')
+  const homeHeroTagEl = document.getElementById('home-hero-tag')
+  const homeDetailsEl = document.getElementById('homeDetails')
+  const homeThumbsEl = document.getElementById('homeThumbs')
+  const homeNameEl = document.getElementById('home-d-name')
+  const homeVersionEl = document.getElementById('homeVersion')
+  const homeOneLinerEl = document.getElementById('homeOneLiner')
+
+  let homeCurrent = 0
+  let homeAnimating = false
+
+  function applyHero(item) {
+    homeHeroEl.style.backgroundColor = item.color
+    homeHeroEl.href = item.href
+    homeHeroEl.setAttribute('aria-label', `${item.name} — ${item.oneLiner}`)
+    if (item.external) {
+      homeHeroEl.setAttribute('target', '_blank')
+      homeHeroEl.setAttribute('rel', 'noopener noreferrer')
+    } else {
+      homeHeroEl.removeAttribute('target')
+      homeHeroEl.removeAttribute('rel')
+    }
+    homeHeroTagEl.textContent = item.tissue
+    homeNameEl.textContent = item.name
+    homeVersionEl.textContent = item.status
+    homeOneLinerEl.textContent = item.oneLiner
+  }
+
+  function renderThumbs() {
+    let html = ''
+    for (let i = 1; i < items.length; i++) {
+      const idx = (homeCurrent + i) % items.length // modulo wrap = the infinite loop
+      const it = items[idx]
+      html += `<a class="home-thumb" style="background-color:${it.color}" data-index="${idx}" href="${it.href}"${
+        it.external ? ' target="_blank" rel="noopener noreferrer"' : ''
+      } aria-label="${it.name}"><span class="home-tile-tag">${it.name}</span></a>`
+    }
+    homeThumbsEl.innerHTML = html
+  }
+
+  function cycleTo(idx) {
+    if (homeAnimating || idx === homeCurrent) return
+    homeAnimating = true
+
+    const commit = () => {
+      homeCurrent = idx
+      applyHero(items[idx])
+      renderThumbs()
+    }
+
+    if (fadeMs === 0) {
+      commit()
+      homeAnimating = false
+      return
+    }
+
+    homeHeroEl.style.transition = `opacity ${fadeMs}ms ease`
+    homeDetailsEl.style.transition = `opacity ${fadeMs}ms ease`
+    homeHeroEl.style.opacity = '0.4'
+    homeDetailsEl.style.opacity = '0'
+
+    setTimeout(() => {
+      commit()
+      homeHeroEl.style.opacity = '1'
+      homeDetailsEl.style.opacity = '1'
+      setTimeout(() => {
+        homeAnimating = false
+      }, fadeMs)
+    }, fadeMs)
+  }
+
+  let homeWheelAccum = 0
+  homeGallery.addEventListener(
+    'wheel',
+    (e) => {
+      e.preventDefault()
+      if (homeAnimating) return
+      homeWheelAccum += Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX
+      if (Math.abs(homeWheelAccum) > HOME_STEP_THRESHOLD) {
+        const next =
+          homeWheelAccum > 0 ? (homeCurrent + 1) % items.length : (homeCurrent - 1 + items.length) % items.length
+        homeWheelAccum = 0
+        cycleTo(next)
+      }
+    },
+    { passive: false },
+  )
+
+  // Keyboard parity for the same scrub gesture — the wheel listener above
+  // is the primary mechanism the reference specifies; this just makes the
+  // same step reachable without a wheel/trackpad.
+  homeGallery.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault()
+      cycleTo((homeCurrent + 1) % items.length)
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault()
+      cycleTo((homeCurrent - 1 + items.length) % items.length)
+    }
+  })
+</script>
