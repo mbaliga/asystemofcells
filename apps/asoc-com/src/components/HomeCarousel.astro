@@ -53,65 +53,62 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
 ---
 
 <div class="home-outer" data-page="home">
-  <div class="home-stage">
-    <div class="home-plinth"></div>
-    <div class="home-card">
-      <div class="home-gallery" id="homeGallery">
-        <div class="home-focus-group" id="homeFocusGroup">
-          <div class="home-details" id="homeDetails">
-            <div class="hd-title-row">
-              <span class="hd-name" id="home-d-name">{first.name}</span>
-              <span class="hd-version" id="homeVersion">{first.status}</span>
-            </div>
-            <p class="hd-oneliner" id="homeOneLiner">{first.oneLiner}</p>
+  <div class="home-card">
+    <div class="home-gallery" id="homeGallery">
+      <div class="home-focus-group" id="homeFocusGroup">
+        <div class="home-details" id="homeDetails">
+          <div class="hd-title-row">
+            <span class="hd-name" id="home-d-name">{first.name}</span>
+            <span class="hd-version" id="homeVersion">{first.status}</span>
           </div>
-          <a
-            class="home-hero"
-            id="homeHero"
-            style={`background:${first.color};`}
-            href={first.href}
-            target={first.external ? '_blank' : undefined}
-            rel={first.external ? 'noopener noreferrer' : undefined}
-            aria-label={`${first.name}: ${first.oneLiner}`}
-          >
-            <span class="home-tile-tag" id="home-hero-tag">{first.tissue}</span>
-            <span class="home-see-details" aria-hidden="true">See details &rarr;</span>
-            <span class="home-btn" aria-hidden="true">Explore</span>
-          </a>
+          <p class="hd-oneliner" id="homeOneLiner">{first.oneLiner}</p>
         </div>
-        <div id="homeThumbs" style="display:contents">
-          {
-            initialThumbs.map((it) => (
-              <a
-                class="home-thumb"
-                style={`background-color:${it.color};`}
-                data-index={it.idx}
-                href={it.href}
-                target={it.external ? '_blank' : undefined}
-                rel={it.external ? 'noopener noreferrer' : undefined}
-                aria-label={it.name}
-              >
-                <span class="home-tile-tag">{it.name}</span>
-              </a>
-            ))
-          }
-        </div>
+        <a
+          class="home-hero"
+          id="homeHero"
+          style={`background:${first.color};`}
+          href={first.href}
+          target={first.external ? '_blank' : undefined}
+          rel={first.external ? 'noopener noreferrer' : undefined}
+          aria-label={`${first.name}: ${first.oneLiner}`}
+        >
+          <span class="home-tile-tag" id="home-hero-tag">{first.tissue}</span>
+          <span class="home-see-details" aria-hidden="true">See details &rarr;</span>
+          <span class="home-btn" aria-hidden="true">Explore</span>
+        </a>
       </div>
+      <div id="homeThumbs" style="display:contents">
+        {
+          initialThumbs.map((it) => (
+            <a
+              class="home-thumb"
+              style={`background-color:${it.color};`}
+              data-index={it.idx}
+              href={it.href}
+              target={it.external ? '_blank' : undefined}
+              rel={it.external ? 'noopener noreferrer' : undefined}
+              aria-label={it.name}
+            >
+              <span class="home-tile-tag">{it.name}</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
 
-      <div class="home-foot">
-        <div class="home-brand">
-          <span class="home-brand-wordmark">a system of cells</span>
-        </div>
-        <div class="home-meta">
-          <div class="home-legal-links">
-            <a href="#">About</a>
-            <a href="#">Privacy policy</a>
-            <a href="#">Contact</a>
-            <span class="home-rights">&copy; 2026 A SYSTEM OF CELLS</span>
-            <button class="home-search-btn" type="button" aria-label="Search (coming soon)" disabled>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </button>
-          </div>
+    <div class="home-foot">
+      <div class="home-brand">
+        <span class="home-brand-wordmark">a system of cells</span>
+      </div>
+      <div class="home-meta">
+        <div class="home-legal-links">
+          <a href="#">About</a>
+          <a href="#">Privacy policy</a>
+          <a href="#">Contact</a>
+          <span class="home-rights">&copy; 2026 A SYSTEM OF CELLS</span>
+          <button class="home-search-btn" type="button" aria-label="Search (coming soon)" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -135,59 +132,20 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   }
 
   .home-outer {
-    min-height: calc(100vh - 60px);
+    min-height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4vw;
     font-family: 'Archivo', system-ui, sans-serif;
     color: var(--home-ink);
-    background: linear-gradient(160deg, #8a8a88 0%, #6d6d6b 45%, #4a4a48 100%);
     overflow: hidden;
-  }
-
-  .home-stage {
-    position: relative;
-    width: 100%;
-    max-width: 1180px;
-    aspect-ratio: 1180 / 812;
-  }
-
-  .home-plinth {
-    position: absolute;
-    left: 2%;
-    right: -2%;
-    bottom: -3%;
-    height: 34%;
-    background: repeating-linear-gradient(180deg, #161616 0 3px, #242424 3px 6px);
-    transform: perspective(900px) rotateX(46deg) skewX(-20deg);
-    transform-origin: bottom center;
-    border-radius: 2px;
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
-    z-index: 0;
-  }
-  .home-plinth::after {
-    content: '';
-    position: absolute;
-    right: -8%;
-    top: -90%;
-    width: 24%;
-    height: 200%;
-    background: linear-gradient(120deg, #0d0d0d, #2a2a2a);
-    transform: skewX(-28deg);
-    border-radius: 2px;
   }
 
   .home-card {
-    position: absolute;
-    inset: 0;
+    position: relative;
+    width: 100%;
     background: linear-gradient(135deg, var(--home-card), var(--home-card-2));
-    border-radius: 22px;
-    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    z-index: 2;
   }
   .home-card::after {
     content: '';
@@ -416,12 +374,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   }
 
   @media (max-width: 720px) {
-    .home-outer {
-      min-height: auto;
-      padding: 6vw 4vw;
-    }
-    .home-stage {
-      aspect-ratio: auto;
+    .home-card {
       min-height: 560px;
     }
     .home-hero,
