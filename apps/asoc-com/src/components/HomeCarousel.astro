@@ -179,22 +179,22 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
        colour (set per product from JS). */
     background-color: var(--home-card);
     background-image:
-      radial-gradient(58% 54% at 16% 12%, color-mix(in srgb, var(--home-accent) 32%, transparent), transparent 70%),
-      radial-gradient(64% 58% at 84% 86%, color-mix(in srgb, var(--home-accent) 22%, transparent), transparent 72%),
-      radial-gradient(52% 50% at 62% 42%, color-mix(in srgb, var(--home-accent) 13%, transparent), transparent 74%),
+      radial-gradient(58% 54% at 16% 12%, color-mix(in srgb, var(--home-accent) 64%, transparent), transparent 72%),
+      radial-gradient(64% 58% at 84% 86%, color-mix(in srgb, var(--home-accent) 50%, transparent), transparent 74%),
+      radial-gradient(52% 50% at 62% 42%, color-mix(in srgb, var(--home-accent) 36%, transparent), transparent 76%),
       linear-gradient(135deg, var(--home-card), var(--home-card-2)),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
     background-size: 150% 150%, 165% 165%, 175% 175%, 100% 100%, 160px 160px;
     background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
     transition: --home-accent 750ms var(--home-ease);
-    animation: home-bg-drift 30s ease-in-out infinite alternate;
+    animation: home-bg-drift 16s ease-in-out infinite alternate;
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
   @keyframes home-bg-drift {
     0%   { background-position: 0% 0%, 100% 100%, 50% 50%, 0 0, 0 0; }
-    100% { background-position: 26% 18%, 74% 82%, 40% 62%, 0 0, 0 0; }
+    100% { background-position: 48% 34%, 52% 66%, 14% 78%, 0 0, 0 0; }
   }
   @media (prefers-reduced-motion: reduce) {
     .home-card { animation: none; transition: none; }
