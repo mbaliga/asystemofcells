@@ -1,0 +1,23 @@
+---
+import SimplePageLayout from '../layouts/SimplePageLayout.astro'
+
+// TODO(owner): real contact email goes here once confirmed.
+const EMAIL = null
+---
+<SimplePageLayout
+  title="Contact: asystemofcells"
+  description="Get in touch about asystemofcells apps - bugs, feature requests, or anything else."
+  canonical="https://asystemofcells.com/contact"
+>
+  <p class="eyebrow">Contact</p>
+  <h1>Get in touch.</h1>
+
+  {EMAIL ? (
+    <p>
+      Bug reports, feature requests, or anything else - email
+      <a class="inline-link" href={`mailto:${EMAIL}`}> {EMAIL}</a>.
+    </p>
+  ) : (
+    <p>Contact details are being finalized. Check back shortly, or find the maker at <a class="inline-link" href="https://mdhv.xyz" target="_blank" rel="noopener noreferrer">mdhv.xyz</a> in the meantime.</p>
+  )}
+</SimplePageLayout>
