@@ -129,12 +129,22 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
      instead the same way the reference does it: every selector below is under
      [data-page="home"] or a home-*-prefixed class, so nothing here can collide
      with packages/kit's tokens.css or component classes. */
+  /* Registered so it interpolates: when JS swaps the focused product's colour,
+     the card's accent-tinted gradients morph hue smoothly instead of snapping.
+     This is what makes the scroll-through colour change buttery, not abrupt. */
+  @property --home-accent {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #c98a3d;
+  }
+
   [data-page='home'] {
     --home-card: #efeeec;
     --home-card-2: #e8e7e5;
     --home-ink: #1a1a1a;
     --home-muted: #6f6f6f;
     --home-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --home-accent: #c98a3d;
   }
 
   .home-outer {
@@ -148,10 +158,32 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   .home-card {
     position: relative;
     width: 100%;
-    background: linear-gradient(135deg, var(--home-card), var(--home-card-2));
+    /* A living, textured backdrop: three soft radial washes in the focused
+       product's accent over the warm base, plus a faint grain. The washes drift
+       slowly (home-bg-drift) so it is subtly moving, and the whole thing shifts
+       hue as you scroll because --home-accent is a transitioned, registered
+       colour (set per product from JS). */
+    background-color: var(--home-card);
+    background-image:
+      radial-gradient(58% 54% at 16% 12%, color-mix(in srgb, var(--home-accent) 32%, transparent), transparent 70%),
+      radial-gradient(64% 58% at 84% 86%, color-mix(in srgb, var(--home-accent) 22%, transparent), transparent 72%),
+      radial-gradient(52% 50% at 62% 42%, color-mix(in srgb, var(--home-accent) 13%, transparent), transparent 74%),
+      linear-gradient(135deg, var(--home-card), var(--home-card-2)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    background-size: 150% 150%, 165% 165%, 175% 175%, 100% 100%, 160px 160px;
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+    transition: --home-accent 750ms var(--home-ease);
+    animation: home-bg-drift 30s ease-in-out infinite alternate;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+  }
+  @keyframes home-bg-drift {
+    0%   { background-position: 0% 0%, 100% 100%, 50% 50%, 0 0, 0 0; }
+    100% { background-position: 26% 18%, 74% 82%, 40% 62%, 0 0, 0 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .home-card { animation: none; transition: none; }
   }
   .home-card::after {
     content: '';
@@ -534,6 +566,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const fadeMs = reducedMotion ? 0 : 220
 
+  const homeCardEl = document.querySelector('.home-card')
   const homeGallery = document.getElementById('homeGallery')
   const homeHeroEl = document.getElementById('homeHero')
   const homeHeroTagEl = document.getElementById('home-hero-tag')
@@ -546,7 +579,16 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   let homeCurrent = 0
   let homeAnimating = false
 
+  // Seed the backdrop with the first product's accent (applyHero only runs on
+  // subsequent steps; the first tile is server-rendered).
+  if (homeCardEl && items[homeCurrent]) {
+    homeCardEl.style.setProperty('--home-accent', items[homeCurrent].color)
+  }
+
   function applyHero(item) {
+    // Drive the backdrop hue from the focused product; the CSS transition on
+    // --home-accent makes the shift smooth as you scroll between products.
+    if (homeCardEl) homeCardEl.style.setProperty('--home-accent', item.color)
     homeHeroEl.style.backgroundColor = item.color
     homeHeroEl.href = item.href
     homeHeroEl.setAttribute('aria-label', `${item.name}: ${item.oneLiner}`)
