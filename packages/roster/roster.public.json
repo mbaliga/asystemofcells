@@ -21,6 +21,7 @@
       "accent": "#3A4A5A",
       "oneLiner": "A news reader that shows you what you did not read, not what it thinks you should.",
       "isHub": false,
+      "readerUrl": "/nooz/read",
       "verify": ["accent color unconfirmed"]
     },
     {

@@ -22,6 +22,9 @@ const eyebrow = TISSUE_LABEL[cell.tissue] || cell.tissue
 const cta = ctaLabel(cell.status)
 const href = cell.hubUrl || '#'
 const external = !!cell.hubUrl
+// Some products ship a same-origin web app (e.g. Nooz's reader at /nooz/read).
+// When present it becomes the primary call to action.
+const readerUrl = cell.readerUrl || null
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -52,7 +55,10 @@ const jsonLd = {
         <h1>{displayName}</h1>
         <p class="tagline">{cell.oneLiner}</p>
         <div class="btn-row">
-          <a class="btn-primary" href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}>{cta}</a>
+          {readerUrl && (
+            <a class="btn-primary" href={readerUrl}>Open the web reader</a>
+          )}
+          <a class={readerUrl ? 'btn-secondary' : 'btn-primary'} href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}>{cta}</a>
         </div>
         <span class={`status-pill status-pill--${cell.status}`}>{cell.status}</span>
       </div>
@@ -156,6 +162,8 @@ const jsonLd = {
   .hero p.tagline{ font-size:clamp(1rem,1.5vw,1.2rem); color:#d9d9de; max-width:52ch; margin:0 auto 22px; }
   .hero .btn-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:4px; }
   .hero .btn-primary{ font-size:14px; font-weight:600; border:none; border-radius:980px; padding:12px 24px; cursor:pointer; display:inline-block; text-decoration:none; background:#fff; color:var(--ink); }
+  .hero .btn-secondary{ font-size:14px; font-weight:600; border:1px solid rgba(255,255,255,.55); border-radius:980px; padding:12px 24px; cursor:pointer; display:inline-block; text-decoration:none; background:transparent; color:#fff; }
+  .hero .btn-secondary:hover{ border-color:#fff; }
   .status-pill{ display:inline-block; margin-top:18px; font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.3); color:var(--dark-muted); }
   .status-pill--live{ color:#3ddc84; border-color:#3ddc84; }
   .status-pill--beta{ color:#08fed5; border-color:#08fed5; }
