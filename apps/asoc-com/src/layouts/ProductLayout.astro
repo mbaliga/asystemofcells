@@ -73,7 +73,7 @@ const jsonLd = {
           <h2>Nothing runs in a cloud you did not choose.</h2>
           <p>Every app in this house computes on your phone first. Cloud is opt-in per use, never a hidden fallback, and every cloud provider is marked as what it is: a watched object.</p>
         </div>
-        <div class="feature-visual"><div class="screen-crop" style="background:var(--tile-1)"></div></div>
+        <div class="feature-visual"><div class="screen-crop screen-crop--1"></div></div>
       </div>
     </section>
     <section class="feature reverse">
@@ -83,7 +83,7 @@ const jsonLd = {
           <h2>No analytics, no cookies, no trackers. Ever.</h2>
           <p>Not a setting you have to find and turn off. It was never wired in, in this app or anywhere else in the house.</p>
         </div>
-        <div class="feature-visual"><div class="screen-crop" style="background:var(--tile-2)"></div></div>
+        <div class="feature-visual"><div class="screen-crop screen-crop--2"></div></div>
       </div>
     </section>
 
@@ -176,7 +176,13 @@ const jsonLd = {
   .feature h2{ font-size:clamp(1.5rem,3vw,2.3rem); font-weight:600; letter-spacing:-.02em; line-height:1.1; margin-bottom:14px; }
   .feature p{ font-size:15px; color:var(--muted); max-width:44ch; line-height:1.6; }
   .feature-visual{ display:flex; justify-content:center; }
-  .screen-crop{ width:100%; max-width:280px; aspect-ratio:9/16; border-radius:28px; margin-inline:auto; box-shadow:0 30px 60px -26px rgba(0,0,0,.4); opacity:.85; }
+  /* Placeholder device screen: an accent gradient with grain and a soft bezel,
+     a "screenshot goes here" stand-in until real product marketing images land. */
+  .screen-crop{ position:relative; width:100%; max-width:280px; aspect-ratio:9/16; border-radius:28px; margin-inline:auto; overflow:hidden; box-shadow:0 30px 60px -26px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.10); opacity:.9; }
+  .screen-crop::before{ content:''; position:absolute; top:12px; left:50%; transform:translateX(-50%); width:34%; height:5px; border-radius:3px; background:rgba(255,255,255,.22); }
+  .screen-crop::after{ content:''; position:absolute; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"); pointer-events:none; }
+  .screen-crop--1{ background:linear-gradient(160deg, var(--tile-1), color-mix(in srgb, var(--tile-1) 40%, black)); }
+  .screen-crop--2{ background:linear-gradient(160deg, var(--tile-2), color-mix(in srgb, var(--tile-2) 55%, black)); }
 
   .pending-note{ padding:2vh 0 6vh; }
   .pending-note .wrap{ background:var(--surface); border:1px dashed var(--line); border-radius:var(--radius); padding:16px 20px; }
