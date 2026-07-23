@@ -7,22 +7,15 @@
 // card, one focused hero tile + a scrolling thumbnail strip, wheel-scrubbed
 // and looped infinitely via modulo indexing.
 //
-// Its visual language (Playfair Display / Space Mono / Archivo, a warm
-// off-white card on a stone-charcoal plinth) is deliberately its own thing,
-// scoped under [data-page="home"] with --home-* custom properties so it
-// never collides with the rest of the site's dark Hyle-derived token
-// system in packages/kit/src/styles/tokens.css.
+// Its layout (a warm off-white card on a stone-charcoal plinth, one focused
+// hero tile + a scrolling thumbnail strip) is its own thing, scoped under
+// [data-page="home"]. Type is the house Hyle system (Hyle Print display,
+// Hyle Grotesk body) via the shared --font-* tokens, so the whole site now
+// speaks in one voice.
 //
 // Data is the real roster (packages/roster), not the reference file's
 // placeholder Music/Fitness/TV demo items — see the mapping below for
 // which real field stands in for each slot in the reference's shape.
-import '@fontsource/playfair-display/600.css'
-import '@fontsource/space-mono/400.css'
-import '@fontsource/space-mono/700.css'
-import '@fontsource/archivo/400.css'
-import '@fontsource/archivo/500.css'
-import '@fontsource/archivo/600.css'
-import '@fontsource/archivo/700.css'
 import { getRoster, TISSUES } from '@asoc/roster'
 
 const tissueLabel = Object.fromEntries(TISSUES.map((t) => [t.slug, t.label]))
@@ -104,6 +97,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
         <div class="home-legal-links">
           <a href="/about">About</a>
           <a href="/faq">FAQ</a>
+          <a href="/hyle-fonts">Fonts</a>
           <a href="/privacy">Privacy policy</a>
           <a href="/contact">Contact</a>
           <span class="home-rights">&copy; 2026 ASYSTEMOFCELLS</span>
@@ -146,7 +140,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   .home-outer {
     min-height: 100vh;
     display: flex;
-    font-family: 'Archivo', system-ui, sans-serif;
+    font-family: var(--font-ui);
     color: var(--home-ink);
     overflow: hidden;
   }
@@ -205,7 +199,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     position: absolute;
     top: 8px;
     left: 8px;
-    font-family: 'Space Mono', ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 7px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -258,12 +252,12 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     gap: 12px;
   }
   .home-details .hd-name {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: var(--font-display);
     font-weight: 600;
     font-size: clamp(15px, 1.7vw, 21px);
   }
   .home-details .hd-version {
-    font-family: 'Space Mono', ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: clamp(8px, 0.9vw, 11px);
     letter-spacing: 0.04em;
     color: var(--home-muted);
@@ -275,7 +269,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
        and this is a one-line revert if it comes back. */
     display: none;
     margin: 0;
-    font-family: 'Archivo', system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-weight: 500;
     font-size: clamp(10px, 1.05vw, 13px);
     line-height: 1.5;
@@ -290,7 +284,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     top: 10px;
     right: 10px;
     z-index: 2;
-    font-family: 'Space Mono', ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: clamp(7px, 0.85vw, 10px);
     letter-spacing: 0.08em;
     color: #f3f2ef;
@@ -301,7 +295,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     bottom: 10px;
     right: 10px;
     z-index: 2;
-    font-family: 'Archivo', system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: clamp(9px, 0.95vw, 12px);
     letter-spacing: 0.06em;
     font-weight: 600;
@@ -333,7 +327,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     gap: 9px;
   }
   .home-brand-wordmark {
-    font-family: 'Archivo', system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-weight: 700;
     font-size: clamp(15px, 2vw, 26px);
     line-height: 0.95;
@@ -352,7 +346,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     flex-wrap: wrap;
   }
   .home-legal-links a {
-    font-family: 'Space Mono', ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: clamp(5px, 0.7vw, 9px);
     letter-spacing: 0.1em;
     color: var(--home-muted);
@@ -362,7 +356,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     color: var(--home-ink);
   }
   .home-rights {
-    font-family: 'Space Mono', ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: clamp(5px, 0.7vw, 9px);
     letter-spacing: 0.14em;
     color: var(--home-muted);
@@ -438,7 +432,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     border-radius: 14px;
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
     overflow: hidden;
-    font-family: 'Archivo', system-ui, sans-serif;
+    font-family: var(--font-ui);
   }
   .search-input-row {
     display: flex;
@@ -469,7 +463,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   }
   .search-close {
     flex: 0 0 auto;
-    font-family: 'Space Mono', ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.06em;
     color: var(--home-muted);
@@ -520,7 +514,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   }
   .search-result-meta {
     display: block;
-    font-family: 'Space Mono', ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.06em;
     text-transform: uppercase;

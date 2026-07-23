@@ -1,0 +1,5 @@
+Copyright 2026 The Hyle Deco Project Authors (https://github.com/mbaliga/HyleDeco-gf)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org
+
+[Full OFL 1.1 legal text to be appended before submission -- unchanged boilerplate from https://openfontlicense.org]

@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./tokens.css": "./src/styles/tokens.css",
+    "./hyle-fonts.css": "./src/styles/hyle-fonts.css",
     "./TrustStrip.astro": "./src/components/TrustStrip.astro",
     "./CellCard.astro": "./src/components/CellCard.astro",
     "./SiteHeader.astro": "./src/components/SiteHeader.astro",

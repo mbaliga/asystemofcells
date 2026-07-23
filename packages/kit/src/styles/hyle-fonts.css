@@ -1,0 +1,64 @@
+/*
+ * Hyle typefaces, self-hosted. These are the real house faces from the Hyle
+ * design system (the same TTFs the Nooz app ships), served locally so the whole
+ * asystemofcells site reads in one voice. Hyle Deco is deliberately NOT loaded
+ * here: it is a display-only face offered for download on /hyle-fonts, never
+ * used as site type.
+ *
+ * Files live in apps/asoc-com/public/fonts/hyle and resolve at /fonts/hyle/*.
+ */
+
+/* Hyle Grotesk (Classic) - the workhorse UI + body face */
+@font-face {
+  font-family: 'Hyle Grotesk';
+  src: url('/fonts/hyle/hyle_grotesk_classic_regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hyle Grotesk';
+  src: url('/fonts/hyle/hyle_grotesk_classic_medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hyle Grotesk';
+  src: url('/fonts/hyle/hyle_grotesk_classic_bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Hyle Grotesk Plus - the slightly warmer sibling, used for the wordmark */
+@font-face {
+  font-family: 'Hyle Grotesk Plus';
+  src: url('/fonts/hyle/hyle_grotesk_plus_medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hyle Grotesk Plus';
+  src: url('/fonts/hyle/hyle_grotesk_plus_bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Hyle Print - the display face for hero titles and headings */
+@font-face {
+  font-family: 'Hyle Print';
+  src: url('/fonts/hyle/hyle_print_medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hyle Print';
+  src: url('/fonts/hyle/hyle_print_heavy.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}

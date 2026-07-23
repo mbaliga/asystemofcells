@@ -20,6 +20,7 @@ const { title, description, canonical } = Astro.props
         <nav class="foot-links">
           <a href="/about">About</a>
           <a href="/faq">FAQ</a>
+          <a href="/hyle-fonts">Fonts</a>
           <a href="/privacy">Privacy policy</a>
           <a href="/contact">Contact</a>
         </nav>
@@ -35,7 +36,7 @@ const { title, description, canonical } = Astro.props
     --ink: #1d1d1f;
     --muted: #6e6e73;
     --line: #e4e4e6;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-ui);
     color: var(--ink);
     background: var(--bg);
     line-height: 1.6;

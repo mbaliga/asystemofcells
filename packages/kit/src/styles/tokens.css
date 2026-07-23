@@ -30,8 +30,13 @@
   --motion-fast: 180ms;
   --motion: 300ms;
 
-  --font-ui: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  --font-mono: ui-monospace, 'DM Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  /* House type: Hyle everywhere. Display = Hyle Print, body/UI = Hyle Grotesk,
+     the "mono" slot (small technical labels) also rides Hyle Grotesk so the
+     whole site speaks in one voice. Hyle Deco is download-only, never site type. */
+  --font-ui: 'Hyle Grotesk', system-ui, -apple-system, sans-serif;
+  --font-display: 'Hyle Print', 'Hyle Grotesk', Georgia, serif;
+  --font-brand: 'Hyle Grotesk Plus', 'Hyle Grotesk', system-ui, sans-serif;
+  --font-mono: 'Hyle Grotesk', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   --shell: 1180px;
   --pad: 32px;
