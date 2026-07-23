@@ -41,6 +41,19 @@ const items = getRoster().map((cell) => ({
   external: !!cell.isHub,
 }))
 
+// A non-product tile for the in-browser generators. It rides the same carousel
+// (and drives the backdrop hue) but points at the /tools hub, not a roster slug.
+items.push({
+  key: 'tools',
+  name: 'Tools',
+  status: 'Open',
+  tissue: 'Maker cells',
+  oneLiner: 'In-browser generators: grainy gradient backgrounds and the ASOC cells mark. On-device, nothing uploaded.',
+  color: '#8e7bff',
+  href: '/tools',
+  external: false,
+})
+
 const first = items[0]
 const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
 ---
@@ -97,6 +110,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
         <div class="home-legal-links">
           <a href="/about">About</a>
           <a href="/faq">FAQ</a>
+          <a href="/tools">Tools</a>
           <a href="/hyle-fonts">Fonts</a>
           <a href="/privacy">Privacy policy</a>
           <a href="/contact">Contact</a>
