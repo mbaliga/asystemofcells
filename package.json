@@ -2,11 +2,14 @@
   "name": "asystemofcells",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "pnpm --filter @asoc/com dev",
     "build": "pnpm --filter @asoc/com build",
     "dev:dev": "pnpm --filter @asoc/dev dev"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.5.0",
+    "linkedom": "^0.18.5"
   },
   "engines": {
     "node": ">=20"

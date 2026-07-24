@@ -1,11 +1,11 @@
 // api/feed.js -- server-side proxy for RSS/Atom/RDF feed fetches.
 //
-// The reader is otherwise fully client-side, but most feed servers don't
-// send Access-Control-Allow-Origin, so the browser refuses to let page JS
-// read the response even though the request itself succeeded. CORS is a
-// browser-enforced policy, not a server one, so a server-side fetch has no
-// such restriction: this function fetches the feed on the browser's behalf
-// and re-serves the body with a permissive CORS header.
+// The reader (nooz/read) is otherwise fully client-side, but most feed
+// servers don't send Access-Control-Allow-Origin, so the browser refuses to
+// let page JS read the response even though the request itself succeeded.
+// CORS is a browser-enforced policy, not a server one, so a server-side
+// fetch has no such restriction: this function fetches the feed on the
+// browser's behalf and re-serves the body with a permissive CORS header.
 //
 // This is a public endpoint that fetches whatever URL it's given, so it's
 // an open-proxy/SSRF surface by construction (the app lets users add any
@@ -16,16 +16,10 @@
 // that only resolves to an internal address); that needs pinning the
 // resolved IP for the actual connection, which is more machinery than this
 // hobby-scale reader warrants today.
-//
-// Only used when this directory (`web/`) is deployed as its own Vercel
-// project root -- e.g. via web/vercel.json's subpath config. The live
-// asystemofcells.com/nooz/read deployment keeps its own copy at that
-// repo's root api/feed.js, since Vercel Functions are always rooted at the
-// deployed project's root, not at this subdirectory.
 
 const TIMEOUT_MS = 15000;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -82,7 +76,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=600');
   res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/xml; charset=utf-8');
   res.status(200).send(body);
-}
+};
 
 function isBlockedTarget(hostname) {
   const lower = hostname.toLowerCase();
