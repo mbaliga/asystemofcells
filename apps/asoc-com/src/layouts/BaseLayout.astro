@@ -1,0 +1,31 @@
+---
+import '@asoc/kit/hyle-fonts.css'
+import '@asoc/kit/tokens.css'
+import Seo from '@asoc/kit/Seo.astro'
+import SiteHeader from '@asoc/kit/SiteHeader.astro'
+import SiteFooter from '@asoc/kit/SiteFooter.astro'
+
+const { title, description, canonical, jsonLd, noChrome = false } = Astro.props
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <Seo title={title} description={description} canonical={canonical} jsonLd={jsonLd} />
+</head>
+<body>
+  {noChrome ? (
+    <slot />
+  ) : (
+    <>
+      <SiteHeader />
+      <main id="main">
+        <slot />
+      </main>
+      <SiteFooter />
+    </>
+  )}
+</body>
+</html>

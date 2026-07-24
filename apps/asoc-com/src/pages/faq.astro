@@ -1,0 +1,65 @@
+---
+import SimplePageLayout from '../layouts/SimplePageLayout.astro'
+---
+<SimplePageLayout
+  title="FAQ: asystemofcells"
+  description="Common questions about asystemofcells - what's open source, why no tracking, platform support, and app status labels."
+  canonical="https://asystemofcells.com/faq"
+>
+  <p class="eyebrow">FAQ</p>
+  <h1>Questions? Answers.</h1>
+
+  <div class="faq-list">
+    <div class="qa">
+      <button class="q" type="button">
+        <span>Is any of this open source?</span>
+        <span class="plus"></span>
+      </button>
+      <div class="a">
+        <p>Most of the plumbing is. A couple of products depend on a shared engine that isn't open — check each product's own page for specifics.</p>
+      </div>
+    </div>
+    <div class="qa">
+      <button class="q" type="button">
+        <span>Why no tracking, anywhere?</span>
+        <span class="plus"></span>
+      </button>
+      <div class="a">
+        <p>Because every layer being legible, including what leaves the device, is the whole point of this house.</p>
+      </div>
+    </div>
+    <div class="qa">
+      <button class="q" type="button">
+        <span>Do you build for iOS?</span>
+        <span class="plus"></span>
+      </button>
+      <div class="a">
+        <p>Android first. Some categories, like live wallpapers, aren't available on iOS at all regardless of intent.</p>
+      </div>
+    </div>
+    <div class="qa">
+      <button class="q" type="button">
+        <span>What do "Live," "Beta," and "Soon" mean?</span>
+        <span class="plus"></span>
+      </button>
+      <div class="a">
+        <p><strong>Live</strong> is shipped and ready to install. <strong>Beta</strong> is real and usable, still being refined. <strong>Soon</strong> is in progress but not installable yet.</p>
+      </div>
+    </div>
+    <div class="qa">
+      <button class="q" type="button">
+        <span>Found a bug, or want to request something?</span>
+        <span class="plus"></span>
+      </button>
+      <div class="a">
+        <p>Reach out via the <a class="inline-link" href="/contact">contact page</a>.</p>
+      </div>
+    </div>
+  </div>
+</SimplePageLayout>
+
+<script>
+  document.querySelectorAll('.qa .q').forEach((btn) => {
+    btn.addEventListener('click', () => btn.closest('.qa')?.classList.toggle('open'))
+  })
+</script>

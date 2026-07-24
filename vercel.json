@@ -1,4 +1,7 @@
 {
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "apps/asoc-com/dist",
   "cleanUrls": true,
   "trailingSlash": true,
   "headers": [

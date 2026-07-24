@@ -1,0 +1,794 @@
+---
+// component: HomeCarousel
+//
+// The real asystemofcells.com landing mechanism — ported from the
+// owner-confirmed design reference (apple_style_reconstruction6.html's
+// "home" page, itself sourced from asoc_landing.html): a plinth-backed
+// card, one focused hero tile + a scrolling thumbnail strip, wheel-scrubbed
+// and looped infinitely via modulo indexing.
+//
+// Its layout (a warm off-white card on a stone-charcoal plinth, one focused
+// hero tile + a scrolling thumbnail strip) is its own thing, scoped under
+// [data-page="home"]. Type is the house Hyle system (Hyle Print display,
+// Hyle Grotesk body) via the shared --font-* tokens, so the whole site now
+// speaks in one voice.
+//
+// Data is the real roster (packages/roster), not the reference file's
+// placeholder Music/Fitness/TV demo items — see the mapping below for
+// which real field stands in for each slot in the reference's shape.
+import { getRoster, TISSUES } from '@asoc/roster'
+
+const tissueLabel = Object.fromEntries(TISSUES.map((t) => [t.slug, t.label]))
+const statusLabel = { live: 'Live', beta: 'Beta', soon: 'Soon' }
+
+function titleCase(slug) {
+  return slug
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
+
+const items = getRoster().map((cell) => ({
+  key: cell.slug,
+  name: titleCase(cell.slug),
+  // No real version numbers exist in the roster — status stands in for the
+  // small meta line the reference used a version string for.
+  status: statusLabel[cell.status] || cell.status,
+  tissue: tissueLabel[cell.tissue] || cell.tissue,
+  oneLiner: cell.oneLiner,
+  color: cell.accent,
+  href: cell.isHub ? cell.hubUrl : `/${cell.slug}`,
+  external: !!cell.isHub,
+}))
+
+// A non-product tile for the in-browser generators. It rides the same carousel
+// (and drives the backdrop hue) but points at the /tools hub, not a roster slug.
+items.push({
+  key: 'tools',
+  name: 'Tools',
+  status: 'Open',
+  tissue: 'Maker cells',
+  oneLiner: 'In-browser generators: grainy gradient backgrounds and the ASOC cells mark. On-device, nothing uploaded.',
+  color: '#8e7bff',
+  href: '/tools',
+  external: false,
+})
+
+const first = items[0]
+const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
+---
+
+<div class="home-outer" data-page="home">
+  <div class="home-card">
+    <div class="home-gallery" id="homeGallery">
+      <div class="home-focus-group" id="homeFocusGroup">
+        <div class="home-details" id="homeDetails">
+          <div class="hd-title-row">
+            <span class="hd-name" id="home-d-name">{first.name}</span>
+            <span class="hd-version" id="homeVersion">{first.status}</span>
+          </div>
+          <p class="hd-oneliner" id="homeOneLiner">{first.oneLiner}</p>
+        </div>
+        <a
+          class="home-hero"
+          id="homeHero"
+          style={`background:${first.color};`}
+          href={first.href}
+          target={first.external ? '_blank' : undefined}
+          rel={first.external ? 'noopener noreferrer' : undefined}
+          aria-label={`${first.name}: ${first.oneLiner}`}
+        >
+          <span class="home-tile-tag" id="home-hero-tag">{first.tissue}</span>
+          <span class="home-see-details" aria-hidden="true">See details &rarr;</span>
+          <span class="home-btn" aria-hidden="true">Explore</span>
+        </a>
+      </div>
+      <div id="homeThumbs" style="display:contents">
+        {
+          initialThumbs.map((it) => (
+            <a
+              class="home-thumb"
+              style={`background-color:${it.color};`}
+              data-index={it.idx}
+              href={it.href}
+              target={it.external ? '_blank' : undefined}
+              rel={it.external ? 'noopener noreferrer' : undefined}
+              aria-label={it.name}
+            >
+              <span class="home-tile-tag">{it.name}</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="home-foot">
+      <div class="home-brand">
+        <span class="home-brand-wordmark">asystemofcells</span>
+      </div>
+      <div class="home-meta">
+        <div class="home-legal-links">
+          <a href="/about">About</a>
+          <a href="/faq">FAQ</a>
+          <a href="/tools">Tools</a>
+          <a href="/hyle-fonts">Fonts</a>
+          <a href="/privacy">Privacy policy</a>
+          <a href="/contact">Contact</a>
+          <span class="home-rights">&copy; 2026 ASYSTEMOFCELLS</span>
+          <button class="home-search-btn" type="button" id="homeSearchBtn" aria-label="Search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="search-overlay" id="searchOverlay" data-page="home" aria-hidden="true">
+  <div class="search-panel" role="dialog" aria-modal="true" aria-label="Search apps">
+    <div class="search-input-row">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" id="searchInput" class="search-input" placeholder="Search apps" autocomplete="off" />
+      <button type="button" id="searchClose" class="search-close" aria-label="Close search">Esc</button>
+    </div>
+    <ul class="search-results" id="searchResults"></ul>
+  </div>
+</div>
+
+<style is:global>
+  /* Global (not Astro-scoped): the thumbnail strip is re-rendered client-side
+     on every carousel step via innerHTML, and elements created that way never
+     receive Astro's auto-injected data-astro-cid scoping attribute, so scoped
+     styles would silently stop matching them after the first cycle. Namespaced
+     instead the same way the reference does it: every selector below is under
+     [data-page="home"] or a home-*-prefixed class, so nothing here can collide
+     with packages/kit's tokens.css or component classes. */
+  /* Registered so it interpolates: when JS swaps the focused product's colour,
+     the card's accent-tinted gradients morph hue smoothly instead of snapping.
+     This is what makes the scroll-through colour change buttery, not abrupt. */
+  @property --home-accent {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #c98a3d;
+  }
+
+  [data-page='home'] {
+    --home-card: #efeeec;
+    --home-card-2: #e8e7e5;
+    --home-ink: #1a1a1a;
+    --home-muted: #6f6f6f;
+    --home-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --home-accent: #c98a3d;
+  }
+
+  .home-outer {
+    min-height: 100vh;
+    display: flex;
+    font-family: var(--font-ui);
+    color: var(--home-ink);
+    overflow: hidden;
+  }
+
+  .home-card {
+    position: relative;
+    width: 100%;
+    /* A living, textured backdrop: three soft radial washes in the focused
+       product's accent over the warm base, plus a faint grain. The washes drift
+       slowly (home-bg-drift) so it is subtly moving, and the whole thing shifts
+       hue as you scroll because --home-accent is a transitioned, registered
+       colour (set per product from JS). */
+    background-color: var(--home-card);
+    background-image:
+      radial-gradient(58% 54% at 16% 12%, color-mix(in srgb, var(--home-accent) 64%, transparent), transparent 72%),
+      radial-gradient(64% 58% at 84% 86%, color-mix(in srgb, var(--home-accent) 50%, transparent), transparent 74%),
+      radial-gradient(52% 50% at 62% 42%, color-mix(in srgb, var(--home-accent) 36%, transparent), transparent 76%),
+      linear-gradient(135deg, var(--home-card), var(--home-card-2)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+    background-size: 150% 150%, 165% 165%, 175% 175%, 100% 100%, 160px 160px;
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+    transition: --home-accent 750ms var(--home-ease);
+    animation: home-bg-drift 16s ease-in-out infinite alternate;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  @keyframes home-bg-drift {
+    0%   { background-position: 0% 0%, 100% 100%, 50% 50%, 0 0, 0 0; }
+    100% { background-position: 48% 34%, 52% 66%, 14% 78%, 0 0, 0 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .home-card { animation: none; transition: none; }
+  }
+  .home-card::after {
+    content: '';
+    position: absolute;
+    right: -10%;
+    top: -20%;
+    width: 55%;
+    height: 160%;
+    background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.5) 50%, transparent 62%);
+    transform: rotate(8deg);
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .home-gallery {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 0 3.2%;
+    position: relative;
+    z-index: 3;
+    overflow: hidden;
+  }
+
+  .home-thumb {
+    flex: 0 0 auto;
+    width: min(156px, 13.2vw);
+    aspect-ratio: 3 / 4;
+    align-self: flex-end;
+    position: relative;
+    overflow: hidden;
+    opacity: 0.8;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s;
+  }
+  .home-thumb:hover,
+  .home-thumb:focus-visible {
+    opacity: 1;
+  }
+
+  .home-tile-tag {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-family: var(--font-mono);
+    font-size: 7px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 4px 7px;
+    background: rgba(20, 20, 20, 0.6);
+    color: #f3f2ef;
+    border-radius: 2px;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .home-hero .home-tile-tag {
+    font-size: 8px;
+    padding: 5px 9px;
+  }
+
+  .home-focus-group {
+    flex: 0 0 auto;
+    align-self: flex-end;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .home-hero {
+    flex: 0 0 auto;
+    width: min(486px, 43.2vw);
+    min-width: 270px;
+    aspect-ratio: 3 / 4;
+    position: relative;
+    overflow: hidden;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .home-details {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(486px, 43.2vw);
+    min-width: 270px;
+  }
+  .home-details .hd-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .home-details .hd-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(15px, 1.7vw, 21px);
+  }
+  .home-details .hd-version {
+    font-family: var(--font-mono);
+    font-size: clamp(8px, 0.9vw, 11px);
+    letter-spacing: 0.04em;
+    color: var(--home-muted);
+    white-space: nowrap;
+  }
+  .home-details .hd-oneliner {
+    /* Hidden for now per owner request - kept in the DOM (not removed) so
+       the JS that updates it on carousel-cycle keeps working untouched,
+       and this is a one-line revert if it comes back. */
+    display: none;
+    margin: 0;
+    font-family: var(--font-ui);
+    font-weight: 500;
+    font-size: clamp(10px, 1.05vw, 13px);
+    line-height: 1.5;
+    color: var(--home-muted);
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .home-hero .home-see-details {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    font-family: var(--font-mono);
+    font-size: clamp(7px, 0.85vw, 10px);
+    letter-spacing: 0.08em;
+    color: #f3f2ef;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  }
+  .home-hero .home-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 2;
+    font-family: var(--font-ui);
+    font-size: clamp(9px, 0.95vw, 12px);
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    background: #f3f2ef;
+    color: var(--home-ink);
+    border: none;
+    padding: 9px 18px;
+    transition: opacity 0.2s;
+  }
+  .home-hero:hover .home-btn {
+    opacity: 0.85;
+  }
+  .home-hero:focus-visible {
+    outline: 2px solid #f3f2ef;
+    outline-offset: 3px;
+  }
+
+  .home-foot {
+    z-index: 3;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 1.8% 3.4% 2.4%;
+    gap: 2%;
+  }
+  .home-brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .home-brand-wordmark {
+    font-family: var(--font-ui);
+    font-weight: 700;
+    font-size: clamp(15px, 2vw, 26px);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .home-meta {
+    display: flex;
+    align-items: center;
+  }
+  .home-legal-links {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .home-legal-links a {
+    font-family: var(--font-mono);
+    font-size: clamp(5px, 0.7vw, 9px);
+    letter-spacing: 0.1em;
+    color: var(--home-muted);
+    text-decoration: none;
+  }
+  .home-legal-links a:hover {
+    color: var(--home-ink);
+  }
+  .home-rights {
+    font-family: var(--font-mono);
+    font-size: clamp(5px, 0.7vw, 9px);
+    letter-spacing: 0.14em;
+    color: var(--home-muted);
+    white-space: nowrap;
+  }
+  .home-search-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--home-muted);
+    transition: color 0.15s;
+  }
+  .home-search-btn:hover,
+  .home-search-btn:focus-visible {
+    color: var(--home-ink);
+  }
+  .home-search-btn svg {
+    width: 13px;
+    height: 13px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+  }
+
+  @media (max-width: 720px) {
+    .home-card {
+      min-height: 560px;
+    }
+    .home-hero,
+    .home-details {
+      width: min(351px, 78.3vw);
+    }
+    .home-thumb {
+      width: min(115px, 24vw);
+    }
+    .home-legal-links {
+      gap: 10px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-thumb {
+      transition: none;
+    }
+  }
+
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 12vh 5vw 0;
+    background: rgba(20, 18, 16, 0.55);
+    backdrop-filter: blur(4px);
+  }
+  .search-overlay.open {
+    display: flex;
+  }
+  .search-panel {
+    width: min(560px, 100%);
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--home-card);
+    border-radius: 14px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+    font-family: var(--font-ui);
+  }
+  .search-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .search-input-row svg {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: var(--home-muted);
+    stroke-width: 1.8;
+  }
+  .search-input {
+    flex: 1;
+    border: none;
+    background: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--home-ink);
+  }
+  .search-input::placeholder {
+    color: var(--home-muted);
+  }
+  .search-close {
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--home-muted);
+    background: rgba(0, 0, 0, 0.06);
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  .search-close:hover {
+    color: var(--home-ink);
+  }
+  .search-results {
+    list-style: none;
+    margin: 0;
+    padding: 8px;
+    overflow-y: auto;
+  }
+  .search-results:empty {
+    display: none;
+  }
+  .search-result {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--home-ink);
+  }
+  .search-result:hover,
+  .search-result.active {
+    background: rgba(0, 0, 0, 0.06);
+  }
+  .search-result-swatch {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+  }
+  .search-result-text {
+    min-width: 0;
+  }
+  .search-result-name {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .search-result-meta {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--home-muted);
+    margin-top: 2px;
+  }
+  .search-empty {
+    padding: 24px 10px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--home-muted);
+  }
+</style>
+
+<script define:vars={{ items }}>
+  const HOME_STEP_THRESHOLD = 60
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const fadeMs = reducedMotion ? 0 : 220
+
+  const homeCardEl = document.querySelector('.home-card')
+  const homeGallery = document.getElementById('homeGallery')
+  const homeHeroEl = document.getElementById('homeHero')
+  const homeHeroTagEl = document.getElementById('home-hero-tag')
+  const homeDetailsEl = document.getElementById('homeDetails')
+  const homeThumbsEl = document.getElementById('homeThumbs')
+  const homeNameEl = document.getElementById('home-d-name')
+  const homeVersionEl = document.getElementById('homeVersion')
+  const homeOneLinerEl = document.getElementById('homeOneLiner')
+
+  let homeCurrent = 0
+  let homeAnimating = false
+
+  // Seed the backdrop with the first product's accent (applyHero only runs on
+  // subsequent steps; the first tile is server-rendered).
+  if (homeCardEl && items[homeCurrent]) {
+    homeCardEl.style.setProperty('--home-accent', items[homeCurrent].color)
+  }
+
+  function applyHero(item) {
+    // Drive the backdrop hue from the focused product; the CSS transition on
+    // --home-accent makes the shift smooth as you scroll between products.
+    if (homeCardEl) homeCardEl.style.setProperty('--home-accent', item.color)
+    homeHeroEl.style.backgroundColor = item.color
+    homeHeroEl.href = item.href
+    homeHeroEl.setAttribute('aria-label', `${item.name}: ${item.oneLiner}`)
+    if (item.external) {
+      homeHeroEl.setAttribute('target', '_blank')
+      homeHeroEl.setAttribute('rel', 'noopener noreferrer')
+    } else {
+      homeHeroEl.removeAttribute('target')
+      homeHeroEl.removeAttribute('rel')
+    }
+    homeHeroTagEl.textContent = item.tissue
+    homeNameEl.textContent = item.name
+    homeVersionEl.textContent = item.status
+    homeOneLinerEl.textContent = item.oneLiner
+  }
+
+  function renderThumbs() {
+    let html = ''
+    for (let i = 1; i < items.length; i++) {
+      const idx = (homeCurrent + i) % items.length // modulo wrap = the infinite loop
+      const it = items[idx]
+      html += `<a class="home-thumb" style="background-color:${it.color}" data-index="${idx}" href="${it.href}"${
+        it.external ? ' target="_blank" rel="noopener noreferrer"' : ''
+      } aria-label="${it.name}"><span class="home-tile-tag">${it.name}</span></a>`
+    }
+    homeThumbsEl.innerHTML = html
+  }
+
+  function cycleTo(idx) {
+    if (homeAnimating || idx === homeCurrent) return
+    homeAnimating = true
+
+    const commit = () => {
+      homeCurrent = idx
+      applyHero(items[idx])
+      renderThumbs()
+    }
+
+    if (fadeMs === 0) {
+      commit()
+      homeAnimating = false
+      return
+    }
+
+    homeHeroEl.style.transition = `opacity ${fadeMs}ms ease`
+    homeDetailsEl.style.transition = `opacity ${fadeMs}ms ease`
+    homeHeroEl.style.opacity = '0.4'
+    homeDetailsEl.style.opacity = '0'
+
+    setTimeout(() => {
+      commit()
+      homeHeroEl.style.opacity = '1'
+      homeDetailsEl.style.opacity = '1'
+      setTimeout(() => {
+        homeAnimating = false
+      }, fadeMs)
+    }, fadeMs)
+  }
+
+  let homeWheelAccum = 0
+  homeGallery.addEventListener(
+    'wheel',
+    (e) => {
+      e.preventDefault()
+      if (homeAnimating) return
+      homeWheelAccum += Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX
+      if (Math.abs(homeWheelAccum) > HOME_STEP_THRESHOLD) {
+        const next =
+          homeWheelAccum > 0 ? (homeCurrent + 1) % items.length : (homeCurrent - 1 + items.length) % items.length
+        homeWheelAccum = 0
+        cycleTo(next)
+      }
+    },
+    { passive: false },
+  )
+
+  // Keyboard parity for the same scrub gesture — the wheel listener above
+  // is the primary mechanism the reference specifies; this just makes the
+  // same step reachable without a wheel/trackpad.
+  homeGallery.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault()
+      cycleTo((homeCurrent + 1) % items.length)
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault()
+      cycleTo((homeCurrent - 1 + items.length) % items.length)
+    }
+  })
+</script>
+
+<script type="application/json" id="rosterData" set:html={JSON.stringify(items)} />
+
+<script>
+  // Search - client-side fuzzy match over the same roster data, no backend.
+  // No server, no third-party API - Fuse.js fuzzy-matches the roster data
+  // that's already bundled into this page at build time, entirely client-side.
+  // A separate, normally-bundled script from the carousel logic above:
+  // `define:vars` scripts are opted out of Vite's bundling (so the browser
+  // can't resolve a bare "fuse.js" import), so `items` comes in via a JSON
+  // data island instead, read at runtime rather than injected at build time.
+  import Fuse from 'fuse.js'
+
+  const items = JSON.parse(document.getElementById('rosterData').textContent)
+
+  const searchBtn = document.getElementById('homeSearchBtn')
+  const searchOverlay = document.getElementById('searchOverlay')
+  const searchInput = document.getElementById('searchInput')
+  const searchResultsEl = document.getElementById('searchResults')
+  const searchCloseBtn = document.getElementById('searchClose')
+
+  const fuse = new Fuse(items, {
+    keys: [
+      { name: 'name', weight: 2 },
+      { name: 'tissue', weight: 1 },
+      { name: 'oneLiner', weight: 1 },
+    ],
+    threshold: 0.35,
+    ignoreLocation: true,
+  })
+
+  let activeIndex = -1
+
+  function renderResults(query) {
+    const results = query.trim() ? fuse.search(query, { limit: 8 }).map((r) => r.item) : items.slice(0, 8)
+    activeIndex = -1
+    if (results.length === 0) {
+      searchResultsEl.innerHTML = `<li class="search-empty">No apps match "${query}"</li>`
+      return
+    }
+    searchResultsEl.innerHTML = results
+      .map(
+        (it, i) => `
+      <li>
+        <a class="search-result" data-index="${i}" href="${it.href}"${it.external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+          <span class="search-result-swatch" style="background:${it.color}"></span>
+          <span class="search-result-text">
+            <span class="search-result-name">${it.name}</span>
+            <span class="search-result-meta">${it.tissue} &middot; ${it.status}</span>
+          </span>
+        </a>
+      </li>`,
+      )
+      .join('')
+  }
+
+  function openSearch() {
+    searchOverlay.classList.add('open')
+    searchOverlay.setAttribute('aria-hidden', 'false')
+    renderResults('')
+    searchInput.value = ''
+    searchInput.focus()
+  }
+
+  function closeSearch() {
+    searchOverlay.classList.remove('open')
+    searchOverlay.setAttribute('aria-hidden', 'true')
+    searchBtn.focus()
+  }
+
+  searchBtn.addEventListener('click', openSearch)
+  searchCloseBtn.addEventListener('click', closeSearch)
+  searchOverlay.addEventListener('click', (e) => {
+    if (e.target === searchOverlay) closeSearch()
+  })
+  searchInput.addEventListener('input', () => renderResults(searchInput.value))
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === '/' || (e.key === 'k' && (e.metaKey || e.ctrlKey))) && !searchOverlay.classList.contains('open')) {
+      const tag = document.activeElement?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+      e.preventDefault()
+      openSearch()
+    } else if (e.key === 'Escape' && searchOverlay.classList.contains('open')) {
+      closeSearch()
+    } else if (searchOverlay.classList.contains('open') && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      const results = Array.from(searchResultsEl.querySelectorAll('.search-result'))
+      if (!results.length) return
+      e.preventDefault()
+      results[activeIndex]?.classList.remove('active')
+      activeIndex =
+        e.key === 'ArrowDown' ? (activeIndex + 1) % results.length : (activeIndex - 1 + results.length) % results.length
+      results[activeIndex].classList.add('active')
+      results[activeIndex].scrollIntoView({ block: 'nearest' })
+    } else if (searchOverlay.classList.contains('open') && e.key === 'Enter' && activeIndex >= 0) {
+      const results = Array.from(searchResultsEl.querySelectorAll('.search-result'))
+      results[activeIndex]?.click()
+    }
+  })
+</script>
