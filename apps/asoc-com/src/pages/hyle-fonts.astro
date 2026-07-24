@@ -1,0 +1,191 @@
+---
+import SimplePageLayout from '../layouts/SimplePageLayout.astro'
+
+// The house faces used across the site (Hyle Grotesk / Grotesk Plus / Print)
+// plus the download-only display face, Hyle Deco. Deco is loaded ONLY on this
+// page (scoped @font-face below), never as site type.
+const specimens = [
+  {
+    family: 'Hyle Grotesk',
+    css: 'var(--font-ui)',
+    role: 'Body and interface',
+    note: 'The workhorse. Everything you read on this site is set in it.',
+    weights: 'Regular / Medium / Bold',
+  },
+  {
+    family: 'Hyle Grotesk Plus',
+    css: 'var(--font-brand)',
+    role: 'Wordmark and accents',
+    note: 'The slightly warmer sibling, used where the house signs its name.',
+    weights: 'Medium / Bold',
+  },
+  {
+    family: 'Hyle Print',
+    css: 'var(--font-display)',
+    role: 'Display and headings',
+    note: 'The editorial face behind every product name and hero title.',
+    weights: 'Medium / Heavy',
+  },
+]
+---
+<SimplePageLayout
+  title="Hyle fonts: asystemofcells"
+  description="The Hyle type system, and a free download of Hyle Deco, the hairline display face drawn for a single thin line of light on a black screen."
+  canonical="https://asystemofcells.com/hyle-fonts"
+>
+  <p class="eyebrow">Type</p>
+  <h1>The Hyle type system.</h1>
+  <p>Every word on this site is set in the Hyle faces. They are the house voice: quiet, geometric, built for small screens. Three of them do the everyday work below. The fourth, Hyle Deco, is a display face you can take with you.</p>
+
+  <div class="type-list">
+    {specimens.map((s) => (
+      <section class="type-row">
+        <div class="type-specimen" style={`font-family:${s.css}`}>Aa Bb Cc 0123</div>
+        <div class="type-meta">
+          <span class="type-name" style={`font-family:${s.css}`}>{s.family}</span>
+          <span class="type-role">{s.role}</span>
+          <span class="type-weights">{s.weights}</span>
+          <p class="type-note">{s.note}</p>
+        </div>
+      </section>
+    ))}
+  </div>
+
+  <div class="deco">
+    <p class="deco-eyebrow">Free download &middot; SIL Open Font License</p>
+    <div class="deco-specimen">asystemofcells</div>
+    <div class="deco-specimen deco-specimen--italic">a single thin line of light</div>
+    <p class="deco-copy"><strong>Hyle Deco</strong> is a hairline display typeface drawn for interfaces where one thin line of light on a black screen carries the identity. One constant 44-unit stroke, flat terminals, rounded rectangular bowls, tabular numerals. Two styles: Thin and Thin Italic, drawn by hand by Madhav.</p>
+    <div class="deco-actions">
+      <a class="deco-btn" href="/fonts/hyle/HyleDeco-Regular.ttf" download>Download Thin (.ttf)</a>
+      <a class="deco-btn" href="/fonts/hyle/HyleDeco-Italic.ttf" download>Download Thin Italic (.ttf)</a>
+      <a class="deco-license" href="/fonts/hyle/HyleDeco-OFL.txt" target="_blank" rel="noopener noreferrer">License (OFL)</a>
+    </div>
+  </div>
+</SimplePageLayout>
+
+<style is:global>
+  /* Hyle Deco - loaded ONLY here, for the specimen. It is never site type. */
+  @font-face {
+    font-family: 'Hyle Deco';
+    src: url('/fonts/hyle/HyleDeco-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Hyle Deco';
+    src: url('/fonts/hyle/HyleDeco-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+  }
+
+  .type-list {
+    margin: 34px 0 8px;
+  }
+  .type-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 22px 0;
+    border-top: 1px solid var(--line);
+  }
+  .type-specimen {
+    font-size: clamp(2rem, 7vw, 3.2rem);
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .type-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 14px;
+  }
+  .type-name {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .type-role {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .type-weights {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .type-note {
+    flex-basis: 100%;
+    font-size: 14px;
+    color: var(--muted);
+    margin: 2px 0 0;
+  }
+
+  /* Deco is a light-on-black face; give it the black stage it was drawn for. */
+  .deco {
+    margin: 48px 0 0;
+    padding: 40px clamp(20px, 5vw, 44px);
+    border-radius: 16px;
+    background: #0b0b0c;
+    color: #f0ede6;
+  }
+  .deco-eyebrow {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--provenance-cloud, #08fed5);
+    margin: 0 0 18px;
+  }
+  .deco-specimen {
+    font-family: 'Hyle Deco', 'Hyle Grotesk', sans-serif;
+    font-weight: 400;
+    font-size: clamp(2.2rem, 9vw, 4.6rem);
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+    color: #f0ede6;
+  }
+  .deco-specimen--italic {
+    font-style: italic;
+    color: rgba(240, 237, 230, 0.7);
+    font-size: clamp(1.4rem, 5.5vw, 2.6rem);
+    margin-top: 6px;
+  }
+  .deco-copy {
+    max-width: 46ch;
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(240, 237, 230, 0.68);
+    margin: 26px 0 24px;
+  }
+  .deco-copy strong { color: #f0ede6; font-weight: 500; }
+  .deco-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  /* Scoped under .deco so these beat `.simple-page a { color: inherit }`
+     (otherwise the button label inherits cream and vanishes on the cream pill). */
+  .deco .deco-btn {
+    display: inline-block;
+    padding: 11px 18px;
+    border-radius: 999px;
+    background: #f0ede6;
+    color: #0b0b0c;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform var(--motion-fast, 180ms) var(--ease, ease), background var(--motion-fast, 180ms) var(--ease, ease);
+  }
+  .deco .deco-btn:hover { transform: translateY(-1px); background: #fff; }
+  .deco .deco-license {
+    font-size: 13px;
+    color: rgba(240, 237, 230, 0.6);
+    text-decoration: underline;
+  }
+  .deco .deco-license:hover { color: #f0ede6; }
+</style>

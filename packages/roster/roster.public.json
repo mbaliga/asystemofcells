@@ -1,0 +1,147 @@
+{
+  "$schema": "./roster.schema.json",
+  "generated": "hand-authored from the mbaliga constellation ethos/tech report, 2026-07-20",
+  "notes": "Every field here traces to a real repo. Two roster slots from the original brief (Stem, Orrery) are omitted, not guessed: no repo evidence supports either as a shipped or even scaffolded product yet. See README.md in this package for what still needs an owner confirm.",
+  "cells": [
+    {
+      "slug": "clackpad",
+      "tissue": "daily-cells",
+      "type": "A",
+      "status": "beta",
+      "accent": "#E8A33D",
+      "oneLiner": "A tactile notepad keyboard that clacks. Its own design language, not the house system, on purpose.",
+      "isHub": false,
+      "verify": ["accent color unconfirmed", "SKU price undecided ($1 vs ~$4.99 both appear in the repo)"]
+    },
+    {
+      "slug": "nooz",
+      "tissue": "daily-cells",
+      "type": "A",
+      "status": "beta",
+      "accent": "#3A4A5A",
+      "oneLiner": "A news reader that shows you what you did not read, not what it thinks you should.",
+      "isHub": false,
+      "readerUrl": "/nooz/read",
+      "verify": ["accent color unconfirmed"]
+    },
+    {
+      "slug": "odyssey",
+      "tissue": "daily-cells",
+      "type": "A",
+      "status": "soon",
+      "accent": "#2F855A",
+      "oneLiner": "A live wallpaper of Odysseus's sea voyage, built book by book for accuracy, not just for looks.",
+      "isHub": false,
+      "verify": ["accent color unconfirmed", "early scaffold stage, no main branch yet"]
+    },
+    {
+      "slug": "crocodyl",
+      "tissue": "daily-cells",
+      "type": "A",
+      "status": "beta",
+      "accent": "#6B7A3A",
+      "oneLiner": "A free, open archery coach: camera and pose estimation build your baseline, then flag the shot that broke it.",
+      "isHub": false,
+      "verify": ["accent color unconfirmed", "main branch is a stub, real app lives on a release branch"]
+    },
+    {
+      "slug": "animalcules",
+      "tissue": "ambient-cells",
+      "type": "B",
+      "status": "live",
+      "accent": "#e6398c",
+      "hubUrl": "https://animalcules.app",
+      "oneLiner": "A living microscope slide for your lock screen. Every organism is drawn and animated in code, never looped from video.",
+      "isHub": true
+    },
+    {
+      "slug": "globe",
+      "tissue": "ambient-cells",
+      "type": "B",
+      "status": "soon",
+      "accent": "#2563A8",
+      "oneLiner": "A real-time day and night Earth for your wrist, one HTML mock exported to three watch platforms.",
+      "isHub": false,
+      "verify": ["accent color unconfirmed", "pre-release, private until the faces are finished"]
+    },
+    {
+      "slug": "timely",
+      "tissue": "ambient-cells",
+      "type": "B",
+      "status": "soon",
+      "accent": "#6D5AE0",
+      "oneLiner": "A set of honest watchfaces, time told plainly, from the same one-design-many-platforms pipeline as Globe.",
+      "isHub": false,
+      "verify": ["accent color unconfirmed", "pre-release, private until the faces are finished"]
+    },
+    {
+      "slug": "fonebrew",
+      "tissue": "maker-cells",
+      "type": "C",
+      "status": "beta",
+      "accent": "#E4572E",
+      "hubUrl": "https://fonebrew.app",
+      "oneLiner": "A sovereign, on-device AI computing environment for the phone. The tool this whole house was built with.",
+      "isHub": true
+    },
+    {
+      "slug": "haptics-workbench",
+      "tissue": "maker-cells",
+      "type": "C",
+      "status": "beta",
+      "accent": "#B5179E",
+      "oneLiner": "Design a haptic effect once, against one shape, and it renders on whatever actuator the platform actually has.",
+      "isHub": false,
+      "verify": ["accent color unconfirmed", "product name pending, internally hnm_playground"]
+    },
+    {
+      "slug": "figma-suite",
+      "tissue": "maker-cells",
+      "type": "C",
+      "status": "live",
+      "accent": "#F2545B",
+      "oneLiner": "A small suite of Figma plugins: export watchfaces, publish a Trusted Web Activity, one just for fun.",
+      "isHub": false
+    },
+    {
+      "slug": "ebbflow",
+      "tissue": "maker-cells",
+      "type": "C",
+      "status": "beta",
+      "accent": "#3AA6B9",
+      "oneLiner": "An open EEG companion. The plumbing that gets your signal off the device is free; the state-inference engine underneath it is licensed.",
+      "isHub": false,
+      "verify": ["accent color unconfirmed", "the open app does not compile standalone until its paid engine sibling ships a versioned artifact, by design"]
+    },
+    {
+      "slug": "hyle",
+      "tissue": "connective-tissue",
+      "type": "D",
+      "status": "live",
+      "accent": "#4A4A55",
+      "oneLiner": "The house design system. State is shown by how a material behaves, never said in words.",
+      "isHub": false
+    },
+    {
+      "slug": "hyle-deco",
+      "tissue": "connective-tissue",
+      "type": "D",
+      "status": "soon",
+      "accent": "#C77DFF",
+      "parent": "hyle",
+      "oneLiner": "A hairline display face for interfaces where one thin line of light has to carry the whole identity.",
+      "isHub": false,
+      "verify": ["submission to Google Fonts prepared but not yet opened"]
+    },
+    {
+      "slug": "asom",
+      "tissue": "connective-tissue",
+      "type": "D",
+      "status": "beta",
+      "accent": "#7C5CFC",
+      "oneLiner": "A sovereign model-routing daemon. One app on the phone holds the keys and makes the routing call; everything else is a client.",
+      "isHub": false,
+      "verify": ["accent color unconfirmed", "no local inference engine yet in v1, cloud routing only"]
+    }
+  ]
+}

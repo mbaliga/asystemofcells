@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import HomeCarousel from '../components/HomeCarousel.astro'
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'asystemofcells',
+  url: 'https://asystemofcells.com',
+  description: 'A family of small, quiet, on-device apps by a solo maker.',
+}
+---
+<BaseLayout
+  title="asystemofcells: small, quiet apps, on your device"
+  description="A family of small, lightweight, Android-first apps by one solo maker. Tiny, on-device, yours forever."
+  canonical="https://asystemofcells.com/"
+  jsonLd={jsonLd}
+  noChrome
+>
+  <HomeCarousel />
+</BaseLayout>

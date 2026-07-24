@@ -1,0 +1,105 @@
+---
+import SimplePageLayout from '../layouts/SimplePageLayout.astro'
+
+// The two generators are self-contained canvas apps (owner-authored), hosted
+// as static pages under /tools. The texture generator covers both the
+// "backgrounds" and "gradient texture" asks; the cells generator is the ASOC
+// voronoi/logo motif on the same engine.
+const tools = [
+  {
+    href: '/tools/texture-background.html',
+    name: 'Texture & background generator',
+    blurb: 'Grainy gradient backdrops: solid, linear, radial, or mesh fills, grain and noise, vignette, and optional drift. Exports at full resolution. The one tool for Hyle-style backgrounds and gradient textures alike.',
+    tag: 'Backgrounds',
+    accent: '#8e7bff',
+  },
+  {
+    href: '/tools/cells-logo.html',
+    name: 'Cells & logo generator',
+    blurb: 'The ASOC voronoi motif: cellular patterns laid over the same grainy gradient engine, for logos, marks, and cell fields. Tune the cell count, spread, and colours, then export.',
+    tag: 'Marks',
+    accent: '#08fed5',
+  },
+]
+---
+<SimplePageLayout
+  title="Tools: asystemofcells"
+  description="Small in-browser generators from the house: grainy gradient backgrounds and the ASOC voronoi cells mark. On-device, nothing uploaded."
+  canonical="https://asystemofcells.com/tools"
+>
+  <p class="eyebrow">Maker cells</p>
+  <h1>Tools.</h1>
+  <p>Small generators that run entirely in your browser, nothing uploaded, nothing tracked. They make the raw material the rest of the house is built from.</p>
+
+  <div class="tool-list">
+    {tools.map((t) => (
+      <a class="tool-card" href={t.href} style={`--tool-accent:${t.accent}`}>
+        <span class="tool-swatch" aria-hidden="true"></span>
+        <span class="tool-body">
+          <span class="tool-head">
+            <span class="tool-name">{t.name}</span>
+            <span class="tool-tag">{t.tag}</span>
+          </span>
+          <span class="tool-blurb">{t.blurb}</span>
+          <span class="tool-open">Open tool &rarr;</span>
+        </span>
+      </a>
+    ))}
+  </div>
+
+  <p class="tool-note">These are the same generators wired into the site itself: the home backdrop, the cell marks, and the product accents all come out of them.</p>
+</SimplePageLayout>
+
+<style is:global>
+  .tool-list {
+    margin: 32px 0 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .tool-card {
+    display: flex;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .tool-card:hover {
+    border-color: color-mix(in srgb, var(--tool-accent) 55%, var(--line));
+    transform: translateY(-1px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  }
+  .tool-swatch {
+    flex: none;
+    width: 54px;
+    height: 54px;
+    border-radius: 11px;
+    background:
+      radial-gradient(120% 120% at 25% 20%, color-mix(in srgb, var(--tool-accent) 75%, white), transparent 60%),
+      radial-gradient(120% 120% at 80% 90%, color-mix(in srgb, var(--tool-accent) 90%, black), var(--tool-accent));
+  }
+  .tool-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .tool-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .tool-name { font-size: 1rem; font-weight: 600; color: var(--ink); }
+  .tool-tag {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--tool-accent) 60%, var(--ink));
+  }
+  .tool-blurb { font-size: 14px; color: var(--muted); line-height: 1.55; }
+  .tool-open {
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .tool-note {
+    margin-top: 22px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+</style>

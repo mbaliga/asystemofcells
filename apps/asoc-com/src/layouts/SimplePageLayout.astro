@@ -1,0 +1,238 @@
+---
+// Shared shell for plain text pages (About / Privacy / FAQ / Contact).
+// Reuses ProductLayout's white/Apple visual system (back-link + simple
+// fixed footer) deliberately, not the dark Hyle kit chrome (SiteHeader/
+// SiteFooter) - see ProductLayout.astro's own comment: that system was
+// already rejected by the owner for this site.
+import BaseLayout from './BaseLayout.astro'
+
+const { title, description, canonical } = Astro.props
+---
+<BaseLayout title={title} description={description} canonical={canonical} noChrome>
+  <div class="simple-page">
+    <a class="back-link" href="/">&larr; asystemofcells</a>
+    <main class="simple-content">
+      <slot />
+    </main>
+    <footer class="site-foot">
+      <div class="wrap foot-simple">
+        <a class="foot-brand-name" href="/">asystemofcells</a>
+        <nav class="foot-links">
+          <a href="/about">About</a>
+          <a href="/faq">FAQ</a>
+          <a href="/tools">Tools</a>
+          <a href="/hyle-fonts">Fonts</a>
+          <a href="/privacy">Privacy policy</a>
+          <a href="/contact">Contact</a>
+        </nav>
+        <span class="foot-rights">&copy; 2026 asystemofcells</span>
+      </div>
+    </footer>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .simple-page {
+    --bg: #fff;
+    --ink: #1d1d1f;
+    --muted: #6e6e73;
+    --line: #e4e4e6;
+    font-family: var(--font-ui);
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding: 90px 0 110px;
+  }
+  .simple-page .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding-inline: 4vw;
+  }
+  .simple-page a {
+    color: inherit;
+  }
+
+  .back-link {
+    position: fixed;
+    top: 20px;
+    left: 4vw;
+    z-index: 10;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    opacity: 0.8;
+  }
+  .back-link:hover {
+    opacity: 1;
+  }
+
+  .simple-content {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 6vw;
+  }
+  .simple-content .eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+  .simple-content h1 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0 0 28px;
+  }
+  .simple-content h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 34px 0 10px;
+  }
+  .simple-content p {
+    font-size: 15px;
+    color: var(--muted);
+    margin: 0 0 16px;
+  }
+  .simple-content a.inline-link {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+  .simple-content ul {
+    margin: 0 0 16px;
+    padding-left: 1.2em;
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .simple-content li {
+    margin-bottom: 6px;
+  }
+  .simple-content .meta-line {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 40px;
+  }
+
+  .faq-list {
+    max-width: 100%;
+  }
+  .qa {
+    border-top: 1px solid var(--line);
+  }
+  .qa:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+  .qa button.q {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 16px 0;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  .qa .plus {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    position: relative;
+  }
+  .qa .plus::before,
+  .qa .plus::after {
+    content: '';
+    position: absolute;
+    background: var(--ink);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .qa .plus::before {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1.6px;
+    transform: translateY(-50%);
+  }
+  .qa .plus::after {
+    left: 50%;
+    top: 0;
+    height: 100%;
+    width: 1.6px;
+    transform: translateX(-50%);
+  }
+  .qa.open .plus::after {
+    transform: translateX(-50%) rotate(90deg);
+    opacity: 0;
+  }
+  .qa .a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .qa.open .a {
+    max-height: 240px;
+  }
+  .qa .a p {
+    padding: 0 0 16px;
+    margin: 0;
+  }
+
+  .site-foot {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    height: 52px;
+    overflow: hidden;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+  }
+  .site-foot .wrap {
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .foot-simple {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .foot-brand-name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .foot-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .foot-links a {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .foot-links a:hover {
+    color: var(--ink);
+  }
+  .foot-rights {
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>

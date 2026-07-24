@@ -1,0 +1,84 @@
+/*
+ * House DNA tokens, carried over from the real Hyle design system
+ * (mbaliga/hyle-design-system), not invented for this site. Hyle's own
+ * constitutional line: "State is shown by material behavior, never said by
+ * language." No status words, no spinners.
+ *
+ * Provenance idiom: native/on-device computation reads warm (radium green),
+ * cloud computation reads cyan (a watched, external "alien" glow). Every
+ * provenance hue is always paired with a second, non-color channel (shape,
+ * label, icon) per WCAG 1.4.1 - color is never the sole carrier of meaning.
+ */
+
+:root {
+  --bg: #0b0b0c;
+  --surface: #121212;
+  --ink: #f0ede6;
+  --ink-muted: rgba(240, 237, 230, 0.62);
+  --ink-faint: rgba(240, 237, 230, 0.34);
+  --hairline: rgba(240, 237, 230, 0.12);
+
+  --violet: #8e7bff;
+  --cyan: #08fed5;
+  --grey: #afafaf;
+
+  --provenance-native: #3ddc84;
+  --provenance-cloud: #08fed5;
+
+  --radius: 10px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-fast: 180ms;
+  --motion: 300ms;
+
+  /* House type: Hyle everywhere. Display = Hyle Print, body/UI = Hyle Grotesk,
+     the "mono" slot (small technical labels) also rides Hyle Grotesk so the
+     whole site speaks in one voice. Hyle Deco is download-only, never site type. */
+  --font-ui: 'Hyle Grotesk', system-ui, -apple-system, sans-serif;
+  --font-display: 'Hyle Print', 'Hyle Grotesk', Georgia, serif;
+  --font-brand: 'Hyle Grotesk Plus', 'Hyle Grotesk', system-ui, sans-serif;
+  --font-mono: 'Hyle Grotesk', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --shell: 1180px;
+  --pad: 32px;
+}
+
+@media (max-width: 720px) {
+  :root { --pad: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-fast: 0ms; --motion: 0ms; }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+.shell { max-width: var(--shell); margin: 0 auto; padding-inline: var(--pad); }
+
+.provenance {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.provenance::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.provenance--native { color: var(--provenance-native); }
+.provenance--native::before { background: var(--provenance-native); box-shadow: 0 0 6px var(--provenance-native); }
+.provenance--cloud { color: var(--provenance-cloud); }
+.provenance--cloud::before { background: var(--provenance-cloud); box-shadow: 0 0 6px var(--provenance-cloud); }
