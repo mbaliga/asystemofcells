@@ -11,6 +11,7 @@
   "dependencies": {
     "@asoc/kit": "workspace:*",
     "@asoc/roster": "workspace:*",
+    "@astrojs/sitemap": "3.2.1",
     "@fontsource/archivo": "^5.3.0",
     "@fontsource/playfair-display": "^5.3.0",
     "@fontsource/space-mono": "^5.3.0",

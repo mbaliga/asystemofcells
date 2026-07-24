@@ -87,13 +87,11 @@ const jsonLd = {
       </div>
     </section>
 
-    {cell.verify && cell.verify.length > 0 && (
-      <section class="pending-note">
-        <div class="wrap">
-          <p><strong>Still filling this page in.</strong> {cell.verify.join(' · ')}</p>
-        </div>
-      </section>
-    )}
+    {/* cell.verify (roster.public.json) is an internal authoring checklist -
+        accent-color TODOs, unresolved pricing, branch/build status, even an
+        internal codename in one entry. It was rendering verbatim on the
+        public page under a "Still filling this page in" label. Never render
+        it here; it's for the person maintaining the roster, not visitors. */}
 
     <section class="faq">
       <div class="wrap">
