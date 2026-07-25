@@ -63,10 +63,53 @@
   --sect-notes: #e8a33d;
   --sect-open: #3ddc84;
   --sect-rules: #f0ede6;
+
+  /* The shared kit footer, retuned for a terminal rather than forked. Every one
+     of these reads through a --footer-* token in SiteFooter.astro whose fallback
+     is the .com value, so .com is untouched. Denser type, dimmer labels, wider
+     tracking on the uppercase runs, and a terminal green on hover in place of
+     the marketing violet. */
+  --footer-pad: 3rem 0 1.6rem;
+  --footer-grid-gap: 1.9rem;
+  --footer-title-size: var(--fs-nano);
+  --footer-title-track: var(--track-label);
+  --footer-title-ink: var(--ink-dim);
+  --footer-title-gap: 0.75rem;
+  --footer-link-gap: 0.38rem;
+  --footer-link-size: var(--fs-small);
+  --footer-link-track: 0.01em;
+  --footer-link-ink: var(--ink-muted);
+  --footer-link-hover: var(--sect-open);
+  --footer-legal-size: var(--fs-nano);
+  --footer-legal-track: var(--track-tag);
+  --footer-legal-ink: var(--ink-faint);
 }
 
 html {
   background: var(--bg);
+}
+
+/*
+ * Footer glyphs. A global rule can still match a scoped component's elements:
+ * Astro scoping stops a component's own styles leaking out, it does not stop
+ * outside rules matching in. These add content where the component declares
+ * none, so there is no specificity contest to lose.
+ *
+ * The prompt marker is the same '>' the command bar uses, so the footer reads
+ * as part of the same shell rather than as a marketing block that happens to
+ * be set in mono.
+ */
+.site-footer__title::before {
+  content: '> ';
+  color: var(--sect-open);
+}
+.site-footer__col a::before {
+  content: '· ';
+  color: var(--ink-faint);
+}
+.site-footer__legal span:first-child::before {
+  content: '# ';
+  color: var(--ink-faint);
 }
 
 body {

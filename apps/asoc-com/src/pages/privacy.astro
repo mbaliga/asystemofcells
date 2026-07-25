@@ -3,26 +3,37 @@ import SimplePageLayout from '../layouts/SimplePageLayout.astro'
 ---
 <SimplePageLayout
   title="Privacy policy: asystemofcells"
-  description="No analytics, no cookies, no trackers on this site. A plain-language privacy policy for asystemofcells.com."
+  description="No cookies, no cross-site tracking, no profiles. Cookieless page counts on the pages that describe the house, and nothing at all in the reader or the tools. A plain-language privacy policy for asystemofcells.com."
   canonical="https://asystemofcells.com/privacy"
 >
   <p class="eyebrow">Privacy policy</p>
-  <h1>Short version: there's almost nothing to say.</h1>
-  <p class="meta-line">Last updated 2026.</p>
+  <h1>Short version: page counts here, nothing where you work.</h1>
+  <p class="meta-line">Last updated July 2026.</p>
 
-  <h2>This website</h2>
-  <p>asystemofcells.com runs no analytics, sets no cookies, and loads no third-party tracking scripts. There is no ad network, no session recording, and nothing here profiles you across visits.</p>
-  <p>Our hosting provider may log basic technical information as a normal part of serving web pages, such as IP address, browser type, and request timestamps. That's standard web server behavior for security and reliability, not something we collect, review, or use to track individuals.</p>
+  <h2>The line</h2>
+  <p>There is one rule, and everything below follows from it: <strong>pages that describe this house are counted, and pages where you make, read, or run something are not.</strong></p>
+  <p>Counted: this page, the home page, the app pages, About, FAQ, Contact, Fonts, and the Tools index. Not counted, ever: the <a class="inline-link" href="/nooz/read">Nooz reader</a>, the <a class="inline-link" href="/tools">generators</a>, and any future tool. Those are not filtered out at run time, they are outside the boundary by construction: they are plain static files that the site's page templates never touch, so no change to those templates can reach them.</p>
+  <p>Which articles you read, and anything you make in a generator, are things this site does not and structurally cannot see.</p>
+
+  <h2>What the counting is</h2>
+  <p>Vercel Web Analytics, on the counted pages only. It records the page URL, the referring site, a coarse location (city and country level), and your browser, operating system, and device type. It sets no cookies of ours, uses no third-party cookies, and stores no identifier that follows you between sites or between days: visitors are distinguished by a hash our host derives from the request, which is discarded after 24 hours.</p>
+  <p>What we get from this is a count of how many people looked at a page, and roughly where they came from. That is the whole purpose: to know whether writing this is worth continuing. There is no session recording, no scroll or click tracking, no A/B testing, no ad network, and no profile of you.</p>
+  <p>Being precise about the limits of that: our host receives your IP address in order to serve the request and to derive the coarse location, as any web server does. Their documentation states the stored records are not associated with it. It does not state how long the address itself is retained, so we are not going to claim it is discarded.</p>
 
   <h2>The apps</h2>
   <p>Every app in this house is built the same way: on-device by default, with no telemetry wired in. Where an app offers an optional cloud feature, that's opt-in per use, clearly marked, and never a hidden default. Specifics vary a little app to app - check an individual app's own listing for details on what it does when you turn a cloud feature on.</p>
 
   <h2>What we don't do</h2>
   <ul>
-    <li>We don't sell or share data, because we don't collect it in the first place.</li>
-    <li>We don't use cookies for tracking or advertising.</li>
-    <li>We don't run A/B tests or behavioral analytics on this site.</li>
+    <li>We don't sell or share data, and there is nothing to sell: no email, no account, no identity.</li>
+    <li>We don't set cookies, and we don't use any third-party cookies.</li>
+    <li>We don't track you across sites, across days, or build a profile of you.</li>
+    <li>We don't run A/B tests, session recording, or behavioral analytics anywhere.</li>
+    <li>We don't measure anything at all inside the reader or the tools.</li>
   </ul>
+
+  <h2>Why this is not simply "no analytics"</h2>
+  <p>It used to say that, and saying it again would have been easier. But adding a page count and leaving that sentence in place would have made this page false, and a privacy policy that is false about something small is worth nothing when it says something large. A specific claim that survives being checked is worth more than an absolute one nobody believes.</p>
 
   <h2>Questions</h2>
   <p>If anything here is unclear, or you want more detail on a specific app, reach out via the <a class="inline-link" href="/contact">contact page</a>.</p>

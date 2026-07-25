@@ -1,0 +1,117 @@
+---
+import DevLayout from '../../layouts/DevLayout.astro'
+import { readFaces, readTokens } from '../../lib/tokens.js'
+
+const faces = readFaces()
+const tokens = readTokens()
+const slots = tokens.filter((t) => t.name.startsWith('--font'))
+
+const NOTES = {
+  'Hyle Grotesk': 'The workhorse. Body copy and UI on the product site.',
+  'Hyle Grotesk Plus': 'The slightly warmer sibling, reserved for the wordmark.',
+  'Hyle Print': 'The display face, for hero titles and headings.',
+}
+
+const WEIGHT_NAME = { 400: 'Regular', 500: 'Medium', 700: 'Bold', 800: 'Heavy' }
+const SPECIMEN = 'cells interlinked within one stem'
+---
+<DevLayout
+  title="Type: Hyle: asystemofcells.dev"
+  description="The Hyle typefaces, their weights, and the four type slots they fill, including the one place the token naming does not describe what it contains."
+  canonical="https://asystemofcells.dev/hyle/type/"
+>
+  <div class="shell" style="padding-top:3.4rem">
+    <a class="back-link" href="/hyle/">&larr; hyle</a>
+    <p class="eyebrow">Hyle / Type</p>
+    <h1 style="font-size:var(--fs-h1);font-weight:500;letter-spacing:var(--track-tight);margin:0 0 0.8rem">
+      {faces.length} faces loaded, {slots.length} slots to fill.
+    </h1>
+    <p class="dev-tagline" style="max-width:72ch">
+      Read from <code>packages/kit/src/styles/hyle-fonts.css</code> at build time.
+      A fourth family, Hyle Deco, exists but is deliberately not loaded as site
+      type: it is a display face offered for download, and the stylesheet says so.
+    </p>
+
+    <section class="section-block">
+      <div class="col-label"><span>faces</span><span>{faces.length}</span></div>
+      <div class="table-scroll" style="margin-top:1rem">
+        <table class="dense-table">
+          <thead><tr><th>family</th><th>weights</th><th>file</th><th>role</th></tr></thead>
+          <tbody>
+            {faces.map((f) => (
+              <tr>
+                <td><code style="color:var(--ink)">{f.family}</code></td>
+                <td>{f.weights.map((w) => `${w.weight} ${WEIGHT_NAME[w.weight] || ''}`.trim()).join(', ')}</td>
+                <td style="color:var(--ink-faint)">{f.weights.map((w) => w.file.split('/').pop()).join(' ')}</td>
+                <td style="color:var(--ink-muted)">{NOTES[f.family] || ''}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:var(--fs-micro);color:var(--ink-faint);line-height:var(--lh-body);max-width:70ch;margin:1rem 0 0">
+        No specimen is rendered on this page, and that is not an oversight. These
+        faces are served from absolute paths under
+        <code>/fonts/hyle/</code> on the product site's host, so a specimen set
+        here would silently fall back to this site's mono and show a specimen of
+        the wrong typeface, which is worse than showing none. To see them set,
+        use <a href="https://asystemofcells.com/hyle-fonts" style="color:var(--sect-roster);text-decoration:none">asystemofcells.com/hyle-fonts</a>.
+      </p>
+    </section>
+
+    <section class="section-block">
+      <div class="col-label"><span>slots</span><span>{slots.length}</span></div>
+      <div class="table-scroll" style="margin-top:1rem">
+        <table class="dense-table">
+          <thead><tr><th>token</th><th>resolves to</th></tr></thead>
+          <tbody>
+            {slots.map((t) => (
+              <tr>
+                <td><code style="color:var(--ink)">{t.name}</code></td>
+                <td style="color:var(--ink-muted)">{t.value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-block" style="padding-bottom:1rem">
+      <div class="col-label"><span>the one that lies</span></div>
+      <div class="dev-prose" style="max-width:72ch;margin-top:1rem">
+        <p>
+          <code>--font-mono</code> is not monospace. On the product site it
+          resolves to Hyle Grotesk, a proportional face, and the stylesheet is
+          candid about why: the small technical labels ride the body face so the
+          whole marketing site speaks in one voice. As a naming convention for a
+          type slot that is defensible. As a typeface classification it is wrong,
+          and it will mislead anyone who reads the token name and expects fixed
+          advance.
+        </p>
+        <p>
+          This site cannot borrow it. Right-aligned timestamps, aligned columns
+          and tabular figures all need real fixed advance, so
+          <code>.dev</code> rebinds every type slot to
+          <strong>JetBrains Mono</strong>, self-hosted from the build rather than
+          fetched from a font CDN, since a CDN request is a third-party request.
+          The fallback chain here ends in <code>monospace</code> rather than in
+          Hyle, deliberately: a font failure on this surface has to degrade to
+          some mono, never to a proportional face that would silently break every
+          column on the page.
+        </p>
+        <p>
+          There is no monospace face in the Hyle family at all. If the house ever
+          wants one, that is a real gap rather than a configuration mistake, and
+          this token is where it would land.
+        </p>
+        <div style="margin-top:1.4rem;padding:1.2rem;border:1px solid var(--hairline);background:var(--bg-sunken)">
+          <div style="font-size:var(--fs-nano);letter-spacing:var(--track-label);text-transform:uppercase;color:var(--ink-faint);margin-bottom:0.7rem">
+            this surface, JetBrains Mono
+          </div>
+          <div style="font-size:1.15rem;color:var(--ink);letter-spacing:-0.01em">{SPECIMEN}</div>
+          <div style="font-size:var(--fs-small);color:var(--ink-muted);margin-top:0.5rem">0123456789 · il1 O0 · {'{}'} [] () &lt;&gt; =&gt; !== ===</div>
+        </div>
+      </div>
+    </section>
+  </div>
+</DevLayout>

@@ -1,0 +1,144 @@
+---
+import DevLayout from '../../layouts/DevLayout.astro'
+import { readTokens, readFaces, groupTokens } from '../../lib/tokens.js'
+
+const tokens = readTokens()
+const faces = readFaces()
+const groups = groupTokens(tokens)
+
+const SECTIONS = [
+  {
+    href: '/hyle/tokens/',
+    name: 'Tokens',
+    hue: 'var(--sect-hyle)',
+    count: `${tokens.length}`,
+    body: 'Every custom property the house ships, with swatches and a measured contrast ratio against the terminal ground. Read out of the stylesheet at build time, so it cannot drift from it.',
+  },
+  {
+    href: '/hyle/type/',
+    name: 'Type',
+    hue: 'var(--sect-notes)',
+    count: `${faces.length + 1}`,
+    body: 'The four faces, their weights, the four type slots they fill, and the one place the naming lies about what a token contains.',
+  },
+  {
+    href: '/hyle/components/',
+    name: 'Components',
+    hue: 'var(--sect-tools)',
+    count: '5',
+    body: 'The Astro components in packages/kit, with their props and what each one is actually for. These are the web side; the Compose and Lit sides live in the Hyle repo.',
+  },
+]
+---
+<DevLayout
+  title="Hyle: asystemofcells.dev"
+  description="The house design system: tokens, type, and components, documented from the source rather than transcribed from it."
+  canonical="https://asystemofcells.dev/hyle/"
+>
+  <div class="shell" style="padding-top:3.4rem">
+    <a class="back-link" href="/">&larr; asystemofcells.dev</a>
+    <p class="eyebrow">Design system</p>
+    <h1 style="font-size:var(--fs-h1);font-weight:500;letter-spacing:var(--track-tight);margin:0 0 1.2rem;max-width:22ch;line-height:var(--lh-tight)">
+      State is shown by material behaviour, never said by language.
+    </h1>
+    <p class="dev-tagline" style="max-width:70ch">
+      That is Hyle's constitutional line, and it is the reason there are no status
+      words and no spinners anywhere in this house. A thing that is working looks
+      like it is working. The burden sits on the material, not on a label next to
+      it. Everything below is downstream of that one sentence.
+    </p>
+
+    <div class="dev-sections" style="border-bottom:none;padding-bottom:0">
+      {SECTIONS.map((s) => (
+        <a class="dev-section" href={s.href} style={`--sect:${s.hue}`}>
+          <span class="glyph" aria-hidden="true">&#9642;</span>
+          <span>{s.name.toLowerCase()}</span>
+          <span class="count">{s.count}</span>
+        </a>
+      ))}
+    </div>
+
+    <div class="tissue-grid" style="margin-top:1.8rem">
+      {SECTIONS.map((s) => (
+        <a class="tissue-card" href={s.href} style={`--sect:${s.hue}`}>
+          <span class="tissue-card__name" style="display:flex;align-items:baseline;gap:0.5rem">
+            <span style={`color:${s.hue}`} aria-hidden="true">&#9642;</span>{s.name}
+          </span>
+          <span class="tissue-card__cells" style="line-height:var(--lh-body)">{s.body}</span>
+        </a>
+      ))}
+    </div>
+
+    <section class="section-block">
+      <div class="col-label"><span>where it lives</span></div>
+      <div class="dev-prose" style="max-width:74ch;margin-top:1rem">
+        <p>
+          Hyle is a cross-platform system, not a stylesheet. Its source of truth is
+          a set of W3C design-token JSON files in
+          <a href="https://github.com/mbaliga/Hyle-Design-System">mbaliga/Hyle-Design-System</a>,
+          which compile out to Android (Kotlin and resource XML), to web (CSS,
+          SCSS, JS), and to iOS (Swift). That repo also carries the Compose
+          library, a set of web components, the six typeface families including
+          their design sources, and a live component explorer.
+        </p>
+        <p>
+          What this site documents is the <strong>web slice that these two sites
+          actually consume</strong>: the token layer in
+          <code>packages/kit/src/styles/tokens.css</code>, the faces in
+          <code>hyle-fonts.css</code>, and the handful of Astro components built
+          on top of them. It is a real subset, honestly labelled, rather than a
+          restatement of the whole system from memory. For the Compose side, the
+          web components, and the token JSON, go to the repo.
+        </p>
+        <p>
+          The token and face tables on the next two pages are parsed out of those
+          stylesheets when this site builds. That is deliberate: transcribed
+          design-system documentation drifts from its source silently, and nothing
+          fails loudly when it does.
+        </p>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <div class="col-label"><span>the two rules that bind everything else</span></div>
+      <div class="record" style="margin-top:1.2rem">
+        <div class="record__row">
+          <span class="record__key">shown, not said</span>
+          <span class="record__val">
+            No status words, no spinners. State is carried by how a material
+            behaves. A label describing the state is a failure to design the state.
+          </span>
+        </div>
+        <div class="record__row">
+          <span class="record__key">never colour alone</span>
+          <span class="record__val">
+            Native computation reads warm, cloud computation reads cyan as a
+            watched external glow, and <strong>every provenance hue is always
+            paired with a second, non-colour channel</strong>: a shape, a label,
+            an icon. Colour is never the sole carrier of meaning, per WCAG 1.4.1.
+            This site obeys it too, which is why product accents appear here as
+            swatches beside a name rather than as coloured type.
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-block" style="padding-bottom:1rem">
+      <div class="col-label"><span>token groups</span><span>{groups.length}</span></div>
+      <div class="table-scroll" style="margin-top:1rem">
+        <table class="dense-table">
+          <thead><tr><th>group</th><th>count</th><th>tokens</th></tr></thead>
+          <tbody>
+            {groups.map((g) => (
+              <tr>
+                <td><a href={`/hyle/tokens/#${g.id}`}>{g.title}</a></td>
+                <td>{g.items.length}</td>
+                <td style="color:var(--ink-faint)">{g.items.map((t) => t.name).join(' ')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</DevLayout>

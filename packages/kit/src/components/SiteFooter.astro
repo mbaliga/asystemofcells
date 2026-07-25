@@ -29,7 +29,11 @@ const DEFAULT_COLS = [
 const {
   cols = DEFAULT_COLS,
   motto = 'cells interlinked within one stem',
-  note = 'No analytics, no cookies, no trackers on this site.',
+  // Specific rather than absolute, and true. A blanket "no analytics" claim
+  // stopped being accurate the moment cookieless page counts went on the pages
+  // that describe the house, and a claim most visitors would not believe anyway
+  // is worth less than one that survives being checked.
+  note = 'No cookies, no cross-site tracking, no profiles. Cookieless page counts on pages like this one, none in the reader or the tools.',
 } = Astro.props
 ---
 <footer class="site-footer">
@@ -50,12 +54,17 @@ const {
 </footer>
 
 <style>
-  .site-footer { padding: 3.5rem 0 2rem; border-top: 1px solid var(--hairline); }
-  .site-footer__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 2.5rem; }
-  .site-footer__title { display: block; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 0.8rem; }
-  .site-footer__col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-  .site-footer__col a { font-size: 0.84rem; text-decoration: none; color: var(--ink-muted); }
-  .site-footer__col a:hover { color: var(--violet); }
-  .site-footer__legal { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.04em; color: var(--ink-faint); padding-top: 1.5rem; border-top: 1px solid var(--hairline); }
+  /* Every size and colour below reads through a --footer-* token with the .com
+     value as its fallback, so a surface retunes this footer by rebinding tokens
+     rather than by forking the component. asystemofcells.dev uses that to give
+     it a terminal treatment (denser type, dimmer labels, a green hover instead
+     of the violet) while this stays the single implementation. */
+  .site-footer { padding: var(--footer-pad, 3.5rem 0 2rem); border-top: 1px solid var(--hairline); }
+  .site-footer__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--footer-gap, 2rem); margin-bottom: var(--footer-grid-gap, 2.5rem); }
+  .site-footer__title { display: block; font-family: var(--font-mono); font-size: var(--footer-title-size, 0.68rem); letter-spacing: var(--footer-title-track, 0.08em); text-transform: uppercase; color: var(--footer-title-ink, var(--ink-faint)); margin-bottom: var(--footer-title-gap, 0.8rem); }
+  .site-footer__col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--footer-link-gap, 0.5rem); }
+  .site-footer__col a { font-size: var(--footer-link-size, 0.84rem); letter-spacing: var(--footer-link-track, 0); text-decoration: none; color: var(--footer-link-ink, var(--ink-muted)); transition: color var(--motion-fast, 180ms) var(--ease, ease); }
+  .site-footer__col a:hover { color: var(--footer-link-hover, var(--violet)); }
+  .site-footer__legal { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-family: var(--font-mono); font-size: var(--footer-legal-size, 0.64rem); letter-spacing: var(--footer-legal-track, 0.04em); color: var(--footer-legal-ink, var(--ink-faint)); padding-top: 1.5rem; border-top: 1px solid var(--hairline); }
   @media (max-width: 720px) { .site-footer__grid { grid-template-columns: 1fr; gap: 1.6rem; } }
 </style>

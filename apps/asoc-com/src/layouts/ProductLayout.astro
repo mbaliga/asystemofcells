@@ -40,6 +40,7 @@ const jsonLd = {
   description={description || cell.oneLiner}
   canonical={`https://asystemofcells.com/${cell.slug}`}
   jsonLd={jsonLd}
+  analytics
   noChrome
 >
   <div class="product-page" style={`--tile-1:${cell.accent}; --tile-2:color-mix(in srgb, ${cell.accent} 60%, black);`}>
@@ -80,8 +81,8 @@ const jsonLd = {
       <div class="wrap feature-grid">
         <div>
           <div class="f-eyebrow">Zero telemetry</div>
-          <h2>No analytics, no cookies, no trackers. Ever.</h2>
-          <p>Not a setting you have to find and turn off. It was never wired in, in this app or anywhere else in the house.</p>
+          <h2>The app has no analytics, no cookies, no trackers. Ever.</h2>
+          <p>Not a setting you have to find and turn off. It was never wired in, in this app or in any other app in the house. This website counts page views on pages like this one, and nothing at all in the reader or the tools. The <a class="inline-link" href="/privacy">privacy policy</a> says exactly what that means.</p>
         </div>
         <div class="feature-visual"><div class="screen-crop screen-crop--2"></div></div>
       </div>

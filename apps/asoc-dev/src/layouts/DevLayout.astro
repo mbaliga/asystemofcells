@@ -14,16 +14,27 @@
 import '@fontsource-variable/jetbrains-mono'
 import '@asoc/kit/tokens.css'
 import '../styles/terminal.css'
+import Analytics from '@vercel/analytics/astro'
 import Seo from '@asoc/kit/Seo.astro'
 import SiteFooter from '@asoc/kit/SiteFooter.astro'
 
-const { title, description, canonical, jsonLd } = Astro.props
+/*
+ * Analytics defaults ON here, unlike asoc-com's BaseLayout where it defaults
+ * off. .dev has no usage surfaces at all: every page on it describes the house,
+ * and there is nothing here that anyone makes, reads, or runs. If that ever
+ * changes the new page passes analytics={false}, and anything genuinely
+ * interactive should ship as a static file under public/, where Astro cannot
+ * reach it in the first place.
+ */
+const { title, description, canonical, jsonLd, analytics = true } = Astro.props
 
 const FOOTER_COLS = [
   {
     title: 'Surface',
     links: [
       { label: 'Roster', href: '/roster/' },
+      { label: 'Hyle', href: '/hyle/' },
+      { label: 'Rules', href: '/rules/' },
       { label: 'Colophon', href: '/colophon/' },
     ],
   },
@@ -52,9 +63,14 @@ const FOOTER_COLS = [
   <meta name="theme-color" content="#0b0b0c" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <Seo title={title} description={description} canonical={canonical} jsonLd={jsonLd} />
+  {analytics && <Analytics />}
 </head>
 <body>
   <slot />
-  <SiteFooter cols={FOOTER_COLS} motto="cells interlinked within one stem" />
+  <SiteFooter
+    cols={FOOTER_COLS}
+    motto="cells interlinked within one stem"
+    note="No cookies, no cross-site tracking, no profiles. Cookieless page counts only."
+  />
 </body>
 </html>

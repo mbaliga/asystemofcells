@@ -1,0 +1,136 @@
+---
+import DevLayout from '../../layouts/DevLayout.astro'
+import { readTokens, groupTokens, isColor, contrastOn, wcag } from '../../lib/tokens.js'
+
+const tokens = readTokens()
+const groups = groupTokens(tokens)
+
+// Contrast is measured against the house ground, and alpha is composited over
+// it first. Reporting a translucent token's contrast without flattening would
+// overstate every single one of them, and --ink-muted, --ink-faint and
+// --hairline are all translucent.
+const GROUND = '#0b0b0c'
+const failing = tokens.filter((t) => isColor(t.value) && (contrastOn(t.value, GROUND) ?? 99) < 4.5)
+---
+<DevLayout
+  title="Tokens: Hyle: asystemofcells.dev"
+  description="Every design token the house ships, with swatches and measured WCAG contrast against the terminal ground, parsed from tokens.css at build time."
+  canonical="https://asystemofcells.dev/hyle/tokens/"
+>
+  <div class="shell" style="padding-top:3.4rem">
+    <a class="back-link" href="/hyle/">&larr; hyle</a>
+    <p class="eyebrow">Hyle / Tokens</p>
+    <h1 style="font-size:var(--fs-h1);font-weight:500;letter-spacing:var(--track-tight);margin:0 0 0.8rem">
+      {tokens.length} tokens.
+    </h1>
+    <p class="dev-tagline" style="max-width:72ch">
+      Parsed from <code>packages/kit/src/styles/tokens.css</code> when this site
+      builds. Contrast is measured against the ground this page is drawn on
+      (<code>{GROUND}</code>), with any alpha composited over it first, because
+      several of these are translucent and quoting their raw contrast would
+      flatter all of them.
+    </p>
+
+    <div class="dev-statusline" style="margin:1.6rem 0 0">
+      <span><b>{tokens.length}</b> total</span>
+      <span><b>{tokens.filter((t) => isColor(t.value)).length}</b> colour</span>
+      <span><b>{failing.length}</b> below 4.5:1 as body text</span>
+    </div>
+
+    <p style="font-size:var(--fs-micro);color:var(--ink-faint);line-height:var(--lh-body);max-width:70ch;margin:0.9rem 0 0">
+      A token failing 4.5:1 is not automatically a bug. <code>--hairline</code> is
+      a one-pixel rule and <code>--ink-faint</code> is for de-emphasised meta,
+      neither of which is body copy. It is listed so the decision is visible
+      rather than assumed.
+    </p>
+
+    {groups.map((g) => (
+      <section class="section-block" id={g.id}>
+        <div class="col-label"><span>{g.title}</span><span>{g.items.length}</span></div>
+        <div class="table-scroll" style="margin-top:1rem">
+          <table class="dense-table">
+            <thead>
+              <tr>
+                <th style="width:2.2rem"></th>
+                <th>token</th>
+                <th>value</th>
+                {g.items.some((t) => isColor(t.value)) && <th>on ground</th>}
+                {g.items.some((t) => isColor(t.value)) && <th>wcag</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {g.items.map((t) => {
+                const colour = isColor(t.value)
+                const ratio = colour ? contrastOn(t.value, GROUND) : null
+                const verdict = wcag(ratio)
+                return (
+                  <tr>
+                    <td>
+                      {colour && (
+                        <span
+                          class="stream-swatch"
+                          style={`background:${t.value};display:inline-block;width:14px;height:14px`}
+                          aria-hidden="true"
+                        ></span>
+                      )}
+                    </td>
+                    <td><code style="color:var(--ink)">{t.name}</code></td>
+                    <td style="color:var(--ink-muted)">{t.value}</td>
+                    {g.items.some((x) => isColor(x.value)) && (
+                      <td style="color:var(--ink-muted)">{ratio === null ? '' : `${ratio.toFixed(2)}:1`}</td>
+                    )}
+                    {g.items.some((x) => isColor(x.value)) && (
+                      <td>
+                        {colour && (
+                          <span
+                            class="tag"
+                            style={
+                              verdict.pass === true
+                                ? 'color:var(--sect-open);border-color:color-mix(in srgb,var(--sect-open) 40%,transparent)'
+                                : verdict.pass === 'partial'
+                                  ? 'color:var(--sect-notes);border-color:color-mix(in srgb,var(--sect-notes) 40%,transparent)'
+                                  : 'color:var(--ink-faint)'
+                            }
+                          >
+                            {verdict.label}
+                          </span>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ))}
+
+    <section class="section-block" style="padding-bottom:1rem">
+      <div class="col-label"><span>the provenance idiom</span></div>
+      <div class="dev-prose" style="max-width:72ch;margin-top:1rem">
+        <p>
+          The two provenance tokens are the only ones in the system that carry
+          meaning rather than style. Native, on-device computation reads warm
+          green. Cloud computation reads cyan, and it is meant to read as a
+          watched, external glow rather than as a neutral state.
+        </p>
+        <p>
+          The binding rule is that <strong>neither is ever used alone</strong>.
+          The house component pairs each hue with a dot and an uppercase label, so
+          the meaning survives being printed in greyscale, being looked at by
+          someone with a colour vision deficiency, or being rendered by a client
+          that drops the stylesheet.
+        </p>
+        <div style="display:flex;gap:2rem;flex-wrap:wrap;margin:1.4rem 0 0;padding:1.1rem 1.2rem;border:1px solid var(--hairline);background:var(--bg-sunken)">
+          <span class="provenance provenance--native">On device</span>
+          <span class="provenance provenance--cloud">Cloud</span>
+        </div>
+        <p style="font-size:var(--fs-micro);color:var(--ink-faint);margin-top:0.7rem">
+          Rendered with the real <code>.provenance</code> class from tokens.css,
+          not a copy of it.
+        </p>
+      </div>
+    </section>
+  </div>
+</DevLayout>

@@ -1,11 +1,37 @@
 ---
+/*
+ * The shell for every Astro-rendered page on asystemofcells.com.
+ *
+ * ANALYTICS BOUNDARY, read before adding a page.
+ *
+ * `analytics` defaults to FALSE here on purpose. The two failure directions are
+ * not symmetric: a marketing page that silently misses a page count loses one
+ * datapoint, while a tool page that silently gains one breaks a promise printed
+ * on the privacy page. So pages opt in, never out.
+ *
+ * The house rule is: count pages that DESCRIBE the house, never pages where
+ * someone MAKES, READS, or RUNS something.
+ *
+ * The reader and the generators sit outside this boundary by construction
+ * rather than by configuration: they are static files under public/, which
+ * Astro copies verbatim and never injects into, so no layout change here can
+ * reach them. That distinction matters, because Vercel's own `beforeSend` hook
+ * is a send-suppressor rather than a load-suppressor: it still ships and runs
+ * the script and merely skips the outbound POST. Vercel documents no way to
+ * make the script not load on a route. Structure is the only real mechanism,
+ * so structure is the mechanism.
+ *
+ * If a future tool ships as an Astro page rather than a static file, it uses
+ * this layout directly and simply does not pass `analytics`.
+ */
 import '@asoc/kit/hyle-fonts.css'
 import '@asoc/kit/tokens.css'
+import Analytics from '@vercel/analytics/astro'
 import Seo from '@asoc/kit/Seo.astro'
 import SiteHeader from '@asoc/kit/SiteHeader.astro'
 import SiteFooter from '@asoc/kit/SiteFooter.astro'
 
-const { title, description, canonical, jsonLd, noChrome = false } = Astro.props
+const { title, description, canonical, jsonLd, noChrome = false, analytics = false } = Astro.props
 ---
 <!doctype html>
 <html lang="en">
@@ -14,6 +40,7 @@ const { title, description, canonical, jsonLd, noChrome = false } = Astro.props
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <Seo title={title} description={description} canonical={canonical} jsonLd={jsonLd} />
+  {analytics && <Analytics />}
 </head>
 <body>
   {noChrome ? (
