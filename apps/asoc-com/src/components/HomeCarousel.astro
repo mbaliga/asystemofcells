@@ -156,7 +156,12 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     --home-card: #efeeec;
     --home-card-2: #e8e7e5;
     --home-ink: #1a1a1a;
-    --home-muted: #6f6f6f;
+    /* Darker than the reference's #6f6f6f on purpose. The backdrop used to be
+       a near-white wash, so mid grey was safe; it is now a real gradient, and
+       on the warm accents (Clackpad, Fonebrew, Figma Suite) the footer strip
+       sits on coral rather than cream, where #6f6f6f falls under 3:1. This
+       still reads as clearly secondary against the #1a1a1a ink. */
+    --home-muted: #4a4a4a;
     --home-ease: cubic-bezier(0.4, 0, 0.2, 1);
     --home-accent: #c98a3d;
   }
@@ -172,44 +177,29 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   .home-card {
     position: relative;
     width: 100%;
-    /* A living, textured backdrop: three soft radial washes in the focused
-       product's accent over the warm base, plus a faint grain. The washes drift
-       slowly (home-bg-drift) so it is subtly moving, and the whole thing shifts
-       hue as you scroll because --home-accent is a transitioned, registered
-       colour (set per product from JS). */
+    /* The real backdrop is a <canvas> painted by the house texture engine
+       (packages/kit/src/texture/texture.js), which is the same rendering core
+       the /tools generator uses. It is prepended as .texture-backdrop by the
+       module script at the bottom of this file and covers this box entirely.
+
+       What is left here is the no-JS / pre-hydration fallback: a plain CSS
+       gradient in the same 3-stop shape and the same corner orientation
+       (accent top-right, white bottom-left; CSS 225deg equals the engine's
+       135deg). It carries no grain, because CSS cannot produce per-pixel grain
+       composited in soft-light, and pretending otherwise with a turbulence
+       tile at 7% opacity is exactly what made the old backdrop look like a
+       flat milky wash instead of the generator's output. */
     background-color: var(--home-card);
-    background-image:
-      radial-gradient(58% 54% at 16% 12%, color-mix(in srgb, var(--home-accent) 64%, transparent), transparent 72%),
-      radial-gradient(64% 58% at 84% 86%, color-mix(in srgb, var(--home-accent) 50%, transparent), transparent 74%),
-      radial-gradient(52% 50% at 62% 42%, color-mix(in srgb, var(--home-accent) 36%, transparent), transparent 76%),
-      linear-gradient(135deg, var(--home-card), var(--home-card-2)),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
-    background-size: 150% 150%, 165% 165%, 175% 175%, 100% 100%, 160px 160px;
-    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+    background-image: linear-gradient(
+      225deg,
+      var(--home-accent) 0%,
+      color-mix(in srgb, var(--home-accent) 40%, white) 35%,
+      #ffffff 100%
+    );
     transition: --home-accent 750ms var(--home-ease);
-    animation: home-bg-drift 16s ease-in-out infinite alternate;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-  }
-  @keyframes home-bg-drift {
-    0%   { background-position: 0% 0%, 100% 100%, 50% 50%, 0 0, 0 0; }
-    100% { background-position: 48% 34%, 52% 66%, 14% 78%, 0 0, 0 0; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .home-card { animation: none; transition: none; }
-  }
-  .home-card::after {
-    content: '';
-    position: absolute;
-    right: -10%;
-    top: -20%;
-    width: 55%;
-    height: 160%;
-    background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.5) 50%, transparent 62%);
-    transform: rotate(8deg);
-    pointer-events: none;
-    z-index: 5;
   }
 
   .home-gallery {
@@ -600,9 +590,12 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   }
 
   function applyHero(item) {
-    // Drive the backdrop hue from the focused product; the CSS transition on
-    // --home-accent makes the shift smooth as you scroll between products.
+    // Drive the backdrop hue from the focused product. The CSS variable still
+    // drives the no-JS fallback gradient; the canvas backdrop listens for the
+    // event, because this script is a define:vars script (opted out of Vite
+    // bundling) and so cannot import the texture module directly.
     if (homeCardEl) homeCardEl.style.setProperty('--home-accent', item.color)
+    document.dispatchEvent(new CustomEvent('asoc:accent', { detail: { color: item.color } }))
     homeHeroEl.style.backgroundColor = item.color
     homeHeroEl.href = item.href
     homeHeroEl.setAttribute('aria-label', `${item.name}: ${item.oneLiner}`)
@@ -694,6 +687,43 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
 </script>
 
 <script type="application/json" id="rosterData" set:html={JSON.stringify(items)} />
+
+<script>
+  // The home backdrop, painted by the same engine as /tools/texture-background.
+  //
+  // Values follow the owner's reference settings: linear fill, 135 degrees,
+  // grain at 40, scale 1.0x, no vignette. The palette is derived per product
+  // from its roster accent so every cell gets a version of that look.
+  //
+  // Motion is 'drift', not the reference's 'rotate', and this is a deliberate
+  // departure: a rotating linear gradient swings its saturated end through a
+  // full circle, so once per cycle the darkest corner passes under the
+  // wordmark and the product title and takes their contrast with it. Drift
+  // translates the gradient instead of spinning it, so the accent corner stays
+  // put (top-right, over empty space) and the white end stays under the type.
+  // If the swing is wanted anyway, this is a one-word change to 'rotate'.
+  import { mountTextureBackdrop, REFERENCE_STOPS } from '@asoc/kit/texture.js'
+
+  const card = document.querySelector('.home-card')
+  const rosterEl = document.getElementById('rosterData')
+
+  if (card && rosterEl) {
+    const roster = JSON.parse(rosterEl.textContent)
+    const backdrop = mountTextureBackdrop(card, {
+      accent: roster[0]?.color || '#c98a3d',
+      fill: 'linear',
+      angle: 135,
+      stops: REFERENCE_STOPS,
+      texType: 'grain',
+      grain: 40,
+      scale: 10,
+      vig: 0,
+      motion: 'drift',
+      speed: 22,
+    })
+    document.addEventListener('asoc:accent', (e) => backdrop.setAccent(e.detail.color))
+  }
+</script>
 
 <script>
   // Search - client-side fuzzy match over the same roster data, no backend.
