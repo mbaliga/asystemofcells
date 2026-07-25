@@ -1,0 +1,99 @@
+---
+import DevLayout from '../../layouts/DevLayout.astro'
+import { getRoster, TISSUES } from '@asoc/roster'
+
+export function getStaticPaths() {
+  return getRoster().map((cell) => ({ params: { slug: cell.slug }, props: { cell } }))
+}
+
+const { cell } = Astro.props
+const tissue = TISSUES.find((t) => t.slug === cell.tissue)
+
+/*
+ * What is deliberately NOT rendered here: the roster's `verify[]` array.
+ *
+ * It is an internal data-quality field, not a public caveat list. Its contents
+ * include an undecided SKU price, an internal working codename, and notes that
+ * certain repos are private and why. The product site used to leak this same
+ * field onto product pages and that was removed for exactly this reason; the
+ * fix should not be quietly undone here at greater scale.
+ *
+ * An honesty ledger is a genuinely good idea for this surface and fits the
+ * house rules better than most things on it, but it needs a separate,
+ * curated, written-for-publication field in the roster. Until that exists,
+ * this page states what is known and says nothing about what is not.
+ */
+const STATUS_MEANING = {
+  live: 'Shipped and available.',
+  beta: 'Usable, still moving.',
+  soon: 'Not released yet.',
+}
+---
+<DevLayout
+  title={`${cell.slug}: asystemofcells.dev`}
+  description={cell.oneLiner}
+  canonical={`https://asystemofcells.dev/roster/${cell.slug}/`}
+>
+  <div class="shell" style="padding-top:3.4rem;padding-bottom:1rem">
+    <a class="back-link" href="/roster/">&larr; roster</a>
+
+    <p class="eyebrow">{tissue?.label} &middot; type {cell.type}</p>
+    <h1 style="font-size:var(--fs-h1);font-weight:500;letter-spacing:var(--track-tight);margin:0 0 0.9rem;display:flex;align-items:center;gap:0.7rem">
+      <span class="stream-swatch" style={`background:${cell.accent};width:12px;height:12px`} aria-hidden="true"></span>
+      {cell.slug}
+    </h1>
+    <p class="dev-tagline" style="margin-bottom:0">{cell.oneLiner}</p>
+
+    <div class="record">
+      <div class="record__row">
+        <span class="record__key">status</span>
+        <span class="record__val">
+          <span class={`tag tag--${cell.status}`}>{cell.status}</span>
+          <span style="margin-left:0.6rem;color:var(--ink-faint)">{STATUS_MEANING[cell.status]}</span>
+        </span>
+      </div>
+      <div class="record__row">
+        <span class="record__key">tissue</span>
+        <span class="record__val">
+          <a href={`/roster/?tissue=${cell.tissue}`} style="color:var(--sect-roster);text-decoration:none">{tissue?.label}</a>
+          <span style="color:var(--ink-faint)"> (type {cell.type})</span>
+        </span>
+      </div>
+      <div class="record__row">
+        <span class="record__key">accent</span>
+        <span class="record__val"><span class="swatch" style={`background:${cell.accent}`}></span>{cell.accent}</span>
+      </div>
+      <div class="record__row">
+        <span class="record__key">elsewhere</span>
+        <span class="record__val">
+          {cell.isHub ? (
+            <a href={cell.hubUrl} target="_blank" rel="noopener noreferrer" style="color:var(--sect-roster);text-decoration:none">
+              {cell.hubUrl.replace('https://', '')} &nearr;
+            </a>
+            <span style="color:var(--ink-faint)"> leaves this site</span>
+          ) : cell.readerUrl ? (
+            <a href={`https://asystemofcells.com${cell.readerUrl}`} style="color:var(--sect-roster);text-decoration:none">
+              asystemofcells.com{cell.readerUrl}
+            </a>
+          ) : (
+            <span style="color:var(--ink-faint)">No separate hub. Lives on the product site.</span>
+          )}
+        </span>
+      </div>
+      <div class="record__row">
+        <span class="record__key">product page</span>
+        <span class="record__val">
+          <a href={`https://asystemofcells.com/${cell.slug}`} style="color:var(--sect-roster);text-decoration:none">
+            asystemofcells.com/{cell.slug}
+          </a>
+        </span>
+      </div>
+    </div>
+
+    <p style="margin-top:1.6rem;font-size:var(--fs-micro);color:var(--ink-faint);line-height:var(--lh-body);max-width:62ch">
+      This record is generated from the shared roster package, not written per
+      page, which is why it is short: it says what is actually recorded and
+      stops. Anything richer belongs on the product page.
+    </p>
+  </div>
+</DevLayout>

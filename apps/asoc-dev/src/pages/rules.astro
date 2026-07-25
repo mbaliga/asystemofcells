@@ -1,0 +1,77 @@
+---
+import DevLayout from '../layouts/DevLayout.astro'
+
+/*
+ * Every rule below is quoted or paraphrased from something already committed
+ * in this repo, not invented for this page:
+ *   1 + 2  packages/kit/src/styles/tokens.css header comment
+ *   3      apps/asoc-com/src/pages/privacy.astro
+ *   4      apps/asoc-com/src/pages/privacy.astro, "The apps" section
+ */
+const RULES = [
+  {
+    n: '01',
+    title: 'State is shown by material behaviour, never said by language.',
+    hue: 'var(--sect-rules)',
+    body:
+      'The house design system carries this as its constitutional line. In practice it means no status words and no spinners: a thing that is working looks like it is working, rather than displaying the sentence "working". The burden is on the material, not on a label.',
+  },
+  {
+    n: '02',
+    title: 'Colour is never the sole carrier of meaning.',
+    hue: 'var(--sect-tools)',
+    body:
+      'Native, on-device computation reads warm. Cloud computation reads cyan, a watched, external glow. Every provenance hue is always paired with a second, non-colour channel: a shape, a label, an icon. This page obeys it too, which is why the roster accents appear here as swatches next to a name rather than as coloured type.',
+  },
+  {
+    n: '03',
+    title: 'No analytics, no cookies, no third-party trackers.',
+    hue: 'var(--sect-open)',
+    body:
+      'Neither this site nor the product site runs analytics, sets cookies, or loads third-party tracking scripts. No ad network, no session recording, no profiling across visits. The hosting provider logs the ordinary technical facts of serving a page, which is not the same thing as collecting them.',
+  },
+  {
+    n: '04',
+    title: 'On-device by default. Cloud is opt-in, per use, and marked.',
+    hue: 'var(--sect-notes)',
+    body:
+      'Every app in the house is built the same way: on-device by default, with no telemetry wired in. Where an app offers a cloud feature it is opt-in per use, clearly marked, and never a hidden fallback. A cloud call is a thing you chose, not a thing that happened to you.',
+  },
+]
+---
+<DevLayout
+  title="Rules: asystemofcells.dev"
+  description="The four engineering rules every cell in the asystemofcells house is held to: state shown not said, colour never alone, no trackers, on-device by default."
+  canonical="https://asystemofcells.dev/rules/"
+>
+  <div class="shell" style="padding-top:3.4rem">
+    <a class="back-link" href="/">&larr; asystemofcells.dev</a>
+    <p class="eyebrow">Rules</p>
+    <h1 style="font-size:var(--fs-h1);font-weight:500;letter-spacing:var(--track-tight);margin:0 0 0.7rem">
+      Four rules, held across every cell.
+    </h1>
+    <p class="dev-tagline">
+      These are not aspirations. Each one is already committed somewhere in the
+      repo the sites are built from, and each one costs something real, which is
+      the only reason it is worth writing down.
+    </p>
+
+    <div class="record" style="margin-top:2rem">
+      {RULES.map((r) => (
+        <article style="padding:1.4rem 0;border-bottom:1px solid var(--hairline-ghost)">
+          <div style="display:flex;gap:1rem;align-items:baseline">
+            <span style={`font-size:var(--fs-micro);letter-spacing:var(--track-label);color:${r.hue}`}>{r.n}</span>
+            <div style="min-width:0">
+              <h2 style="font-size:var(--fs-h3);font-weight:500;color:var(--ink);margin:0 0 0.5rem;letter-spacing:var(--track-tight);line-height:var(--lh-tight)">
+                {r.title}
+              </h2>
+              <p style="margin:0;font-size:var(--fs-small);color:var(--ink-muted);line-height:var(--lh-body);max-width:66ch">
+                {r.body}
+              </p>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</DevLayout>

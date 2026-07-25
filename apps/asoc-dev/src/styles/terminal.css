@@ -1,0 +1,543 @@
+/*
+ * asystemofcells.dev - the terminal surface.
+ *
+ * Layered on top of @asoc/kit's tokens.css, which supplies the house ground,
+ * ink, hairline and provenance hues. Everything here either rebinds a kit
+ * token for this surface only, or adds one the kit does not have.
+ *
+ * The one rebinding that matters: --font-mono. On .com that token is a naming
+ * convention, not a fixed-advance face; tokens.css binds it to Hyle Grotesk
+ * on purpose, so the whole marketing site speaks in one voice. A terminal
+ * surface cannot borrow that. Right-aligned timestamps, aligned columns and
+ * tabular figures all need real fixed advance, so .dev binds every type slot
+ * to a genuine mono and the fallback chain ends in monospace rather than in
+ * Hyle. A font failure here must degrade to *a* mono, never to a proportional
+ * face that silently breaks every column on the page.
+ */
+
+:root {
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, 'Liberation Mono', monospace;
+  --font-ui: var(--font-mono);
+  --font-display: var(--font-mono);
+  --font-brand: var(--font-mono);
+
+  /* Rounded cards are the single most tired signal in this genre, and a
+     terminal has no corner radius at all. Killing it at token level means the
+     kit's own components inherit square corners here without being forked. */
+  --radius: 0px;
+
+  --bg-sunken: #08080a;
+  --surface-raised: #17171a;
+  --hairline-ghost: rgba(240, 237, 230, 0.06);
+  --hairline-strong: rgba(240, 237, 230, 0.2);
+  --ink-dim: rgba(240, 237, 230, 0.48);
+
+  /* Mono runs optically wide, so the base sits at 13px rather than 16px.
+     Two thirds of this site lives between 10 and 13. */
+  --fs-nano: 0.625rem;
+  --fs-micro: 0.6875rem;
+  --fs-small: 0.75rem;
+  --fs-base: 0.8125rem;
+  --fs-body: 0.875rem;
+  --fs-lead: 1rem;
+  --fs-h3: 1.125rem;
+  --fs-h2: 1.375rem;
+  --fs-h1: 1.75rem;
+
+  /* Mono needs positive tracking small and negative large. */
+  --track-label: 0.12em;
+  --track-tag: 0.08em;
+  --track-tight: -0.012em;
+
+  --lh-row: 1.35;
+  --lh-body: 1.65;
+  --lh-tight: 1.15;
+
+  --shell-dev: 1140px;
+
+  /* Six section hues at near-equal apparent lightness on #0b0b0c. Four are
+     existing house values; notes and open are assignments made here. */
+  --sect-roster: #8e7bff;
+  --sect-hyle: #c77dff;
+  --sect-tools: #08fed5;
+  --sect-notes: #e8a33d;
+  --sect-open: #3ddc84;
+  --sect-rules: #f0ede6;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+  line-height: var(--lh-row);
+  color: var(--ink);
+  background: var(--bg);
+  /* Every number on this site sits in a column with other numbers. */
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+.shell {
+  max-width: var(--shell-dev);
+  margin: 0 auto;
+  padding: 0 var(--pad);
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 1px solid var(--sect-tools);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ header */
+
+.dev-head {
+  padding: 3.4rem 0 0;
+}
+
+.dev-statusline {
+  display: flex;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+  font-size: var(--fs-nano);
+  letter-spacing: var(--track-tag);
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-bottom: 2.2rem;
+}
+.dev-statusline b {
+  font-weight: 500;
+  color: var(--ink-dim);
+}
+
+.dev-wordmark {
+  font-size: clamp(1.5rem, 6.4vw, 3.15rem);
+  /* Clamped for a real reason: "asystemofcells.dev" at 52px and 0.22em is
+     about 604px, which fits the shell, but at a 360px viewport the same
+     tracking overflows by roughly 200px. */
+  letter-spacing: clamp(0.06em, 0.55vw, 0.2em);
+  line-height: 0.95;
+  font-weight: 400;
+  margin: 0 0 0.5rem;
+  text-decoration: none;
+  display: block;
+}
+.dev-wordmark .tld {
+  color: var(--sect-roster);
+}
+
+.dev-tagline {
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+  margin: 0 0 2.2rem;
+  max-width: 62ch;
+  line-height: var(--lh-body);
+}
+
+/* Section row: each entry carries its own hue, and a leading glyph so the hue
+   is never the only channel distinguishing them (kit rule, WCAG 1.4.1). */
+.dev-sections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.6rem 2.1rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--hairline-strong);
+}
+.dev-section {
+  --sect: var(--ink);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: var(--fs-small);
+  text-decoration: none;
+  color: var(--ink-muted);
+  transition: color var(--motion-fast) var(--ease);
+}
+.dev-section:hover {
+  color: var(--ink);
+}
+.dev-section .glyph {
+  color: var(--sect);
+  font-size: var(--fs-micro);
+}
+.dev-section .count {
+  color: var(--ink-faint);
+  font-size: var(--fs-nano);
+}
+
+/* -------------------------------------------------------------------- grid */
+
+.dev-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: 3rem;
+  padding: 2.4rem 0 0;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .dev-main {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.4rem;
+  }
+}
+
+.col-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding-bottom: 0.7rem;
+  margin-bottom: 0.2rem;
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* ------------------------------------------------------------------ stream */
+
+.stream {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.stream li {
+  border-bottom: 1px solid var(--hairline-ghost);
+}
+.stream-row {
+  display: grid;
+  grid-template-columns: 1.4rem minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 0.85rem;
+  padding: 0.62rem 0;
+  text-decoration: none;
+  color: var(--ink-muted);
+  transition: color var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease);
+}
+.stream-row:hover {
+  color: var(--ink);
+  background: var(--surface-raised);
+  /* Bleed the hover past the text column so it reads as a selected terminal
+     row rather than a highlighted link. */
+  box-shadow: -0.7rem 0 0 var(--surface-raised), 0.7rem 0 0 var(--surface-raised);
+}
+.stream-swatch {
+  width: 7px;
+  height: 7px;
+  align-self: center;
+  justify-self: center;
+  /* Nine of the fourteen roster accents fail 4.5:1 as text on this ground
+     (nooz #3A4A5A is about 1.5:1), so accents are swatches and hairlines
+     here, never type. The inset ring keeps the darkest ones visible. */
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+}
+.stream-name {
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stream-row:hover .stream-name {
+  color: var(--ink);
+}
+.stream-desc {
+  display: block;
+  grid-column: 2;
+  font-size: var(--fs-small);
+  color: var(--ink-faint);
+  line-height: var(--lh-body);
+  padding-bottom: 0.15rem;
+  max-width: 68ch;
+}
+.tag {
+  font-size: var(--fs-nano);
+  letter-spacing: var(--track-tag);
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  border: 1px solid var(--hairline);
+  padding: 0.12rem 0.42rem;
+  white-space: nowrap;
+}
+.tag--live {
+  color: var(--sect-open);
+  border-color: color-mix(in srgb, var(--sect-open) 40%, transparent);
+}
+.tag--beta {
+  color: var(--sect-notes);
+  border-color: color-mix(in srgb, var(--sect-notes) 40%, transparent);
+}
+.tag--soon {
+  color: var(--ink-faint);
+}
+.stream-meta {
+  font-size: var(--fs-nano);
+  color: var(--ink-faint);
+  letter-spacing: var(--track-tag);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------------------------- rail */
+
+.rail-card {
+  display: block;
+  border: 1px solid var(--hairline);
+  padding: 0.85rem 0.9rem;
+  text-decoration: none;
+  margin-bottom: 0.7rem;
+  transition: border-color var(--motion-fast) var(--ease);
+}
+.rail-card:hover {
+  border-color: var(--hairline-strong);
+}
+.rail-card__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+.rail-card__name {
+  font-size: var(--fs-small);
+  color: var(--ink);
+}
+.rail-card__body {
+  font-size: var(--fs-micro);
+  color: var(--ink-faint);
+  line-height: var(--lh-body);
+  margin: 0;
+}
+
+/* ------------------------------------------------------------------ groups */
+
+.tissue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.7rem;
+  margin-top: 0.2rem;
+}
+.tissue-card {
+  border: 1px solid var(--hairline);
+  padding: 0.9rem 1rem 1rem;
+  text-decoration: none;
+  display: block;
+  transition: border-color var(--motion-fast) var(--ease);
+}
+.tissue-card:hover {
+  border-color: var(--hairline-strong);
+}
+.tissue-card__name {
+  font-size: var(--fs-small);
+  color: var(--ink);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.tissue-card__cells {
+  font-size: var(--fs-micro);
+  color: var(--ink-faint);
+  line-height: 1.7;
+}
+
+.section-block {
+  padding: 2.8rem 0 0;
+}
+
+/* ------------------------------------------------------------------- table */
+
+.dense-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+}
+.dense-table th {
+  text-align: left;
+  font-weight: 400;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0 0.8rem 0.6rem 0;
+  border-bottom: 1px solid var(--hairline-strong);
+  white-space: nowrap;
+}
+.dense-table td {
+  padding: 0.55rem 0.8rem 0.55rem 0;
+  border-bottom: 1px solid var(--hairline-ghost);
+  color: var(--ink-muted);
+  vertical-align: top;
+}
+.dense-table tr:hover td {
+  background: var(--surface-raised);
+  color: var(--ink);
+}
+.dense-table a {
+  color: var(--ink);
+  text-decoration: none;
+}
+.dense-table a:hover {
+  color: var(--sect-roster);
+}
+.table-scroll {
+  overflow-x: auto;
+}
+
+/* -------------------------------------------------------------------- prose */
+
+.dev-prose {
+  max-width: 68ch;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-muted);
+}
+.dev-prose h1 {
+  font-size: var(--fs-h1);
+  letter-spacing: var(--track-tight);
+  line-height: var(--lh-tight);
+  color: var(--ink);
+  font-weight: 500;
+  margin: 0 0 1rem;
+}
+.dev-prose h2 {
+  font-size: var(--fs-h3);
+  color: var(--ink);
+  font-weight: 500;
+  margin: 2.4rem 0 0.8rem;
+  letter-spacing: var(--track-tight);
+}
+.dev-prose p {
+  margin: 0 0 1rem;
+}
+.dev-prose a {
+  color: var(--sect-roster);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--sect-roster) 35%, transparent);
+}
+.dev-prose a:hover {
+  border-bottom-color: var(--sect-roster);
+}
+.dev-prose code {
+  background: var(--bg-sunken);
+  border: 1px solid var(--hairline-ghost);
+  padding: 0.05rem 0.3rem;
+  font-size: 0.95em;
+}
+.dev-prose ul {
+  margin: 0 0 1rem;
+  padding-left: 1.1rem;
+}
+.dev-prose li {
+  margin-bottom: 0.4rem;
+}
+
+.eyebrow {
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 0.8rem;
+}
+
+.back-link {
+  display: inline-block;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-tag);
+  color: var(--ink-faint);
+  text-decoration: none;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+}
+.back-link:hover {
+  color: var(--ink);
+}
+
+/* --------------------------------------------------------------- record kv */
+
+.record {
+  border-top: 1px solid var(--hairline-strong);
+  margin-top: 1.6rem;
+}
+.record__row {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 1.2rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--hairline-ghost);
+  font-size: var(--fs-small);
+}
+@media (max-width: 620px) {
+  .record__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+  }
+}
+.record__key {
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding-top: 0.1rem;
+}
+.record__val {
+  color: var(--ink-muted);
+  line-height: var(--lh-body);
+  min-width: 0;
+}
+.record__val .swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  margin-right: 0.4rem;
+  vertical-align: baseline;
+}
+
+/* ---------------------------------------------------------------- command */
+
+.cmd {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--bg-sunken);
+  border: 1px solid var(--hairline);
+  padding: 0.55rem 0.8rem;
+  margin-bottom: 1.6rem;
+}
+.cmd__prompt {
+  color: var(--sect-open);
+  font-size: var(--fs-small);
+  user-select: none;
+}
+.cmd__input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--fs-small);
+  min-width: 0;
+}
+.cmd__input::placeholder {
+  color: var(--ink-faint);
+}
+.cmd__hint {
+  font-size: var(--fs-nano);
+  letter-spacing: var(--track-tag);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+.is-hidden {
+  display: none !important;
+}
+.cmd-empty {
+  padding: 1.4rem 0;
+  font-size: var(--fs-small);
+  color: var(--ink-faint);
+}

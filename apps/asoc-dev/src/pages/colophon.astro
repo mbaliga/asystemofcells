@@ -1,0 +1,96 @@
+---
+import DevLayout from '../layouts/DevLayout.astro'
+---
+<DevLayout
+  title="Colophon: asystemofcells.dev"
+  description="How asystemofcells.dev is built: Astro static in a pnpm workspace, sharing one design kit and one roster with the product site, with no runtime scripts from anyone else."
+  canonical="https://asystemofcells.dev/colophon/"
+>
+  <div class="shell" style="padding-top:3.4rem">
+    <a class="back-link" href="/">&larr; asystemofcells.dev</a>
+    <div class="dev-prose">
+      <p class="eyebrow">Colophon</p>
+      <h1>How this is put together.</h1>
+
+      <p>
+        Two sites, one repository. <code>apps/asoc-com</code> is the product
+        house and <code>apps/asoc-dev</code> is this. Both are Astro 4, both
+        build to static files, and both consume the same two workspace
+        packages, which is the point: <code>@asoc/roster</code> holds the single
+        <code>roster.public.json</code> that every cell listing on either site
+        reads from, and <code>@asoc/kit</code> holds the shared design tokens,
+        the head component, and the footer. Neither site can quietly disagree
+        with the other about what exists, because neither one owns the list.
+      </p>
+
+      <h2>Why this one looks different</h2>
+      <p>
+        The kit is token-driven rather than class-driven, so a surface changes
+        its whole voice by rebinding tokens rather than by forking components.
+        The footer at the bottom of this page is the same component the product
+        site renders, unmodified. It looks like this because the tokens
+        underneath it changed.
+      </p>
+      <p>
+        The one rebinding that carries the rest is <code>--font-mono</code>. On
+        the product site that token is a naming convention rather than a
+        typeface classification: it points at Hyle Grotesk, the proportional
+        house face, so the marketing site speaks in one voice throughout. A
+        terminal surface cannot borrow that. Right-aligned timestamps, aligned
+        columns and tabular figures all need real fixed advance. So this site
+        binds every type slot to JetBrains Mono, self-hosted, and ends its
+        fallback chain in <code>monospace</code> rather than in Hyle. A font
+        failure here has to degrade to some mono, never to a proportional face
+        that would silently break every column on the page.
+      </p>
+      <p>
+        No Hyle faces load here at all, which also sidesteps a real trap: the
+        kit's <code>hyle-fonts.css</code> declares absolute paths under
+        <code>/fonts/hyle/</code>, served out of the product site's public
+        directory. Importing it on this host would request four faces that all
+        404.
+      </p>
+
+      <h2>What runs in your browser</h2>
+      <p>
+        Two small scripts, both first-party, both operating on markup that is
+        already in the page: the filter on the home page, and the tissue filter
+        on the roster. Every row they act on is server-rendered, so the full
+        list is there for a crawler, for <code>curl</code>, and for anyone with
+        JavaScript off. Nothing fetches. Nothing is lazy-loaded. There are no
+        third-party scripts, no analytics, no cookies, and no serverless
+        functions behind this site at all.
+      </p>
+
+      <h2>Type and colour</h2>
+      <p>
+        JetBrains Mono Variable throughout, self-hosted from the build rather
+        than requested from a font CDN, because a font CDN request is a
+        third-party request. The base size is 13px rather than 16px: mono runs
+        optically wide, and most of this site lives between 10 and 13.
+      </p>
+      <p>
+        The ground, ink, hairline and provenance hues are the house values from
+        the kit, unchanged. Six section hues are defined on top of them at
+        roughly equal apparent lightness against this background. Product accent
+        colours are only ever swatches and hairlines here, never text: nine of
+        the fourteen fall below 4.5:1 on this ground, and the house rule says
+        colour is never the only channel carrying meaning anyway.
+      </p>
+
+      <h2>Not here on purpose</h2>
+      <p>
+        There is no API reference, because there is no public API. The only two
+        server functions in the repository are the proxies behind the Nooz
+        reader, and their own source comments describe them as an open-proxy
+        surface by construction. Documenting them as a product would be an
+        invitation to the exact thing that code is already worried about.
+      </p>
+      <p>
+        There is also no changelog, no SDK section, and no contributor guide.
+        Each of those would be an empty room, and an empty room reads as an
+        abandoned building rather than as a promise.
+      </p>
+    </div>
+  </div>
+</DevLayout>

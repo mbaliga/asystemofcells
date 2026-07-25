@@ -1,0 +1,98 @@
+---
+import DevLayout from '../../layouts/DevLayout.astro'
+import { getRoster, TISSUES } from '@asoc/roster'
+
+const cells = getRoster()
+const tissueLabel = Object.fromEntries(TISSUES.map((t) => [t.slug, t.label]))
+---
+<DevLayout
+  title="Roster: asystemofcells.dev"
+  description="Every cell in the asystemofcells house as one dense table: slug, tissue, type, status, accent, and where it lives."
+  canonical="https://asystemofcells.dev/roster/"
+>
+  <div class="shell" style="padding-top:3.4rem">
+    <a class="back-link" href="/">&larr; asystemofcells.dev</a>
+    <p class="eyebrow">Roster</p>
+    <h1 style="font-size:var(--fs-h1);font-weight:500;letter-spacing:var(--track-tight);margin:0 0 0.7rem">
+      {cells.length} cells, {TISSUES.length} tissues.
+    </h1>
+    <p class="dev-tagline" style="margin-bottom:2rem">
+      Read from <code style="background:var(--bg-sunken);padding:0.05rem 0.3rem">packages/roster/roster.public.json</code>,
+      the same file the product site builds from. Accents render as swatches rather
+      than as coloured text: nine of the fourteen fall below 4.5:1 against this
+      ground, so the hue is never the only thing carrying the information.
+    </p>
+
+    <nav class="dev-sections" style="border-bottom:none;padding-bottom:0.9rem" aria-label="Filter by tissue">
+      <button class="dev-section tissue-filter is-active" data-tissue="" type="button" style="--sect:var(--ink);background:none;border:none;cursor:pointer;font:inherit">
+        <span class="glyph" aria-hidden="true">▚</span><span>all</span><span class="count">{cells.length}</span>
+      </button>
+      {TISSUES.map((t) => (
+        <button class="dev-section tissue-filter" data-tissue={t.slug} type="button" style="--sect:var(--sect-roster);background:none;border:none;cursor:pointer;font:inherit">
+          <span class="glyph" aria-hidden="true">·</span><span>{t.label.toLowerCase()}</span>
+          <span class="count">{cells.filter((c) => c.tissue === t.slug).length}</span>
+        </button>
+      ))}
+    </nav>
+
+    <div class="table-scroll" style="margin-top:1.4rem">
+      <table class="dense-table">
+        <thead>
+          <tr>
+            <th>cell</th>
+            <th>tissue</th>
+            <th>type</th>
+            <th>status</th>
+            <th>accent</th>
+            <th>elsewhere</th>
+          </tr>
+        </thead>
+        <tbody id="rosterBody">
+          {cells.map((c) => (
+            <tr data-tissue={c.tissue}>
+              <td><a href={`/roster/${c.slug}/`}>{c.slug}</a></td>
+              <td>{tissueLabel[c.tissue]}</td>
+              <td>{c.type}</td>
+              <td><span class={`tag tag--${c.status}`}>{c.status}</span></td>
+              <td>
+                <span class="stream-swatch" style={`background:${c.accent};display:inline-block;vertical-align:baseline;margin-right:0.4rem`} aria-hidden="true"></span>
+                {c.accent}
+              </td>
+              <td>
+                {c.isHub ? (
+                  <a href={c.hubUrl} target="_blank" rel="noopener noreferrer">{c.hubUrl.replace('https://', '')} &nearr;</a>
+                ) : c.readerUrl ? (
+                  <a href={`https://asystemofcells.com${c.readerUrl}`}>asystemofcells.com{c.readerUrl}</a>
+                ) : (
+                  <span style="color:var(--ink-faint)">&mdash;</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</DevLayout>
+
+<script>
+  // Tissue filter. Deep-linkable via ?tissue=<slug> so the home page's tissue
+  // cards land here pre-filtered, and the filtered view is shareable.
+  const rows = Array.from(document.querySelectorAll('#rosterBody tr'))
+  const buttons = Array.from(document.querySelectorAll('.tissue-filter'))
+
+  function apply(tissue, push) {
+    rows.forEach((r) => r.classList.toggle('is-hidden', !!tissue && r.dataset.tissue !== tissue))
+    buttons.forEach((b) => b.classList.toggle('is-active', b.dataset.tissue === tissue))
+    buttons.forEach((b) => {
+      b.style.color = b.dataset.tissue === tissue ? 'var(--ink)' : ''
+    })
+    if (push) {
+      const url = tissue ? `?tissue=${tissue}` : location.pathname
+      history.replaceState(null, '', url)
+    }
+  }
+
+  buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.tissue, true)))
+  apply(new URLSearchParams(location.search).get('tissue') || '', false)
+</script>

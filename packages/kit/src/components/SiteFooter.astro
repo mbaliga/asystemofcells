@@ -1,6 +1,13 @@
 ---
 // component: SiteFooter
-const cols = [
+//
+// Every style below is token-driven (--hairline, --ink-faint, --ink-muted,
+// --violet, --font-mono, .shell), so this footer re-skins itself to whichever
+// surface renders it, without being forked. asystemofcells.dev therefore keeps
+// it verbatim in style and passes its own columns: the .com anchors below are
+// host-relative, and /#daily-cells and friends do not exist on .dev. Same
+// footer, correct links.
+const DEFAULT_COLS = [
   { title: 'Cells', links: [
     { label: 'Daily cells', href: '/#daily-cells' },
     { label: 'Ambient cells', href: '/#ambient-cells' },
@@ -18,6 +25,12 @@ const cols = [
     { label: 'mdhv', href: 'https://mdhv.xyz' },
   ]},
 ]
+
+const {
+  cols = DEFAULT_COLS,
+  motto = 'cells interlinked within one stem',
+  note = 'No analytics, no cookies, no trackers on this site.',
+} = Astro.props
 ---
 <footer class="site-footer">
   <div class="shell site-footer__grid">
@@ -31,8 +44,8 @@ const cols = [
     ))}
   </div>
   <div class="shell site-footer__legal">
-    <span>cells interlinked within one stem</span>
-    <span>No analytics, no cookies, no trackers on this site.</span>
+    <span>{motto}</span>
+    <span>{note}</span>
   </div>
 </footer>
 
