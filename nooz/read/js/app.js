@@ -24,16 +24,20 @@ import {
 import { fetchFeed } from './feeds.js';
 import { STARTERS } from './starters.js';
 import { loadSettings, getSettings, setSetting } from './settings.js';
+import { installSelectionSearch } from './selection.js';
 import { render as renderStand } from './views/stand.js';
 import { render as renderReader } from './views/reader.js';
 import { render as renderSources } from './views/sources.js';
 import { render as renderClippings } from './views/clippings.js';
 import { render as renderLoom } from './views/loom.js';
 import { render as renderSettings } from './views/settings.js';
+import { render as renderNewsstand } from './views/newsstand.js';
+import { classifyItem } from './topics.js';
 import { parseRoute, navigate, onRoute } from './router.js';
 
 const VIEW_RENDERERS = {
   stand: renderStand,
+  newsstand: renderNewsstand,
   loom: renderLoom,
   reader: renderReader,
   sources: renderSources,
@@ -41,9 +45,16 @@ const VIEW_RENDERERS = {
   settings: renderSettings,
 };
 // Footer nav order. Reader has no nav entry (it's reached by opening an item);
-// Settings sits at the end, slightly apart.
-const NAV_VIEWS = ['stand', 'loom', 'sources', 'clippings', 'settings'];
-const NAV_LABELS = { stand: 'Stand', loom: 'Loom', sources: 'Sources', clippings: 'Clippings', settings: 'Settings' };
+// Settings sits at the end, slightly apart. "Stand" is the front PAPER; the
+// newsstand ("Stand") is a separate browse-the-papers surface.
+const NAV_VIEWS = ['stand', 'newsstand', 'loom', 'sources', 'clippings', 'settings'];
+const NAV_LABELS = { stand: 'Paper', newsstand: 'Stand', loom: 'Loom', sources: 'Sources', clippings: 'Clippings', settings: 'Settings' };
+// Full-stage views replace the Paper; everything else opens as a right drawer.
+const STAGE_VIEWS = new Set(['stand', 'reader', 'newsstand']);
+// The option views open as a right-hand drawer over the Paper (which slides
+// aside), rather than replacing it. Reader and Paper are full-stage.
+const DRAWER_VIEWS = new Set(['loom', 'sources', 'clippings', 'settings']);
+
 
 // A feed whose own body already runs to at least this many characters of plain
 // text is treated as "full enough" -- we don't bother the extraction endpoint
@@ -60,6 +71,8 @@ const currentState = {
   clippedIds: new Set(),
   searchQuery: '',
   regionFilter: null,
+  topicFilter: null, // set from the newsstand (Category)
+  sourceFilter: null, // set from the newsstand (Publisher)
   starters: STARTERS,
   fetchStatus: {},
   fetchErrors: {},
@@ -69,6 +82,9 @@ const currentState = {
 };
 
 let viewEl = null;
+let stageEl = null;
+let drawerEl = null;
+let shellEl = null;
 let navLinksEl = {};
 let toastEl = null;
 let toastTimer = null;
@@ -91,6 +107,7 @@ async function boot() {
   rebuildItemsById();
 
   buildShell();
+  installSelectionSearch();
   onRoute(handleRoute);
   refreshAll();
 }
@@ -113,10 +130,23 @@ function buildShell() {
 
   const shell = document.createElement('div');
   shell.className = 'nooz-app-shell';
+  shellEl = shell;
 
   viewEl = document.createElement('main');
   viewEl.id = 'view';
   viewEl.className = 'nooz-view';
+
+  // The stage holds the Paper (or the reader); the drawer slides in from the
+  // right for option views, pushing the stage aside.
+  stageEl = document.createElement('div');
+  stageEl.className = 'nooz-stage';
+  viewEl.appendChild(stageEl);
+
+  drawerEl = document.createElement('aside');
+  drawerEl.className = 'nooz-drawer';
+  drawerEl.setAttribute('aria-label', 'Options');
+  viewEl.appendChild(drawerEl);
+
   shell.appendChild(viewEl);
 
   const footer = document.createElement('footer');
@@ -141,7 +171,12 @@ function buildShell() {
     link.className = 'nooz-footer-link';
     if (view === 'settings') link.classList.add('nooz-footer-link--end');
     link.textContent = NAV_LABELS[view];
-    link.addEventListener('click', () => navigate(view));
+    // Clicking the already-open drawer tab closes it (back to the bare Paper).
+    link.addEventListener('click', () => {
+      const route = parseRoute();
+      if (DRAWER_VIEWS.has(view) && route.view === view) navigate('stand');
+      else navigate(view);
+    });
     nav.appendChild(link);
     navLinksEl[view] = link;
   }
@@ -154,6 +189,24 @@ function buildShell() {
   shell.appendChild(toastEl);
 
   app.appendChild(shell);
+
+  // Escape closes an open drawer.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && DRAWER_VIEWS.has(parseRoute().view)) navigate('stand');
+  });
+}
+
+function buildDrawerClose() {
+  const bar = document.createElement('div');
+  bar.className = 'nooz-drawer-close';
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'nooz-button-icon';
+  btn.setAttribute('aria-label', 'Close');
+  btn.textContent = '×'; // ×
+  btn.addEventListener('click', () => navigate('stand'));
+  bar.appendChild(btn);
+  return bar;
 }
 
 // ---------------------------------------------------------------------------
@@ -162,12 +215,16 @@ function buildShell() {
 
 function handleRoute(route) {
   for (const view of NAV_VIEWS) {
-    const active =
-      view === route.view || (view === 'stand' && route.view === 'reader');
+    // Paper tab stays lit for the Paper and the reader; a drawer tab lights
+    // only while its own drawer is open.
+    const active = DRAWER_VIEWS.has(view)
+      ? view === route.view
+      : view === route.view || (view === 'stand' && route.view === 'reader');
     if (active) navLinksEl[view].setAttribute('aria-current', 'page');
     else navLinksEl[view].removeAttribute('aria-current');
   }
-  viewEl.scrollTop = 0;
+  // Opening an article starts at the top of the page.
+  if (route.view === 'reader') window.scrollTo({ top: 0 });
   rerender();
 }
 
@@ -197,6 +254,8 @@ function rerender() {
     currentItemId: route.itemId,
     searchQuery: currentState.searchQuery,
     regionFilter: currentState.regionFilter,
+    topicFilter: currentState.topicFilter,
+    sourceFilter: currentState.sourceFilter,
     starters: currentState.starters,
     fetchStatus: currentState.fetchStatus,
     fetchErrors: currentState.fetchErrors,
@@ -205,8 +264,26 @@ function rerender() {
     settings: getSettings(),
   };
 
-  const renderer = VIEW_RENDERERS[route.view] || VIEW_RENDERERS.stand;
-  renderer(viewEl, stateForView, actions);
+  // Stage: reader / newsstand / Paper (which stays mounted behind an open drawer).
+  const stageView = STAGE_VIEWS.has(route.view) ? route.view : 'stand';
+  VIEW_RENDERERS[stageView](stageEl, stateForView, actions);
+
+  // Drawer: an option view slides in from the right; the Paper shifts aside.
+  const drawerView = DRAWER_VIEWS.has(route.view) ? route.view : null;
+  if (drawerView) {
+    drawerEl.replaceChildren();
+    drawerEl.appendChild(buildDrawerClose());
+    const content = document.createElement('div');
+    content.className = 'nooz-drawer-content';
+    VIEW_RENDERERS[drawerView](content, stateForView, actions);
+    drawerEl.appendChild(content);
+    shellEl.classList.add('has-drawer');
+    drawerEl.dataset.view = drawerView;
+  } else {
+    shellEl.classList.remove('has-drawer');
+    drawerEl.replaceChildren();
+    delete drawerEl.dataset.view;
+  }
 
   if (restore && restore.index >= 0) {
     const candidates = Array.prototype.filter.call(viewEl.querySelectorAll(restore.tag), (el) => el.type === restore.type);
@@ -234,6 +311,14 @@ function computeVisibleItems() {
       currentState.sources.filter((s) => s.region === currentState.regionFilter).map((s) => s.id)
     );
     list = list.filter((item) => idsInRegion.has(item.sourceId));
+  }
+
+  if (currentState.sourceFilter) {
+    list = list.filter((item) => item.sourceId === currentState.sourceFilter);
+  }
+
+  if (currentState.topicFilter) {
+    list = list.filter((item) => classifyItem(item) === currentState.topicFilter);
   }
 
   const q = (currentState.searchQuery || '').trim().toLowerCase();
@@ -461,9 +546,39 @@ function setRegionFilter(region) {
   rerender();
 }
 
+// The newsstand focuses the Paper on one category / publisher / region, then
+// hands back to the Paper.
+function focusTopic(topic) {
+  currentState.topicFilter = topic;
+  currentState.sourceFilter = null;
+  navigate('stand');
+}
+function focusSource(sourceId) {
+  currentState.sourceFilter = sourceId;
+  currentState.topicFilter = null;
+  navigate('stand');
+}
+function focusRegion(region) {
+  currentState.regionFilter = region;
+  currentState.topicFilter = null;
+  currentState.sourceFilter = null;
+  navigate('stand');
+}
+function clearFocus() {
+  currentState.topicFilter = null;
+  currentState.sourceFilter = null;
+  rerender();
+}
+
 function updateSetting(key, value) {
   setSetting(key, value);
   currentState.settings = getSettings();
+  rerender();
+}
+
+// Views that keep their own local paging state (the Newspaper mode) trigger a
+// re-render through this rather than reaching into app internals.
+function refreshView() {
   rerender();
 }
 
@@ -487,8 +602,13 @@ const actions = {
   shareItem,
   setSearchQuery,
   setRegionFilter,
+  focusTopic,
+  focusSource,
+  focusRegion,
+  clearFocus,
   updateSetting,
   ensureArticle,
+  refreshView,
 };
 
 boot();
