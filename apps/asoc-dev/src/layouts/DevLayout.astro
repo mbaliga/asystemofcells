@@ -1,0 +1,76 @@
+---
+/*
+ * The shell for asystemofcells.dev.
+ *
+ * Note what is deliberately NOT imported: @asoc/kit/hyle-fonts.css. Those
+ * @font-face rules point at absolute paths (/fonts/hyle/*.ttf) served out of
+ * apps/asoc-com/public, so importing them here would request four faces that
+ * 404 on this host. .dev does not want them anyway: one surface, one voice,
+ * and that voice is a real monospace.
+ *
+ * tokens.css comes first and terminal.css second, because terminal.css works
+ * by rebinding kit tokens (--font-mono above all) for this surface only.
+ */
+import '@fontsource-variable/jetbrains-mono'
+import '@asoc/kit/tokens.css'
+import '../styles/terminal.css'
+import Analytics from '@vercel/analytics/astro'
+import Seo from '@asoc/kit/Seo.astro'
+import SiteFooter from '@asoc/kit/SiteFooter.astro'
+
+/*
+ * Analytics defaults ON here, unlike asoc-com's BaseLayout where it defaults
+ * off. .dev has no usage surfaces at all: every page on it describes the house,
+ * and there is nothing here that anyone makes, reads, or runs. If that ever
+ * changes the new page passes analytics={false}, and anything genuinely
+ * interactive should ship as a static file under public/, where Astro cannot
+ * reach it in the first place.
+ */
+const { title, description, canonical, jsonLd, analytics = true } = Astro.props
+
+const FOOTER_COLS = [
+  {
+    title: 'Surface',
+    links: [
+      { label: 'Roster', href: '/roster/' },
+      { label: 'Hyle', href: '/hyle/' },
+      { label: 'Rules', href: '/rules/' },
+      { label: 'Colophon', href: '/colophon/' },
+    ],
+  },
+  {
+    title: 'House',
+    links: [
+      { label: 'asystemofcells.com', href: 'https://asystemofcells.com' },
+      { label: 'The making of it', href: 'https://mdhv.xyz' },
+      { label: 'Generators', href: 'https://asystemofcells.com/tools' },
+    ],
+  },
+  {
+    title: 'Terms',
+    links: [
+      { label: 'Privacy policy', href: 'https://asystemofcells.com/privacy' },
+      { label: 'Contact', href: 'https://asystemofcells.com/contact' },
+    ],
+  },
+]
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0b0c" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <Seo title={title} description={description} canonical={canonical} jsonLd={jsonLd} />
+  {analytics && <Analytics />}
+</head>
+<body>
+  <slot />
+  <SiteFooter
+    cols={FOOTER_COLS}
+    motto="cells interlinked within one stem"
+    note="No cookies, no cross-site tracking, no profiles. Cookieless page counts only."
+  />
+</body>
+</html>

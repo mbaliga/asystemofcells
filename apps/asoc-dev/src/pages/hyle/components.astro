@@ -1,0 +1,132 @@
+---
+import DevLayout from '../../layouts/DevLayout.astro'
+
+/*
+ * Documented by reading packages/kit/src/components/*.astro, not from memory.
+ * Where a component takes no props, that is stated rather than padded out with
+ * an empty table.
+ */
+const COMPONENTS = [
+  {
+    name: 'Seo.astro',
+    hue: 'var(--sect-open)',
+    line: 'The complete head for a page. Title, description, canonical, robots, the Open Graph and Twitter blocks, and optional JSON-LD.',
+    props: [
+      { n: 'title', t: 'string', d: 'required', b: 'Used for <title>, og:title and twitter:title.' },
+      { n: 'description', t: 'string', d: 'required', b: 'Meta description and both social descriptions.' },
+      { n: 'canonical', t: 'string', d: 'required', b: 'Absolute URL. Also becomes og:url.' },
+      { n: 'ogType', t: 'string', d: "'website'", b: '' },
+      { n: 'jsonLd', t: 'object', d: 'null', b: 'Serialised into a ld+json script if present.' },
+      { n: 'image', t: 'string', d: 'the site card', b: 'No page passes its own yet, so every page gets one site-wide card rather than shipping previews with no image.' },
+    ],
+    note: 'Every page passes its own title, description and canonical. There is no default title, on purpose: a shared fallback title is how a site ends up with forty pages called the same thing.',
+  },
+  {
+    name: 'SiteFooter.astro',
+    hue: 'var(--sect-roster)',
+    line: 'The house footer. One implementation, two very different surfaces.',
+    props: [
+      { n: 'cols', t: 'array', d: 'the .com columns', b: 'Each entry is { title, links: [{ label, href }] }.' },
+      { n: 'motto', t: 'string', d: "'cells interlinked within one stem'", b: '' },
+      { n: 'note', t: 'string', d: 'the privacy line', b: 'The right-hand legal line.' },
+    ],
+    note: 'Every size and colour in it reads through a --footer-* token whose fallback is the .com value, so a surface retunes it by rebinding tokens rather than by forking it. The footer at the bottom of this page is that same component: it looks like this because the tokens under it changed, not because there are two of them. The columns are passed rather than defaulted here because the .com anchors are host-relative and those sections do not exist on this host.',
+  },
+  {
+    name: 'CellCard.astro',
+    hue: 'var(--sect-tools)',
+    line: 'One roster entry as a card.',
+    props: [{ n: 'cell', t: 'object', d: 'required', b: 'A roster entry straight from @asoc/roster.' }],
+    note: 'Hub products, the ones with their own authoritative site, render lean and deep-link out instead of pretending to be a full sell page for something that already has one.',
+  },
+  {
+    name: 'SiteHeader.astro',
+    hue: 'var(--sect-notes)',
+    line: 'Wordmark, the four tissue links, and a skip link.',
+    props: [],
+    note: 'Takes no props. The skip link is first in the DOM and is the reason it exists at all: the product pages are long, and a keyboard user should not have to tab the whole nav on every one.',
+  },
+  {
+    name: 'TrustStrip.astro',
+    hue: 'var(--sect-hyle)',
+    line: "The house's four fixed proofs: tiny, on your device, yours forever, made in Fonebrew.",
+    props: [],
+    note: 'Takes no props, and that is the design. The same four claims in the same order on every page they appear, because a proof that changes per page is marketing rather than a proof.',
+  },
+]
+---
+<DevLayout
+  title="Components: Hyle: asystemofcells.dev"
+  description="The Astro components in packages/kit, with their props and what each is actually for."
+  canonical="https://asystemofcells.dev/hyle/components/"
+>
+  <div class="shell" style="padding-top:3.4rem">
+    <a class="back-link" href="/hyle/">&larr; hyle</a>
+    <p class="eyebrow">Hyle / Components</p>
+    <h1 style="font-size:var(--fs-h1);font-weight:500;letter-spacing:var(--track-tight);margin:0 0 0.8rem">
+      {COMPONENTS.length} components.
+    </h1>
+    <p class="dev-tagline" style="max-width:72ch">
+      These are the web slice, in <code>packages/kit/src/components/</code>, and
+      they are what both of these sites are actually built from. The Compose
+      library, the web components and the token JSON live in
+      <a href="https://github.com/mbaliga/Hyle-Design-System" style="color:var(--sect-roster);text-decoration:none">the Hyle repo</a>
+      and are not restated here.
+    </p>
+
+    {COMPONENTS.map((c) => (
+      <section class="section-block">
+        <div class="col-label">
+          <span style={`color:${c.hue}`}>{c.name}</span>
+          <span>{c.props.length ? `${c.props.length} props` : 'no props'}</span>
+        </div>
+        <p style="font-size:var(--fs-small);color:var(--ink-muted);line-height:var(--lh-body);max-width:70ch;margin:0.9rem 0 0">
+          {c.line}
+        </p>
+
+        {c.props.length > 0 && (
+          <div class="table-scroll" style="margin-top:1rem">
+            <table class="dense-table">
+              <thead><tr><th>prop</th><th>type</th><th>default</th><th>notes</th></tr></thead>
+              <tbody>
+                {c.props.map((p) => (
+                  <tr>
+                    <td><code style="color:var(--ink)">{p.n}</code></td>
+                    <td style="color:var(--ink-faint)">{p.t}</td>
+                    <td style="color:var(--ink-muted)">{p.d}</td>
+                    <td style="color:var(--ink-muted)">{p.b}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <p style="font-size:var(--fs-micro);color:var(--ink-faint);line-height:var(--lh-body);max-width:70ch;margin:1rem 0 0">
+          {c.note}
+        </p>
+      </section>
+    ))}
+
+    <section class="section-block" style="padding-bottom:1rem">
+      <div class="col-label"><span>using them</span></div>
+      <div class="dev-prose" style="max-width:72ch;margin-top:1rem">
+        <p>
+          The kit is a private workspace package, consumed through an explicit
+          exports map rather than by reaching into its source tree:
+        </p>
+        <pre style="background:var(--bg-sunken);border:1px solid var(--hairline-ghost);padding:0.9rem 1rem;overflow-x:auto;font-size:var(--fs-small);color:var(--ink-muted);margin:0 0 1rem"><code>{`import '@asoc/kit/tokens.css'
+import Seo from '@asoc/kit/Seo.astro'
+import SiteFooter from '@asoc/kit/SiteFooter.astro'`}</code></pre>
+        <p>
+          One caveat worth knowing before adding a second consumer:
+          <code>hyle-fonts.css</code> declares its faces at absolute paths under
+          <code>/fonts/hyle/</code>, which are served from the product site's
+          public directory. Importing it from any other host requests four files
+          that all 404. This site does not import it, which is why the type here
+          is a real mono instead.
+        </p>
+      </div>
+    </section>
+  </div>
+</DevLayout>

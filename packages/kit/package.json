@@ -10,7 +10,8 @@
     "./CellCard.astro": "./src/components/CellCard.astro",
     "./SiteHeader.astro": "./src/components/SiteHeader.astro",
     "./SiteFooter.astro": "./src/components/SiteFooter.astro",
-    "./Seo.astro": "./src/components/Seo.astro"
+    "./Seo.astro": "./src/components/Seo.astro",
+    "./texture.js": "./src/texture/texture.js"
   },
   "peerDependencies": {
     "astro": "^4.0.0"

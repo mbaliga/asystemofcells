@@ -1,0 +1,188 @@
+---
+import DevLayout from '../layouts/DevLayout.astro'
+import { getRoster, TISSUES } from '@asoc/roster'
+
+const cells = getRoster()
+const tissueLabel = Object.fromEntries(TISSUES.map((t) => [t.slug, t.label]))
+
+const counts = cells.reduce((acc, c) => ({ ...acc, [c.status]: (acc[c.status] || 0) + 1 }), {})
+const hubs = cells.filter((c) => c.isHub)
+
+// Ordered so the shipped things lead. Within a status the roster's own order
+// stands: it is grouped by tissue, which is the house's own taxonomy.
+const RANK = { live: 0, beta: 1, soon: 2 }
+const stream = [...cells].sort((a, b) => RANK[a.status] - RANK[b.status])
+
+const grouped = TISSUES.map((t) => ({
+  ...t,
+  cells: cells.filter((c) => c.tissue === t.slug),
+})).filter((t) => t.cells.length > 0)
+
+const SECTIONS = [
+  { label: 'roster', href: '/roster/', glyph: '▚', hue: 'var(--sect-roster)', count: `${cells.length}` },
+  { label: 'hyle', href: '/hyle/', glyph: '◫', hue: 'var(--sect-hyle)', count: '3' },
+  { label: 'rules', href: '/rules/', glyph: '§', hue: 'var(--sect-rules)', count: '4' },
+  { label: 'colophon', href: '/colophon/', glyph: '⌘', hue: 'var(--sect-notes)', count: '' },
+  {
+    label: 'generators',
+    href: 'https://asystemofcells.com/tools',
+    glyph: '◈',
+    hue: 'var(--sect-tools)',
+    count: '2',
+  },
+]
+---
+<DevLayout
+  title="asystemofcells.dev: the engineering surface"
+  description="The builder-facing side of the asystemofcells house: the full cell roster, the engineering rules the apps are held to, and how this is put together. Static, no analytics, no runtime scripts."
+  canonical="https://asystemofcells.dev/"
+>
+  <header class="dev-head shell">
+    <div class="dev-statusline">
+      <span><b>{cells.length}</b> cells</span>
+      <span><b>{grouped.length}</b> tissues</span>
+      <span><b>{counts.live || 0}</b> live</span>
+      <span><b>{counts.beta || 0}</b> beta</span>
+      <span><b>{counts.soon || 0}</b> soon</span>
+      <span>roster hand-authored <b>2026-07-20</b></span>
+    </div>
+
+    <a class="dev-wordmark" href="/">asystemofcells<span class="tld">.dev</span></a>
+    <p class="dev-tagline">
+      The engineering side of the house. Everything on this page is read from the
+      same roster the product site is built from, so the two cannot disagree.
+      Static pages, no analytics, no third-party runtime scripts.
+    </p>
+
+    <nav class="dev-sections" aria-label="Sections">
+      {SECTIONS.map((s) => (
+        <a class="dev-section" href={s.href} style={`--sect:${s.hue}`}>
+          <span class="glyph" aria-hidden="true">{s.glyph}</span>
+          <span>{s.label}</span>
+          {s.count && <span class="count">{s.count}</span>}
+        </a>
+      ))}
+    </nav>
+  </header>
+
+  <div class="dev-main shell">
+    <section>
+      <!-- A real filter, not a costume prompt: it narrows the list below as you
+           type and Enter opens the first remaining match. Progressive: the full
+           list is server-rendered, so no-JS and curl both get all 14 rows. -->
+      <form class="cmd" id="cmd" role="search">
+        <span class="cmd__prompt" aria-hidden="true">&gt;</span>
+        <input
+          class="cmd__input"
+          id="cmdInput"
+          type="text"
+          placeholder="filter cells by name, tissue, or status"
+          autocomplete="off"
+          aria-label="Filter cells"
+        />
+        <span class="cmd__hint">/ to focus</span>
+      </form>
+
+      <div class="col-label">
+        <span>cells</span>
+        <span id="cmdCount">{stream.length} of {stream.length}</span>
+      </div>
+
+      <ul class="stream" id="stream">
+        {stream.map((c) => (
+          <li
+            data-slug={c.slug}
+            data-search={`${c.slug} ${tissueLabel[c.tissue]} ${c.status} ${c.oneLiner}`.toLowerCase()}
+          >
+            <a class="stream-row" href={`/roster/${c.slug}/`}>
+              <span class="stream-swatch" style={`background:${c.accent}`} aria-hidden="true"></span>
+              <span class="stream-name">{c.slug}</span>
+              <span class={`tag tag--${c.status}`}>{c.status}</span>
+              <span class="stream-meta">{tissueLabel[c.tissue]}</span>
+              <span class="stream-desc">{c.oneLiner}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p class="cmd-empty is-hidden" id="cmdEmpty">No cell matches that.</p>
+    </section>
+
+    <aside>
+      <div class="col-label"><span>hubs</span><span>{hubs.length}</span></div>
+      {hubs.map((c) => (
+        <a class="rail-card" href={c.hubUrl} target="_blank" rel="noopener noreferrer">
+          <span class="rail-card__head">
+            <span class="stream-swatch" style={`background:${c.accent}`} aria-hidden="true"></span>
+            <span class="rail-card__name">{c.slug}</span>
+          </span>
+          <p class="rail-card__body">{c.hubUrl.replace('https://', '')} &nearr; leaves this site</p>
+        </a>
+      ))}
+
+      <div class="col-label" style="margin-top:1.8rem"><span>elsewhere</span></div>
+      <a class="rail-card" href="https://asystemofcells.com">
+        <span class="rail-card__head"><span class="rail-card__name">asystemofcells.com</span></span>
+        <p class="rail-card__body">The product house: what each cell is, for people who want to use them rather than read about how they are built.</p>
+      </a>
+      <a class="rail-card" href="https://mdhv.xyz">
+        <span class="rail-card__head"><span class="rail-card__name">mdhv.xyz</span></span>
+        <p class="rail-card__body">The design work behind the house, as case studies.</p>
+      </a>
+    </aside>
+  </div>
+
+  <section class="section-block shell">
+    <div class="col-label"><span>tissues</span><span>{grouped.length}</span></div>
+    <div class="tissue-grid">
+      {grouped.map((t) => (
+        <a class="tissue-card" href={`/roster/?tissue=${t.slug}`}>
+          <span class="tissue-card__name">{t.label} <span class="count" style="color:var(--ink-faint)">{t.cells.length}</span></span>
+          <span class="tissue-card__cells">{t.cells.map((c) => c.slug).join(' · ')}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</DevLayout>
+
+<script>
+  // Filter the server-rendered list. Nothing here fetches, and nothing is
+  // hidden from a crawler: every row is in the DOM before this runs.
+  const input = document.getElementById('cmdInput')
+  const rows = Array.from(document.querySelectorAll('#stream li'))
+  const countEl = document.getElementById('cmdCount')
+  const emptyEl = document.getElementById('cmdEmpty')
+  const form = document.getElementById('cmd')
+
+  function apply() {
+    const q = input.value.trim().toLowerCase()
+    let shown = 0
+    rows.forEach((li) => {
+      const hit = !q || li.dataset.search.includes(q)
+      li.classList.toggle('is-hidden', !hit)
+      if (hit) shown++
+    })
+    countEl.textContent = `${shown} of ${rows.length}`
+    emptyEl.classList.toggle('is-hidden', shown > 0)
+  }
+
+  input.addEventListener('input', apply)
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault()
+    const first = rows.find((li) => !li.classList.contains('is-hidden'))
+    const href = first?.querySelector('a')?.getAttribute('href')
+    if (href) window.location.href = href
+  })
+
+  document.addEventListener('keydown', (e) => {
+    const tag = document.activeElement?.tagName
+    if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+      e.preventDefault()
+      input.focus()
+    } else if (e.key === 'Escape' && document.activeElement === input) {
+      input.value = ''
+      apply()
+      input.blur()
+    }
+  })
+</script>

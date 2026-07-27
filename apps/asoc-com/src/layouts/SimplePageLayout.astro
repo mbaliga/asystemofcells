@@ -8,7 +8,11 @@ import BaseLayout from './BaseLayout.astro'
 
 const { title, description, canonical } = Astro.props
 ---
-<BaseLayout title={title} description={description} canonical={canonical} noChrome>
+<!-- analytics: every consumer of this layout is a page that describes the house
+     (About, FAQ, Privacy, Contact, Fonts, and the Tools index, which lists the
+     generators without being one). A page where someone makes, reads, or runs
+     something must not use this layout. See BaseLayout's boundary comment. -->
+<BaseLayout title={title} description={description} canonical={canonical} analytics noChrome>
   <div class="simple-page">
     <a class="back-link" href="/">&larr; asystemofcells</a>
     <main class="simple-content">
