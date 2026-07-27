@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://fonebrew.app/sitemap-index.xml

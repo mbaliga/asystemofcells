@@ -1,6 +1,6 @@
 # Adding a loop to the gallery
 
-There is no backend, no account and no upload form: `fonebrew.com` is static
+There is no backend, no account and no upload form: `fonebrew.app` is static
 files. A loop joins the gallery by pull request, and a PR adds exactly two
 things.
 
@@ -9,7 +9,7 @@ things.
 Put your exported loop at:
 
 ```
-apps/fonebrew-com/public/loops/gallery/<slug>.bpmn
+apps/fonebrew-app/public/loops/gallery/<slug>.bpmn
 ```
 
 `<slug>` is lowercase, hyphenated, and becomes the URL (`/loops/<slug>/`).

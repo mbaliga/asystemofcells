@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config'
 import sitemap from '@astrojs/sitemap'
 
 export default defineConfig({
-  site: 'https://fonebrew.com',
+  site: 'https://fonebrew.app',
   output: 'static',
   integrations: [
     sitemap({

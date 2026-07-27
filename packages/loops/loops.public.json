@@ -1,6 +1,6 @@
 {
   "generated": "hand-authored, 2026-07-27",
-  "notes": "The community gallery behind fonebrew.com/loops. Every entry points at a real .bpmn file under apps/fonebrew-com/public/loops/gallery/, and every field here is either read from that file's own <aarso:meta> provenance or is site metadata (author, tags, accent). The three seed entries are examples written to demonstrate the format, not distillations of any published method: their distilledBy says 'hand-authored' because that is what happened. See CONTRIBUTING.md in apps/fonebrew-com for how a loop gets added.",
+  "notes": "The community gallery behind fonebrew.app/loops. Every entry points at a real .bpmn file under apps/fonebrew-app/public/loops/gallery/, and every field here is either read from that file's own <aarso:meta> provenance or is site metadata (author, tags, accent). The three seed entries are examples written to demonstrate the format, not distillations of any published method: their distilledBy says 'hand-authored' because that is what happened. See CONTRIBUTING.md in apps/fonebrew-app for how a loop gets added.",
   "loops": [
     {
       "slug": "self-critique",

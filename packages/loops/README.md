@@ -1,6 +1,6 @@
 # @asoc/loops
 
-The single source of truth for the loop gallery shown on `fonebrew.com/loops`.
+The single source of truth for the loop gallery shown on `fonebrew.app/loops`.
 Same shape as `@asoc/roster`: one hand-authored `loops.public.json` plus a small
 loader, no build step, no fetch at runtime.
 

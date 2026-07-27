@@ -1,13 +1,13 @@
 # asystemofcells
 
 Monorepo for `asystemofcells.com` (the product house), `asystemofcells.dev`
-(the developer surface) and `fonebrew.com` (one cell with its own site), plus
+(the developer surface) and `fonebrew.app` (one cell with its own site), plus
 the shared packages they consume.
 
 ```
 apps/asoc-com       asystemofcells.com - the product house / marketing surface
 apps/asoc-dev       asystemofcells.dev - the builder/engineering surface
-apps/fonebrew-com   fonebrew.com       - the Fonebrew product site + loop gallery
+apps/fonebrew-app   fonebrew.app       - the Fonebrew product site + loop gallery
 packages/kit        shared Astro components, layout, SEO, design tokens (from Hyle)
 packages/roster     the single roster.public.json + a typed loader
 packages/loops      the single loops.public.json + a loader (the Fonebrew gallery)
@@ -16,9 +16,8 @@ packages/loops      the single loops.public.json + a loader (the Fonebrew galler
 Fonebrew is a hub cell: it has its own authoritative site rather than a product
 page on `.com`, the same relationship `animalcules.app` has. A `fonebrew.dev`
 mirroring the `.com`/`.dev` split is the natural next step and does not exist
-yet. (`packages/roster`'s `hubUrl` for the `fonebrew` entry now points at
-`fonebrew.com`, matching this app — it previously said `fonebrew.app`, a stale
-placeholder from before this site existed.)
+yet. `packages/roster`'s `hubUrl` for the `fonebrew` entry points at
+`fonebrew.app`, matching this app.
 
 ## The analytics boundary
 
@@ -30,7 +29,7 @@ Cookieless Vercel Web Analytics runs on the Astro-rendered pages of `.com` and
 on all of `.dev`. It never runs in the Nooz reader or the generators, because
 those are static files under `apps/asoc-com/public/`, which Astro copies
 verbatim and never injects into. No layout change can reach them.
-**`fonebrew.com` runs none at all**, on any page — see below.
+**`fonebrew.app` runs none at all**, on any page — see below.
 
 That distinction is load-bearing. Vercel's `beforeSend` hook is a
 send-suppressor, not a load-suppressor: it still ships and runs the script and
@@ -54,9 +53,9 @@ where `{analytics && <Analytics />}` is false. Moving it behind a dynamic
 
 This is not currently a live leak: every Astro page in `.com` and `.dev` opts
 in, so neither has an opted-out page shipping the script. It becomes one the
-day either grows a page that opts out. `fonebrew.com`, where nothing opts in,
+day either grows a page that opts out. `fonebrew.app`, where nothing opts in,
 handles it the only way that works — the module is not imported in that app at
-all, and `apps/fonebrew-com/src/layouts/BaseLayout.astro` carries the two
+all, and `apps/fonebrew-app/src/layouts/BaseLayout.astro` carries the two
 commented lines that turn it on plus the full note.
 
 `mdhv.xyz` is a separate repo entirely.
@@ -67,10 +66,10 @@ commented lines that turn it on plus the full note.
 pnpm install
 pnpm dev            # asoc-com      -> asystemofcells.com
 pnpm dev:dev        # asoc-dev      -> asystemofcells.dev
-pnpm dev:fonebrew   # fonebrew-com  -> fonebrew.com
+pnpm dev:fonebrew   # fonebrew-app  -> fonebrew.app
 pnpm build          # asoc-com      -> apps/asoc-com/dist
 pnpm build:dev      # asoc-dev      -> apps/asoc-dev/dist
-pnpm build:fonebrew # fonebrew-com  -> apps/fonebrew-com/dist
+pnpm build:fonebrew # fonebrew-app  -> apps/fonebrew-app/dist
 ```
 
 `pnpm-workspace.yaml` already globs `apps/*` and `packages/*`, so a new app or
@@ -83,19 +82,19 @@ convention, a pair of root scripts like the ones above.
 `outputDirectory` to `apps/asoc-com/dist`, and the root `api/*.js` functions
 behind the Nooz reader require that project's Root Directory to stay `/`.
 
-`.dev` and `fonebrew.com` therefore each need their **own Vercel project pointed
+`.dev` and `fonebrew.app` therefore each need their **own Vercel project pointed
 at this same repo**, rather than a change to that file. In each new project's
 settings:
 
 - Root Directory: `/` (leave it, so the pnpm workspace resolves)
 - Install Command: `pnpm install`
 - Build Command: `pnpm run build:dev` / `pnpm run build:fonebrew`
-- Output Directory: `apps/asoc-dev/dist` / `apps/fonebrew-com/dist`
-- Domain: `asystemofcells.dev` / `fonebrew.com`
+- Output Directory: `apps/asoc-dev/dist` / `apps/fonebrew-app/dist`
+- Domain: `asystemofcells.dev` / `fonebrew.app`
 
 Nothing about the `.com` project changes. The builds share the workspace and the
 lockfile, and each one only builds its own app.
 
 See `packages/roster/README.md` for what's confirmed vs. still needs an owner
 confirm in the product roster, and `packages/loops/README.md` plus
-`apps/fonebrew-com/CONTRIBUTING.md` for how a loop joins the gallery.
+`apps/fonebrew-app/CONTRIBUTING.md` for how a loop joins the gallery.
