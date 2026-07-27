@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loop Editor — Fonebrew BPMN</title>
+<style>
+  :root {
+    --bg: #0e0e12;
+    --panel: #17171e;
+    --panel-2: #1e1e28;
+    --line: #2a2a36;
+    --text: #e8e8ef;
+    --muted: #8a8a99;
+    --accent: #6c5ce7;
+    --accent-soft: #a29bfe;
+    --cyan: #4fd1c5;
+    --danger: #ff6b6b;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 250px 1fr 310px;
+    overflow: hidden;
+  }
+  .sidebar, .inspector {
+    background: var(--panel);
+    height: 100vh;
+    overflow-y: auto;
+    padding: 20px 18px 40px;
+  }
+  .sidebar { border-right: 1px solid var(--line); }
+  .inspector { border-left: 1px solid var(--line); }
+  .sidebar::-webkit-scrollbar, .inspector::-webkit-scrollbar, .xml-body::-webkit-scrollbar { width: 8px; height: 8px; }
+  .sidebar::-webkit-scrollbar-thumb, .inspector::-webkit-scrollbar-thumb, .xml-body::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 4px; }
+  .sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.45; }
+  .group { margin-bottom: 20px; }
+  .group-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); font-weight: 600; margin-bottom: 10px;
+  }
+
+  /* ---- palette ---- */
+  .palette { display: flex; flex-direction: column; gap: 6px; }
+  .pal-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 10px; cursor: grab;
+    font-size: 13px; color: var(--text); user-select: none;
+  }
+  .pal-item:hover { border-color: var(--accent); }
+  .pal-item:active { cursor: grabbing; }
+  .pal-item svg { flex: none; }
+  .pal-item .el { font-size: 10px; color: var(--muted); font-family: 'SF Mono', ui-monospace, monospace; margin-left: auto; }
+
+  /* ---- generic controls ---- */
+  .field { margin-bottom: 10px; }
+  .field span.lbl { font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px; }
+  input[type=text], input[type=number], textarea, select {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--line);
+    color: var(--text); border-radius: 7px; padding: 8px; font-size: 13px;
+    font-family: inherit; outline: none;
+  }
+  textarea { resize: vertical; min-height: 74px; line-height: 1.45; }
+  input[type=text]:focus, input[type=number]:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  .mono { font-family: 'SF Mono', ui-monospace, monospace; }
+  .primary-btn {
+    width: 100%; padding: 11px; background: var(--accent); border: none;
+    color: #fff; border-radius: 9px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  .primary-btn:hover { background: #5a4bd4; }
+  .ghost-btn {
+    width: 100%; padding: 9px; margin-top: 8px; background: var(--panel-2);
+    border: 1px solid var(--line); color: var(--text); border-radius: 9px;
+    font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit;
+  }
+  .ghost-btn:hover { border-color: var(--accent); }
+  .ghost-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+  .note { font-size: 11px; color: var(--muted); line-height: 1.5; margin-top: 10px; }
+  .note a { color: var(--accent-soft); }
+  .kbd-list { font-size: 11px; color: var(--muted); line-height: 1.9; }
+  .kbd-list b { color: var(--text); font-weight: 500; }
+  kbd {
+    font-family: 'SF Mono', ui-monospace, monospace; font-size: 10px;
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 4px; padding: 1px 5px; color: var(--text);
+  }
+
+  /* ---- stage ---- */
+  .stage { position: relative; height: 100vh; overflow: hidden; background: var(--bg); }
+  #cv { display: block; width: 100%; height: 100%; touch-action: none; }
+  .toolbar {
+    position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; align-items: center;
+    background: rgba(23,23,30,.92); border: 1px solid var(--line); border-radius: 10px;
+    padding: 5px; backdrop-filter: blur(6px);
+  }
+  .toolbar button {
+    background: transparent; border: none; color: var(--muted); font-family: inherit;
+    font-size: 12px; padding: 6px 9px; border-radius: 6px; cursor: pointer; white-space: nowrap;
+  }
+  .toolbar button:hover { color: var(--text); }
+  .toolbar button.active { background: var(--accent); color: #fff; }
+  .toolbar button:disabled { opacity: .35; cursor: default; }
+  .toolbar .divider { width: 1px; height: 18px; background: var(--line); }
+  .zoomval { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 42px; text-align: center; }
+
+  .banner {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    max-width: 70%; display: none; align-items: flex-start; gap: 10px;
+    background: #2a1618; border: 1px solid #5c2b30; color: #ffc9c9;
+    border-radius: 9px; padding: 10px 12px; font-size: 12px; line-height: 1.5; z-index: 20;
+  }
+  .banner.ok { background: #16221c; border-color: #2a4a3a; color: #b6e7cd; }
+  .banner.show { display: flex; }
+  .banner button {
+    background: transparent; border: none; color: inherit; cursor: pointer;
+    font-size: 15px; line-height: 1; padding: 0 2px; opacity: .7;
+  }
+  .hint-bar {
+    position: absolute; bottom: 46px; left: 12px; font-size: 11px; color: var(--muted);
+    background: rgba(14,14,18,.75); padding: 4px 8px; border-radius: 6px; pointer-events: none;
+  }
+  #minimap {
+    position: absolute; right: 12px; bottom: 46px; width: 200px; height: 132px;
+    background: rgba(23,23,30,.92); border: 1px solid var(--line); border-radius: 9px;
+    cursor: pointer; touch-action: none;
+  }
+
+  /* ---- xml drawer ---- */
+  .xml-panel {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: var(--panel); border-top: 1px solid var(--line);
+    display: flex; flex-direction: column; max-height: 55%;
+  }
+  .xml-head {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); font-weight: 600; cursor: pointer; user-select: none;
+  }
+  .xml-head .spacer { flex: 1; }
+  .xml-head button {
+    background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+    border-radius: 6px; font-size: 11px; padding: 4px 9px; cursor: pointer;
+    font-family: inherit; text-transform: none; letter-spacing: 0;
+  }
+  .xml-head button:hover { border-color: var(--accent); }
+  .xml-body {
+    overflow: auto; padding: 0 12px 12px; font-family: 'SF Mono', ui-monospace, monospace;
+    font-size: 11px; line-height: 1.55; color: #c9c9d8; white-space: pre; tab-size: 2;
+  }
+  .xml-panel.collapsed .xml-body { display: none; }
+
+  /* ---- inspector ---- */
+  .empty-hint { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .ext-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+  .ext-row input { flex: 1; min-width: 0; font-size: 12px; padding: 6px; }
+  .ext-row input.k { flex: 0 0 92px; }
+  .ext-row button {
+    background: transparent; border: none; color: var(--muted); cursor: pointer;
+    font-size: 15px; line-height: 1; padding: 0 3px;
+  }
+  .ext-row button:hover { color: var(--danger); }
+  .warn {
+    font-size: 11px; color: #ffd8a8; background: #2a2318; border: 1px solid #4a3a22;
+    border-radius: 7px; padding: 7px 9px; line-height: 1.5; margin-bottom: 10px;
+  }
+  .sel-count { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+
+  /* ---- context menu ---- */
+  #ctxmenu {
+    position: fixed; display: none; z-index: 50; min-width: 160px;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px;
+    padding: 5px; box-shadow: 0 12px 34px rgba(0,0,0,.55);
+  }
+  #ctxmenu button {
+    display: block; width: 100%; text-align: left; background: transparent; border: none;
+    color: var(--text); font-family: inherit; font-size: 12.5px; padding: 7px 10px;
+    border-radius: 6px; cursor: pointer;
+  }
+  #ctxmenu button:hover { background: var(--accent); color: #fff; }
+  #ctxmenu button.danger:hover { background: var(--danger); }
+  #ctxmenu hr { border: none; border-top: 1px solid var(--line); margin: 4px 2px; }
+
+  @media (max-width: 1080px) {
+    body { grid-template-columns: 1fr; grid-template-rows: 46vh auto auto; height: auto; overflow: auto; }
+    .stage { height: 46vh; }
+    .sidebar, .inspector { height: auto; border: none; border-top: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================= palette / files ============================= -->
+<div class="sidebar">
+  <h1>Loop Editor</h1>
+  <div class="sub">Author a Fonebrew loop as standard BPMN&nbsp;2.0. Everything happens in this
+  browser tab — no account, no upload, no analytics.</div>
+
+  <div class="group">
+    <div class="group-label">Palette</div>
+    <div class="palette" id="palette"></div>
+    <div class="note">Click to drop one in the middle of the view, or drag it onto the canvas.</div>
+  </div>
+
+  <div class="group">
+    <div class="group-label">Loop</div>
+    <div class="field">
+      <span class="lbl">Name (process <code class="mono">name</code>)</span>
+      <input type="text" id="loopName" value="New loop">
+    </div>
+    <div class="field">
+      <span class="lbl">Id (process <code class="mono">id</code>)</span>
+      <input type="text" id="loopId" class="mono" value="loop">
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-label">File</div>
+    <button class="primary-btn" id="btnExport">Download .bpmn</button>
+    <div class="note">Saves a file to this computer. There is no server behind this page, so nothing
+      is stored or sent anywhere. To share a loop with the community gallery, open a pull request
+      adding your <code class="mono">.bpmn</code> file — see CONTRIBUTING in the repo.</div>
+    <button class="ghost-btn" id="btnOpen">Open .bpmn…</button>
+    <button class="ghost-btn" id="btnSample">Load starter loop</button>
+    <button class="ghost-btn danger" id="btnClear">Clear canvas</button>
+    <input type="file" id="fileInput" accept=".bpmn,.xml,application/xml,text/xml" style="display:none">
+  </div>
+
+  <div class="group">
+    <div class="group-label">Keyboard</div>
+    <div class="kbd-list">
+      <b>Move</b> drag a node<br>
+      <b>Connect</b> drag from a node handle<br>
+      <b>Multi-select</b> <kbd>Shift</kbd>+drag, or <kbd>Shift</kbd>+click<br>
+      <b>Pan</b> drag empty canvas · <kbd>Space</kbd>+drag<br>
+      <b>Zoom</b> wheel<br>
+      <b>Delete</b> <kbd>Del</kbd> / <kbd>⌫</kbd><br>
+      <b>Undo</b> <kbd>Ctrl/⌘ Z</kbd> · <b>Redo</b> <kbd>⇧ Ctrl/⌘ Z</kbd><br>
+      <b>Copy / Paste</b> <kbd>Ctrl/⌘ C</kbd> <kbd>Ctrl/⌘ V</kbd><br>
+      <b>Select all</b> <kbd>Ctrl/⌘ A</kbd> · <b>Deselect</b> <kbd>Esc</kbd>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-label">Format</div>
+    <div class="note">
+      Written to match Fonebrew's own <code class="mono">BpmnArchive</code>: five standard BPMN
+      namespaces plus <code class="mono">xmlns:aarso</code>, <code class="mono">isExecutable="false"</code>,
+      one flat <code class="mono">&lt;aarso:meta&gt;</code> per node, and <code class="mono">dc:Bounds</code>
+      per shape. Edges are drawn as straight lines on purpose — the format carries no
+      <code class="mono">di:waypoint</code>, so bend points would be thrown away on the phone.
+      Unknown <code class="mono">aarso:meta</code> attributes you import are kept and re-emitted.
+    </div>
+  </div>
+</div>
+
+<!-- ================================ canvas ================================ -->
+<div class="stage" id="stage">
+  <canvas id="cv"></canvas>
+
+  <div class="toolbar">
+    <button id="btnUndo" title="Undo (Ctrl/Cmd+Z)">↶</button>
+    <button id="btnRedo" title="Redo (Shift+Ctrl/Cmd+Z)">↷</button>
+    <div class="divider"></div>
+    <button id="btnModeSelect" title="Drag empty canvas selects">Select</button>
+    <button id="btnModePan" class="active" title="Drag empty canvas pans">Pan</button>
+    <div class="divider"></div>
+    <button id="btnZoomOut">−</button>
+    <span class="zoomval" id="zoomVal">100%</span>
+    <button id="btnZoomIn">+</button>
+    <button id="btnFit" title="Fit graph in view">Fit</button>
+  </div>
+
+  <div class="banner" id="banner"><span id="bannerText"></span><button id="bannerClose" title="Dismiss">×</button></div>
+  <div class="hint-bar" id="hintBar"></div>
+  <canvas id="minimap" width="400" height="264"></canvas>
+
+  <div class="xml-panel collapsed" id="xmlPanel">
+    <div class="xml-head" id="xmlHead">
+      <span id="xmlCaret">▸</span><span>Live BPMN preview</span>
+      <span class="spacer"></span>
+      <button id="btnCopyXml">Copy XML</button>
+    </div>
+    <div class="xml-body"><pre id="xmlOut"></pre></div>
+  </div>
+</div>
+
+<!-- =============================== inspector =============================== -->
+<div class="inspector" id="inspector"></div>
+
+<div id="ctxmenu"></div>
+
+<script>
+'use strict';
+(function () {
+
+/* =========================================================================
+   Format contract — docs/design/bpmn-dialect.md (Fonebrew).
+   These five namespaces plus the aarso one, verbatim. The aarso URI is the
+   pre-rename domain and MUST stay exactly this string, or the phone app and
+   this editor stop recognising each other's files.
+   ========================================================================= */
+var NS_BPMN   = 'http://www.omg.org/spec/BPMN/20100524/MODEL';
+var NS_BPMNDI = 'http://www.omg.org/spec/BPMN/20100524/DI';
+var NS_DC     = 'http://www.omg.org/spec/DD/20100524/DC';
+var NS_DI     = 'http://www.omg.org/spec/DD/20100524/DI';
+var NS_XSI    = 'http://www.w3.org/2001/XMLSchema-instance';
+var NS_AARSO  = 'https://aarso.dev/bpmn';
+var TARGET_NS = 'https://aarso.dev/loops';
+
+/* The 15 element names BpmnNodeKind enumerates. The first five are the only
+   ones Fonebrew's own writers produce; the rest parse fine on the phone but
+   GraphRunner's behaviour on them is untested (dialect doc, "Node kinds"). */
+var PRIMARY_KINDS = ['startEvent', 'serviceTask', 'exclusiveGateway', 'parallelGateway', 'endEvent'];
+var OTHER_KINDS = ['task', 'userTask', 'scriptTask', 'businessRuleTask', 'manualTask',
+                   'sendTask', 'receiveTask', 'callActivity', 'subProcess', 'inclusiveGateway'];
+var ALL_KINDS = PRIMARY_KINDS.concat(OTHER_KINDS);
+
+/* Attribute keys the phone app actually reads off <aarso:meta>. */
+var NAMED_EXT_KEYS = ['systemPrompt', 'model', 'role'];
+var PROVENANCE_KEYS = ['source', 'pattern', 'distilledBy', 'distilledOn', 'summary'];
+
+var KIND_LABEL = {
+  startEvent: 'Start', endEvent: 'End', serviceTask: 'Task',
+  exclusiveGateway: 'Exclusive gateway', parallelGateway: 'Parallel gateway',
+  task: 'Task (plain)', userTask: 'User task', scriptTask: 'Script task',
+  businessRuleTask: 'Business rule task', manualTask: 'Manual task',
+  sendTask: 'Send task', receiveTask: 'Receive task',
+  callActivity: 'Call activity', subProcess: 'Sub-process', inclusiveGateway: 'Inclusive gateway'
+};
+
+/* Geometry. Fonebrew treats dc:Bounds x/y as the node's top-left in raw
+   device pixels, roughly 0-800 per axis for the shipped patterns; its own
+   task card is ~148x62 and its event circle ~48. Matching those keeps a
+   loop authored here from opening tiny or enormous on the phone. */
+var TASK_W = 148, TASK_H = 62, EVENT_D = 48, GATE_D = 64;
+function sizeOf(kind) {
+  if (kind === 'startEvent' || kind === 'endEvent') return { w: EVENT_D, h: EVENT_D };
+  if (kind === 'exclusiveGateway' || kind === 'parallelGateway' || kind === 'inclusiveGateway') return { w: GATE_D, h: GATE_D };
+  return { w: TASK_W, h: TASK_H };
+}
+function isEvent(k) { return k === 'startEvent' || k === 'endEvent'; }
+function isGateway(k) { return k === 'exclusiveGateway' || k === 'parallelGateway' || k === 'inclusiveGateway'; }
+
+/* ============================== state ============================== */
+var model = { id: 'loop', name: 'New loop', nodes: [], edges: [] };
+var view = { scale: 1, tx: 60, ty: 60 };
+var sel = { nodes: [], edges: [] };
+var clipboard = null;
+var history = [], hIndex = -1;
+var dragMode = 'pan';           // what a drag on empty canvas does
+var spaceDown = false;
+var needsDraw = false;
+
+/* transient interaction state */
+var drag = null;                // {type:'node'|'pan'|'band'|'link', ...}
+var hover = { nodeId: null, edgeId: null, handle: null };
+
+var cv = document.getElementById('cv');
+var ctx = cv.getContext('2d');
+var mini = document.getElementById('minimap');
+var mctx = mini.getContext('2d');
+var stage = document.getElementById('stage');
+
+/* ============================== helpers ============================== */
+function uid(prefix) {
+  var s = Math.random().toString(36).slice(2, 8);
+  return prefix + s;
+}
+function uniqueId(prefix) {
+  var id = uid(prefix), guard = 0;
+  while (findNode(id) || findEdge(id)) { id = uid(prefix); if (++guard > 200) break; }
+  return id;
+}
+function findNode(id) { for (var i = 0; i < model.nodes.length; i++) if (model.nodes[i].id === id) return model.nodes[i]; return null; }
+function findEdge(id) { for (var i = 0; i < model.edges.length; i++) if (model.edges[i].id === id) return model.edges[i]; return null; }
+function centerOf(n) { var s = sizeOf(n.kind); return { x: n.x + s.w / 2, y: n.y + s.h / 2 }; }
+function clean(s) { return (s === undefined || s === null) ? '' : String(s); }
+
+function slug(s) {
+  var t = clean(s).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return t || 'loop';
+}
+function sanitizeId(s) {
+  var t = clean(s).trim().replace(/[^A-Za-z0-9._:-]/g, '-').replace(/^[^A-Za-z_]+/, '');
+  return t || 'loop';
+}
+
+/* ============================== errors ============================== */
+var banner = document.getElementById('banner');
+var bannerText = document.getElementById('bannerText');
+function showError(msg) {
+  banner.classList.remove('ok');
+  bannerText.textContent = msg;
+  banner.classList.add('show');
+}
+function showOk(msg) {
+  banner.classList.add('ok');
+  bannerText.textContent = msg;
+  banner.classList.add('show');
+  window.setTimeout(function () { banner.classList.remove('show'); }, 3200);
+}
+document.getElementById('bannerClose').onclick = function () { banner.classList.remove('show'); };
+
+/* ============================== history ============================== */
+function snapshot() { return JSON.stringify(model); }
+function restore(snap) {
+  model = JSON.parse(snap);
+  pruneSelection();
+  document.getElementById('loopName').value = model.name;
+  document.getElementById('loopId').value = model.id;
+  renderInspector();
+  refresh();
+}
+function resetHistory() { history = [snapshot()]; hIndex = 0; updateHistoryButtons(); }
+function commit() {
+  var snap = snapshot();
+  if (history[hIndex] === snap) { refresh(); return; }
+  history = history.slice(0, hIndex + 1);
+  history.push(snap);
+  if (history.length > 120) { history.shift(); }
+  hIndex = history.length - 1;
+  updateHistoryButtons();
+  refresh();
+}
+function undo() {
+  if (hIndex <= 0) return;
+  hIndex--; restore(history[hIndex]); updateHistoryButtons();
+}
+function redo() {
+  if (hIndex >= history.length - 1) return;
+  hIndex++; restore(history[hIndex]); updateHistoryButtons();
+}
+function updateHistoryButtons() {
+  document.getElementById('btnUndo').disabled = hIndex <= 0;
+  document.getElementById('btnRedo').disabled = hIndex >= history.length - 1;
+}
+
+/* ============================== selection ============================== */
+function pruneSelection() {
+  sel.nodes = sel.nodes.filter(function (id) { return !!findNode(id); });
+  sel.edges = sel.edges.filter(function (id) { return !!findEdge(id); });
+}
+function selectOnly(kind, id) {
+  sel.nodes = []; sel.edges = [];
+  if (kind === 'node') sel.nodes = [id];
+  if (kind === 'edge') sel.edges = [id];
+  renderInspector(); requestDraw();
+}
+function toggleSel(kind, id) {
+  var arr = kind === 'node' ? sel.nodes : sel.edges;
+  var i = arr.indexOf(id);
+  if (i >= 0) arr.splice(i, 1); else arr.push(id);
+  renderInspector(); requestDraw();
+}
+function isSelected(kind, id) {
+  return (kind === 'node' ? sel.nodes : sel.edges).indexOf(id) >= 0;
+}
+function clearSelection() { sel.nodes = []; sel.edges = []; renderInspector(); requestDraw(); }
+
+/* ============================== mutations ============================== */
+function addNode(kind, worldX, worldY, opts) {
+  var s = sizeOf(kind);
+  var n = {
+    id: uniqueId('n-'),
+    kind: kind,
+    name: (opts && opts.name) || defaultName(kind),
+    x: Math.round(worldX - s.w / 2),
+    y: Math.round(worldY - s.h / 2),
+    ext: {}
+  };
+  model.nodes.push(n);
+  selectOnly('node', n.id);
+  /* opts.silent lets a caller fold the add into one history entry with
+     whatever it does next (e.g. dropping a connection on empty canvas). */
+  if (!(opts && opts.silent)) commit();
+  return n;
+}
+function defaultName(kind) {
+  if (kind === 'startEvent') return 'Start';
+  if (kind === 'endEvent') return 'End';
+  if (isGateway(kind)) return 'Gateway';
+  return 'Task';
+}
+function connect(fromId, toId) {
+  if (!fromId || !toId || fromId === toId) return null;
+  for (var i = 0; i < model.edges.length; i++) {
+    if (model.edges[i].from === fromId && model.edges[i].to === toId) return model.edges[i];
+  }
+  var e = { id: uniqueId('edge-'), from: fromId, to: toId, name: '', condition: '' };
+  model.edges.push(e);
+  return e;
+}
+function deleteSelection() {
+  if (!sel.nodes.length && !sel.edges.length) return;
+  var dead = {};
+  sel.nodes.forEach(function (id) { dead[id] = true; });
+  model.nodes = model.nodes.filter(function (n) { return !dead[n.id]; });
+  var deadEdges = {};
+  sel.edges.forEach(function (id) { deadEdges[id] = true; });
+  model.edges = model.edges.filter(function (e) {
+    return !deadEdges[e.id] && !dead[e.from] && !dead[e.to];
+  });
+  clearSelection();
+  commit();
+}
+function copySelection() {
+  if (!sel.nodes.length) return;
+  var picked = {};
+  var nodes = model.nodes.filter(function (n) {
+    if (sel.nodes.indexOf(n.id) >= 0) { picked[n.id] = true; return true; }
+    return false;
+  });
+  var edges = model.edges.filter(function (e) { return picked[e.from] && picked[e.to]; });
+  clipboard = JSON.parse(JSON.stringify({ nodes: nodes, edges: edges }));
+}
+function pasteClipboard() {
+  if (!clipboard || !clipboard.nodes.length) return;
+  var map = {}, newIds = [];
+  clipboard.nodes.forEach(function (n) {
+    var copy = JSON.parse(JSON.stringify(n));
+    copy.id = uniqueId('n-');
+    copy.x = n.x + 28; copy.y = n.y + 28;
+    map[n.id] = copy.id;
+    model.nodes.push(copy);
+    newIds.push(copy.id);
+  });
+  clipboard.edges.forEach(function (e) {
+    if (!map[e.from] || !map[e.to]) return;
+    model.edges.push({ id: uniqueId('edge-'), from: map[e.from], to: map[e.to], name: clean(e.name), condition: clean(e.condition) });
+  });
+  sel.nodes = newIds; sel.edges = [];
+  renderInspector();
+  commit();
+}
+
+/* =========================================================================
+   XML WRITE — structurally identical to BpmnArchive.write():
+   same element names, same attribute names and order, same nesting,
+   isExecutable="false", one flat <aarso:meta> per node, dc:Bounds per shape,
+   and bare <bpmndi:BPMNEdge> with no waypoints.
+   ========================================================================= */
+function esc(s) {
+  return clean(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    /* Fonebrew's own esc() stops there. Multi-line system prompts would then be
+       collapsed to spaces by XML attribute-value normalisation on read, so we
+       additionally emit control characters as numeric references — still plain
+       XML, and the phone's DOM parser gives the newlines back intact. */
+    .replace(/\r/g, '&#13;')
+    .replace(/\n/g, '&#10;')
+    .replace(/\t/g, '&#9;');
+}
+/* One decimal, so a whole number reads "150.0" the way Kotlin's Double.toString
+   writes it in the files this has to sit alongside. */
+function num(v) {
+  var n = Number(v);
+  if (!isFinite(n)) n = 0;
+  return n.toFixed(1);
+}
+/* Ordered ext for a node: carried-through (unrecognised / provenance) keys first,
+   then the three keys the phone reads — the same order Fonebrew emits. */
+function orderedExt(n) {
+  var out = [], k;
+  for (k in n.ext) {
+    if (!Object.prototype.hasOwnProperty.call(n.ext, k)) continue;
+    if (NAMED_EXT_KEYS.indexOf(k) >= 0) continue;
+    if (clean(n.ext[k]) === '') continue;
+    out.push([k, clean(n.ext[k])]);
+  }
+  NAMED_EXT_KEYS.forEach(function (key) {
+    if (clean(n.ext[key]) !== '') out.push([key, clean(n.ext[key])]);
+  });
+  return out;
+}
+function writeXml() {
+  var pid = sanitizeId(model.id);
+  var s = [];
+  s.push('<?xml version="1.0" encoding="UTF-8"?>');
+  s.push('<bpmn:definitions ' +
+    'xmlns:bpmn="' + NS_BPMN + '" ' +
+    'xmlns:bpmndi="' + NS_BPMNDI + '" ' +
+    'xmlns:dc="' + NS_DC + '" ' +
+    'xmlns:di="' + NS_DI + '" ' +
+    'xmlns:xsi="' + NS_XSI + '" ' +
+    'xmlns:aarso="' + NS_AARSO + '" ' +
+    'id="defs_' + esc(pid) + '" ' +
+    'targetNamespace="' + TARGET_NS + '">');
+  s.push('  <bpmn:process id="' + esc(pid) + '" name="' + esc(model.name) + '" isExecutable="false">');
+
+  model.nodes.forEach(function (n) {
+    var line = '    <bpmn:' + n.kind + ' id="' + esc(n.id) + '"';
+    if (clean(n.name) !== '') line += ' name="' + esc(n.name) + '"';
+    s.push(line + '>');
+    var ext = orderedExt(n);
+    if (ext.length) {
+      var meta = '      <bpmn:extensionElements><aarso:meta';
+      ext.forEach(function (kv) { meta += ' ' + kv[0] + '="' + esc(kv[1]) + '"'; });
+      s.push(meta + '/></bpmn:extensionElements>');
+    }
+    model.edges.forEach(function (e) {
+      if (e.to === n.id) s.push('      <bpmn:incoming>' + esc(e.id) + '</bpmn:incoming>');
+    });
+    model.edges.forEach(function (e) {
+      if (e.from === n.id) s.push('      <bpmn:outgoing>' + esc(e.id) + '</bpmn:outgoing>');
+    });
+    s.push('    </bpmn:' + n.kind + '>');
+  });
+
+  model.edges.forEach(function (e) {
+    var line = '    <bpmn:sequenceFlow id="' + esc(e.id) +
+      '" sourceRef="' + esc(e.from) + '" targetRef="' + esc(e.to) + '"';
+    if (clean(e.name) !== '') line += ' name="' + esc(e.name) + '"';
+    if (clean(e.condition) !== '') {
+      s.push(line + '>');
+      s.push('      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">' +
+        esc(e.condition) + '</bpmn:conditionExpression>');
+      s.push('    </bpmn:sequenceFlow>');
+    } else {
+      s.push(line + '/>');
+    }
+  });
+  s.push('  </bpmn:process>');
+
+  s.push('  <bpmndi:BPMNDiagram id="diagram_' + esc(pid) + '">');
+  s.push('    <bpmndi:BPMNPlane id="plane_' + esc(pid) + '" bpmnElement="' + esc(pid) + '">');
+  model.nodes.forEach(function (n) {
+    var sz = sizeOf(n.kind);
+    s.push('      <bpmndi:BPMNShape id="shape_' + esc(n.id) + '" bpmnElement="' + esc(n.id) + '">');
+    s.push('        <dc:Bounds x="' + num(n.x) + '" y="' + num(n.y) +
+      '" width="' + num(sz.w) + '" height="' + num(sz.h) + '"/>');
+    s.push('      </bpmndi:BPMNShape>');
+  });
+  /* Bare edges, no <di:waypoint> — exactly what Fonebrew writes and all it reads. */
+  model.edges.forEach(function (e) {
+    s.push('      <bpmndi:BPMNEdge id="edge_' + esc(e.id) + '" bpmnElement="' + esc(e.id) + '"/>');
+  });
+  s.push('    </bpmndi:BPMNPlane>');
+  s.push('  </bpmndi:BPMNDiagram>');
+  s.push('</bpmn:definitions>');
+  return s.join('\n') + '\n';
+}
+
+/* =========================================================================
+   XML READ — mirrors BpmnArchive.read(): first bpmn:process in the document,
+   direct children only, node kinds from the known set, ext exclusively from
+   extensionElements/aarso:meta, bounds from BPMNShape/dc:Bounds. Unknown
+   aarso:meta attributes are kept so they survive a round-trip.
+   ========================================================================= */
+function readXml(text) {
+  var parser = new DOMParser();
+  var doc = parser.parseFromString(text, 'application/xml');
+  var bad = doc.getElementsByTagName('parsererror');
+  if (bad && bad.length) throw new Error('not well-formed XML');
+
+  var procs = elementsByName(doc, NS_BPMN, 'process');
+  if (!procs.length) throw new Error('no <bpmn:process> element — is this a BPMN 2.0 file?');
+  var proc = procs[0];
+
+  /* bounds by referenced element id */
+  var bounds = {};
+  var shapes = elementsByName(doc, NS_BPMNDI, 'BPMNShape');
+  for (var i = 0; i < shapes.length; i++) {
+    var shp = shapes[i];
+    var b = firstChildNS(shp, NS_DC, 'Bounds');
+    if (!b) continue;
+    bounds[shp.getAttribute('bpmnElement')] = {
+      x: parseFloat(b.getAttribute('x')) || 0,
+      y: parseFloat(b.getAttribute('y')) || 0
+    };
+  }
+
+  var nodes = [], edges = [], skipped = [], unplaced = [];
+  var kids = proc.childNodes;
+  for (var j = 0; j < kids.length; j++) {
+    var c = kids[j];
+    if (c.nodeType !== 1) continue;
+    var local = c.localName;
+    if (c.namespaceURI && c.namespaceURI !== NS_BPMN) continue;
+    if (local === 'sequenceFlow') {
+      var condEl = firstChildNS(c, NS_BPMN, 'conditionExpression');
+      edges.push({
+        id: c.getAttribute('id') || uid('edge-'),
+        from: c.getAttribute('sourceRef') || '',
+        to: c.getAttribute('targetRef') || '',
+        name: c.getAttribute('name') || '',
+        condition: condEl ? clean(condEl.textContent).trim() : ''
+      });
+      continue;
+    }
+    if (ALL_KINDS.indexOf(local) < 0) {
+      if (local !== 'extensionElements' && local !== 'documentation' && skipped.indexOf(local) < 0) skipped.push(local);
+      continue;
+    }
+    var ext = {};
+    var ee = firstChildNS(c, NS_BPMN, 'extensionElements');
+    if (ee) {
+      var meta = firstChildNS(ee, NS_AARSO, 'meta') || firstChildLocal(ee, 'meta');
+      if (meta) {
+        var attrs = meta.attributes;
+        for (var a = 0; a < attrs.length; a++) {
+          var at = attrs[a];
+          if (at.name.indexOf('xmlns') === 0) continue;
+          ext[at.localName || at.name] = at.value;
+        }
+      }
+    }
+    var id = c.getAttribute('id') || uid('n-');
+    var bx = bounds[id] || { x: 0, y: 0 };
+    if (!bounds[id]) unplaced.push(id);
+    nodes.push({ id: id, kind: local, name: c.getAttribute('name') || '', x: bx.x, y: bx.y, ext: ext });
+  }
+
+  /* Drop flows whose endpoints didn't survive, the way the phone would find
+     them dangling — but say so rather than dropping silently. */
+  var known = {};
+  nodes.forEach(function (n) { known[n.id] = true; });
+  var dangling = 0;
+  edges = edges.filter(function (e) {
+    if (known[e.from] && known[e.to]) return true;
+    dangling++; return false;
+  });
+
+  if (!nodes.length) throw new Error('the first <bpmn:process> has no nodes this dialect understands');
+
+  return {
+    graph: {
+      id: proc.getAttribute('id') || 'loop',
+      name: proc.getAttribute('name') || '',
+      nodes: nodes,
+      edges: edges
+    },
+    skipped: skipped,
+    dangling: dangling,
+    unplaced: unplaced
+  };
+}
+
+/* Fonebrew drops a node with no BPMNShape at the origin, where every such node
+   lands on top of every other. A file with no DI at all is legal BPMN, so lay
+   those out on a grid instead of stacking them — and say that we did. */
+function layoutUnplaced(graph, unplaced) {
+  if (!unplaced || !unplaced.length) return;
+  var baseY = 60;
+  graph.nodes.forEach(function (n) {
+    if (unplaced.indexOf(n.id) >= 0) return;
+    baseY = Math.max(baseY, n.y + sizeOf(n.kind).h + 40);
+  });
+  if (unplaced.length === graph.nodes.length) baseY = 60;
+  unplaced.forEach(function (id, i) {
+    var n = null;
+    for (var k = 0; k < graph.nodes.length; k++) if (graph.nodes[k].id === id) { n = graph.nodes[k]; break; }
+    if (!n) return;
+    n.x = 60 + (i % 4) * 200;
+    n.y = baseY + Math.floor(i / 4) * 120;
+  });
+}
+/* Namespace-qualified lookup first (what Fonebrew does), then a local-name
+   fallback — some tools, and hand-edited files, drop or default the namespace,
+   and reading such a file best-effort beats a blank canvas. What we write back
+   is always properly namespaced. */
+function elementsByName(root, ns, local) {
+  var found = root.getElementsByTagNameNS ? root.getElementsByTagNameNS(ns, local) : [];
+  if (found && found.length) return found;
+  var all = root.getElementsByTagName('*'), out = [];
+  for (var i = 0; i < all.length; i++) if (all[i].localName === local) out.push(all[i]);
+  return out;
+}
+function firstChildNS(parent, ns, local) {
+  var kids = parent.childNodes, i, k;
+  for (i = 0; i < kids.length; i++) {
+    k = kids[i];
+    if (k.nodeType === 1 && k.namespaceURI === ns && k.localName === local) return k;
+  }
+  for (i = 0; i < kids.length; i++) {
+    k = kids[i];
+    if (k.nodeType === 1 && !k.namespaceURI && k.localName === local) return k;
+  }
+  return null;
+}
+function firstChildLocal(parent, local) {
+  var kids = parent.childNodes;
+  for (var i = 0; i < kids.length; i++) {
+    var k = kids[i];
+    if (k.nodeType === 1 && k.localName === local) return k;
+  }
+  return null;
+}
+
+function loadGraph(parsed, sourceLabel) {
+  model = parsed.graph;
+  layoutUnplaced(model, parsed.unplaced);
+  model.nodes.forEach(function (n) { if (!n.ext) n.ext = {}; });
+  model.edges.forEach(function (e) { e.name = clean(e.name); e.condition = clean(e.condition); });
+  document.getElementById('loopName').value = model.name;
+  document.getElementById('loopId').value = model.id;
+  clearSelection();
+  resetHistory();
+  fitToContent();
+  renderInspector();
+  refresh();
+  var notes = [];
+  if (parsed.skipped && parsed.skipped.length) notes.push('ignored unsupported element(s): ' + parsed.skipped.join(', '));
+  if (parsed.dangling) notes.push(parsed.dangling + ' sequence flow(s) had no matching node and were dropped');
+  if (parsed.unplaced && parsed.unplaced.length) {
+    notes.push(parsed.unplaced.length + ' node(s) had no dc:Bounds and were laid out on a grid — reposition and re-export to give them real coordinates');
+  }
+  if (notes.length) showError('Opened ' + sourceLabel + ' with caveats — ' + notes.join('; ') + '.');
+  else showOk('Opened ' + sourceLabel + ' — ' + model.nodes.length + ' node(s), ' + model.edges.length + ' flow(s).');
+}
+
+/* ============================== geometry ============================== */
+function screenToWorld(sx, sy) {
+  return { x: (sx - view.tx) / view.scale, y: (sy - view.ty) / view.scale };
+}
+function worldToScreen(wx, wy) {
+  return { x: wx * view.scale + view.tx, y: wy * view.scale + view.ty };
+}
+function pointerPos(ev) {
+  var r = cv.getBoundingClientRect();
+  return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+}
+/* Where a straight edge meets a node's outline, so arrows stop at the shape. */
+function boundaryPoint(n, towardX, towardY) {
+  var c = centerOf(n), s = sizeOf(n.kind);
+  var dx = towardX - c.x, dy = towardY - c.y;
+  var len = Math.hypot(dx, dy);
+  if (len < 0.0001) return c;
+  var ux = dx / len, uy = dy / len;
+  var hw = s.w / 2, hh = s.h / 2, t;
+  if (isEvent(n.kind)) {
+    t = hw;
+  } else if (isGateway(n.kind)) {
+    t = 1 / (Math.abs(ux) / hw + Math.abs(uy) / hh);
+  } else {
+    var tx = Math.abs(ux) > 0.0001 ? hw / Math.abs(ux) : Infinity;
+    var ty = Math.abs(uy) > 0.0001 ? hh / Math.abs(uy) : Infinity;
+    t = Math.min(tx, ty);
+  }
+  return { x: c.x + ux * t, y: c.y + uy * t };
+}
+function edgeGeometry(e) {
+  var a = findNode(e.from), b = findNode(e.to);
+  if (!a || !b) return null;
+  var ca = centerOf(a), cb = centerOf(b);
+  var p1 = boundaryPoint(a, cb.x, cb.y);
+  var p2 = boundaryPoint(b, ca.x, ca.y);
+  return { p1: p1, p2: p2, mid: { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 } };
+}
+function pointInNode(n, wx, wy) {
+  var s = sizeOf(n.kind), c = centerOf(n);
+  if (isEvent(n.kind)) return Math.hypot(wx - c.x, wy - c.y) <= s.w / 2 + 2;
+  if (isGateway(n.kind)) return (Math.abs(wx - c.x) / (s.w / 2) + Math.abs(wy - c.y) / (s.h / 2)) <= 1.05;
+  return wx >= n.x && wx <= n.x + s.w && wy >= n.y && wy <= n.y + s.h;
+}
+function distToSegment(px, py, x1, y1, x2, y2) {
+  var dx = x2 - x1, dy = y2 - y1;
+  var l2 = dx * dx + dy * dy;
+  if (l2 === 0) return Math.hypot(px - x1, py - y1);
+  var t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / l2));
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+/* Four connect handles per node, at the mid-points of its bounding box edges. */
+function handlesOf(n) {
+  var s = sizeOf(n.kind), c = centerOf(n);
+  return [
+    { id: 'e', x: n.x + s.w, y: c.y },
+    { id: 's', x: c.x, y: n.y + s.h },
+    { id: 'w', x: n.x, y: c.y },
+    { id: 'n', x: c.x, y: n.y }
+  ];
+}
+function hitTest(wx, wy) {
+  var i, n, h, hs;
+  /* handles of hovered / selected nodes take priority so connecting beats moving */
+  for (i = model.nodes.length - 1; i >= 0; i--) {
+    n = model.nodes[i];
+    if (!isSelected('node', n.id) && hover.nodeId !== n.id) continue;
+    hs = handlesOf(n);
+    for (h = 0; h < hs.length; h++) {
+      if (Math.hypot(wx - hs[h].x, wy - hs[h].y) <= 8 / view.scale + 3) {
+        return { type: 'handle', node: n, handle: hs[h] };
+      }
+    }
+  }
+  for (i = model.nodes.length - 1; i >= 0; i--) {
+    if (pointInNode(model.nodes[i], wx, wy)) return { type: 'node', node: model.nodes[i] };
+  }
+  var tol = 7 / view.scale;
+  for (i = model.edges.length - 1; i >= 0; i--) {
+    var g = edgeGeometry(model.edges[i]);
+    if (!g) continue;
+    if (distToSegment(wx, wy, g.p1.x, g.p1.y, g.p2.x, g.p2.y) <= tol) return { type: 'edge', edge: model.edges[i] };
+    if (Math.abs(wx - g.mid.x) < 46 && Math.abs(wy - g.mid.y) < 12) return { type: 'edge', edge: model.edges[i] };
+  }
+  return { type: 'empty' };
+}
+function contentBounds() {
+  if (!model.nodes.length) return null;
+  var x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+  model.nodes.forEach(function (n) {
+    var s = sizeOf(n.kind);
+    x1 = Math.min(x1, n.x); y1 = Math.min(y1, n.y);
+    x2 = Math.max(x2, n.x + s.w); y2 = Math.max(y2, n.y + s.h + 18);
+  });
+  return { x1: x1, y1: y1, x2: x2, y2: y2 };
+}
+function fitToContent() {
+  var b = contentBounds();
+  if (!b) { view.scale = 1; view.tx = 60; view.ty = 60; requestDraw(); updateZoomLabel(); return; }
+  var pad = 60;
+  var vw = cv.clientWidth, vh = cv.clientHeight;
+  var s = Math.min((vw - pad * 2) / Math.max(1, b.x2 - b.x1), (vh - pad * 2) / Math.max(1, b.y2 - b.y1));
+  view.scale = Math.max(0.2, Math.min(1.6, s));
+  view.tx = vw / 2 - ((b.x1 + b.x2) / 2) * view.scale;
+  view.ty = vh / 2 - ((b.y1 + b.y2) / 2) * view.scale;
+  updateZoomLabel();
+  requestDraw();
+}
+function zoomAt(sx, sy, factor) {
+  var before = screenToWorld(sx, sy);
+  view.scale = Math.max(0.15, Math.min(3.5, view.scale * factor));
+  var after = screenToWorld(sx, sy);
+  view.tx += (after.x - before.x) * view.scale;
+  view.ty += (after.y - before.y) * view.scale;
+  updateZoomLabel();
+  requestDraw();
+}
+function updateZoomLabel() {
+  document.getElementById('zoomVal').textContent = Math.round(view.scale * 100) + '%';
+}
+
+/* ============================== drawing ============================== */
+function requestDraw() {
+  if (needsDraw) return;
+  needsDraw = true;
+  window.requestAnimationFrame(function () { needsDraw = false; draw(); });
+}
+function resizeCanvas() {
+  var dpr = window.devicePixelRatio || 1;
+  cv.width = Math.max(1, Math.round(cv.clientWidth * dpr));
+  cv.height = Math.max(1, Math.round(cv.clientHeight * dpr));
+  requestDraw();
+}
+function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+var C = {};
+function readPalette() {
+  C = {
+    bg: css('--bg') || '#0e0e12',
+    panel2: css('--panel-2') || '#1e1e28',
+    line: css('--line') || '#2a2a36',
+    text: css('--text') || '#e8e8ef',
+    muted: css('--muted') || '#8a8a99',
+    accent: css('--accent') || '#6c5ce7',
+    accentSoft: css('--accent-soft') || '#a29bfe',
+    cyan: css('--cyan') || '#4fd1c5'
+  };
+}
+function draw() {
+  var dpr = window.devicePixelRatio || 1;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cv.clientWidth, cv.clientHeight);
+  ctx.fillStyle = C.bg;
+  ctx.fillRect(0, 0, cv.clientWidth, cv.clientHeight);
+
+  drawGrid();
+
+  ctx.save();
+  ctx.translate(view.tx, view.ty);
+  ctx.scale(view.scale, view.scale);
+
+  model.edges.forEach(function (e) { drawEdge(e); });
+  if (drag && drag.type === 'link') {
+    var src = findNode(drag.fromId);
+    if (src) {
+      var p1 = boundaryPoint(src, drag.cur.x, drag.cur.y);
+      ctx.strokeStyle = C.accentSoft;
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([6, 5]);
+      ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(drag.cur.x, drag.cur.y); ctx.stroke();
+      ctx.setLineDash([]);
+      arrowHead(p1.x, p1.y, drag.cur.x, drag.cur.y, C.accentSoft);
+    }
+  }
+  model.nodes.forEach(function (n) { drawNode(n); });
+  ctx.restore();
+
+  if (drag && drag.type === 'band') {
+    var a = worldToScreen(drag.start.x, drag.start.y);
+    var b = worldToScreen(drag.cur.x, drag.cur.y);
+    var x = Math.min(a.x, b.x), y = Math.min(a.y, b.y);
+    ctx.fillStyle = 'rgba(108,92,231,.15)';
+    ctx.strokeStyle = C.accent;
+    ctx.lineWidth = 1;
+    ctx.fillRect(x, y, Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+    ctx.strokeRect(x + 0.5, y + 0.5, Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+  }
+  drawMinimap();
+}
+function drawGrid() {
+  var step = 24 * view.scale;
+  if (step < 9) return;
+  var ox = view.tx % step, oy = view.ty % step;
+  ctx.fillStyle = 'rgba(138,138,153,.18)';
+  var r = view.scale > 1.4 ? 1.4 : 1.1;
+  for (var x = ox; x < cv.clientWidth; x += step) {
+    for (var y = oy; y < cv.clientHeight; y += step) {
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+}
+function roundRect(g, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  g.beginPath();
+  g.moveTo(x + r, y);
+  g.arcTo(x + w, y, x + w, y + h, r);
+  g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r);
+  g.arcTo(x, y, x + w, y, r);
+  g.closePath();
+}
+function arrowHead(x1, y1, x2, y2, color) {
+  var a = Math.atan2(y2 - y1, x2 - x1), len = 10, spread = 0.42;
+  ctx.strokeStyle = color;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - len * Math.cos(a - spread), y2 - len * Math.sin(a - spread));
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - len * Math.cos(a + spread), y2 - len * Math.sin(a + spread));
+  ctx.stroke();
+}
+function drawEdge(e) {
+  var g = edgeGeometry(e);
+  if (!g) return;
+  var selected = isSelected('edge', e.id);
+  var hot = hover.edgeId === e.id;
+  var color = selected ? C.accent : (clean(e.name) !== '' || clean(e.condition) !== '' ? C.cyan : C.muted);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = selected ? 2.6 : (hot ? 2.1 : 1.5);
+  ctx.beginPath();
+  ctx.moveTo(g.p1.x, g.p1.y);
+  ctx.lineTo(g.p2.x, g.p2.y);
+  ctx.stroke();
+  arrowHead(g.p1.x, g.p1.y, g.p2.x, g.p2.y, color);
+
+  var label = clean(e.name);
+  var cond = clean(e.condition);
+  var text = label + (cond ? (label ? ' · ' : '') + cond : '');
+  if (text) {
+    ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    var w = ctx.measureText(text).width;
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(g.mid.x - w / 2 - 4, g.mid.y - 8, w + 8, 16);
+    ctx.fillStyle = selected ? C.accent : C.cyan;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, g.mid.x, g.mid.y);
+  }
+}
+function ellipsize(text, maxW) {
+  if (ctx.measureText(text).width <= maxW) return text;
+  var t = text;
+  while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+  return t + '…';
+}
+function drawNode(n) {
+  var s = sizeOf(n.kind), c = centerOf(n);
+  var selected = isSelected('node', n.id);
+  var hot = hover.nodeId === n.id;
+  var stroke = selected ? C.accent : (hot ? C.accentSoft : C.line);
+  var known = PRIMARY_KINDS.indexOf(n.kind) >= 0;
+
+  ctx.lineCap = 'butt';
+  if (isEvent(n.kind)) {
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, s.w / 2, 0, Math.PI * 2);
+    ctx.fillStyle = C.panel2; ctx.fill();
+    ctx.strokeStyle = selected ? C.accent : (n.kind === 'startEvent' ? C.accentSoft : C.muted);
+    ctx.lineWidth = n.kind === 'endEvent' ? 3.4 : 1.8;
+    ctx.stroke();
+    ctx.fillStyle = n.kind === 'startEvent' ? C.accentSoft : C.muted;
+    ctx.font = '13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(n.kind === 'startEvent' ? '▶' : '■', c.x, c.y);
+    ctx.fillStyle = C.text;
+    ctx.font = '11.5px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillText(ellipsize(clean(n.name), 120), c.x, n.y + s.h + 11);
+  } else if (isGateway(n.kind)) {
+    ctx.beginPath();
+    ctx.moveTo(c.x, n.y);
+    ctx.lineTo(n.x + s.w, c.y);
+    ctx.lineTo(c.x, n.y + s.h);
+    ctx.lineTo(n.x, c.y);
+    ctx.closePath();
+    ctx.fillStyle = C.panel2; ctx.fill();
+    ctx.strokeStyle = selected ? C.accent : (hot ? C.accentSoft : C.cyan);
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+    ctx.strokeStyle = selected ? C.accent : C.cyan;
+    ctx.lineWidth = 2;
+    var r = 9;
+    ctx.beginPath();
+    if (n.kind === 'parallelGateway') {
+      ctx.moveTo(c.x - r, c.y); ctx.lineTo(c.x + r, c.y);
+      ctx.moveTo(c.x, c.y - r); ctx.lineTo(c.x, c.y + r);
+    } else if (n.kind === 'inclusiveGateway') {
+      ctx.arc(c.x, c.y, r - 1, 0, Math.PI * 2);
+    } else {
+      ctx.moveTo(c.x - r + 2, c.y - r + 2); ctx.lineTo(c.x + r - 2, c.y + r - 2);
+      ctx.moveTo(c.x + r - 2, c.y - r + 2); ctx.lineTo(c.x - r + 2, c.y + r - 2);
+    }
+    ctx.stroke();
+    ctx.fillStyle = C.text;
+    ctx.font = '11.5px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(ellipsize(clean(n.name), 140), c.x, n.y + s.h + 11);
+  } else {
+    roundRect(ctx, n.x, n.y, s.w, s.h, 12);
+    ctx.fillStyle = C.panel2; ctx.fill();
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = selected ? 2.2 : 1.4;
+    if (!known) ctx.setLineDash([5, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = C.text;
+    ctx.font = '13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillText(ellipsize(clean(n.name) || KIND_LABEL[n.kind] || n.kind, s.w - 24), n.x + 12, n.y + 24);
+    var sub = clean(n.ext.model) || clean(n.ext.role) || (known ? 'task' : n.kind);
+    ctx.fillStyle = C.muted;
+    ctx.font = '11px "SF Mono", ui-monospace, monospace';
+    ctx.fillText(ellipsize(sub, s.w - 24), n.x + 12, n.y + 43);
+    if (clean(n.ext.systemPrompt) !== '') {
+      ctx.fillStyle = C.accentSoft;
+      ctx.beginPath(); ctx.arc(n.x + s.w - 12, n.y + 13, 3, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  if (selected || hot) {
+    var hs = handlesOf(n);
+    hs.forEach(function (h) {
+      ctx.beginPath();
+      ctx.arc(h.x, h.y, 4.2, 0, Math.PI * 2);
+      ctx.fillStyle = C.bg; ctx.fill();
+      ctx.strokeStyle = C.accentSoft; ctx.lineWidth = 1.6; ctx.stroke();
+    });
+  }
+}
+function drawMinimap() {
+  var w = mini.width, h = mini.height;
+  mctx.setTransform(1, 0, 0, 1, 0, 0);
+  mctx.clearRect(0, 0, w, h);
+  var b = contentBounds();
+  var vw = cv.clientWidth, vh = cv.clientHeight;
+  var vx1 = screenToWorld(0, 0), vx2 = screenToWorld(vw, vh);
+  if (!b) b = { x1: vx1.x, y1: vx1.y, x2: vx2.x, y2: vx2.y };
+  var bx1 = Math.min(b.x1, vx1.x), by1 = Math.min(b.y1, vx1.y);
+  var bx2 = Math.max(b.x2, vx2.x), by2 = Math.max(b.y2, vx2.y);
+  var pad = 20;
+  var sc = Math.min((w - pad) / Math.max(1, bx2 - bx1), (h - pad) / Math.max(1, by2 - by1));
+  var ox = (w - (bx2 - bx1) * sc) / 2 - bx1 * sc;
+  var oy = (h - (by2 - by1) * sc) / 2 - by1 * sc;
+  mini._map = { sc: sc, ox: ox, oy: oy };
+
+  mctx.strokeStyle = 'rgba(138,138,153,.55)';
+  mctx.lineWidth = 1.5;
+  model.edges.forEach(function (e) {
+    var g = edgeGeometry(e);
+    if (!g) return;
+    mctx.beginPath();
+    mctx.moveTo(g.p1.x * sc + ox, g.p1.y * sc + oy);
+    mctx.lineTo(g.p2.x * sc + ox, g.p2.y * sc + oy);
+    mctx.stroke();
+  });
+  model.nodes.forEach(function (n) {
+    var s = sizeOf(n.kind);
+    mctx.fillStyle = isSelected('node', n.id) ? C.accent : C.accentSoft;
+    mctx.fillRect(n.x * sc + ox, n.y * sc + oy, Math.max(3, s.w * sc), Math.max(3, s.h * sc));
+  });
+  mctx.strokeStyle = C.accent;
+  mctx.lineWidth = 2;
+  mctx.strokeRect(vx1.x * sc + ox, vx1.y * sc + oy, (vx2.x - vx1.x) * sc, (vx2.y - vx1.y) * sc);
+}
+
+/* ============================== pointer ============================== */
+cv.addEventListener('pointerdown', function (ev) {
+  hideMenu();
+  cv.focus();
+  var p = pointerPos(ev);
+  var w = screenToWorld(p.x, p.y);
+  var hit = hitTest(w.x, w.y);
+
+  if (ev.button === 2) {
+    ev.preventDefault();
+    if (hit.type === 'node') { if (!isSelected('node', hit.node.id)) selectOnly('node', hit.node.id); nodeMenu(ev, hit.node); }
+    else if (hit.type === 'edge') { selectOnly('edge', hit.edge.id); edgeMenu(ev, hit.edge); }
+    else canvasMenu(ev, w);
+    return;
+  }
+  if (ev.button !== 0) {
+    drag = { type: 'pan', last: p };
+    cv.setPointerCapture(ev.pointerId);
+    return;
+  }
+
+  var wantsPan = spaceDown || (dragMode === 'pan' && !ev.shiftKey);
+  var wantsBand = ev.shiftKey ? dragMode === 'pan' : dragMode === 'select';
+
+  if (hit.type === 'handle') {
+    drag = { type: 'link', fromId: hit.node.id, cur: w };
+    cv.setPointerCapture(ev.pointerId);
+    return;
+  }
+  if (hit.type === 'node') {
+    if (ev.shiftKey) toggleSel('node', hit.node.id);
+    else if (!isSelected('node', hit.node.id)) selectOnly('node', hit.node.id);
+    var moving = model.nodes.filter(function (n) { return isSelected('node', n.id); });
+    drag = {
+      type: 'node',
+      start: w,
+      moved: false,
+      items: moving.map(function (n) { return { id: n.id, x: n.x, y: n.y }; })
+    };
+    cv.setPointerCapture(ev.pointerId);
+    return;
+  }
+  if (hit.type === 'edge') {
+    if (ev.shiftKey) toggleSel('edge', hit.edge.id);
+    else selectOnly('edge', hit.edge.id);
+    return;
+  }
+  /* empty canvas */
+  if (spaceDown || (wantsPan && !wantsBand)) {
+    drag = { type: 'pan', last: p };
+  } else {
+    if (!ev.shiftKey) clearSelection();
+    drag = { type: 'band', start: w, cur: w, additive: ev.shiftKey };
+  }
+  cv.setPointerCapture(ev.pointerId);
+});
+
+cv.addEventListener('pointermove', function (ev) {
+  var p = pointerPos(ev);
+  var w = screenToWorld(p.x, p.y);
+
+  if (!drag) {
+    var hit = hitTest(w.x, w.y);
+    var nId = hit.type === 'node' ? hit.node.id : (hit.type === 'handle' ? hit.node.id : null);
+    var eId = hit.type === 'edge' ? hit.edge.id : null;
+    if (nId !== hover.nodeId || eId !== hover.edgeId) {
+      hover.nodeId = nId; hover.edgeId = eId;
+      requestDraw();
+    }
+    cv.style.cursor = hit.type === 'handle' ? 'crosshair'
+      : hit.type === 'node' ? 'move'
+      : hit.type === 'edge' ? 'pointer'
+      : (spaceDown || dragMode === 'pan') ? 'grab' : 'default';
+    return;
+  }
+
+  if (drag.type === 'pan') {
+    view.tx += p.x - drag.last.x;
+    view.ty += p.y - drag.last.y;
+    drag.last = p;
+    requestDraw();
+  } else if (drag.type === 'node') {
+    var dx = w.x - drag.start.x, dy = w.y - drag.start.y;
+    if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) drag.moved = true;
+    drag.items.forEach(function (it) {
+      var n = findNode(it.id);
+      if (!n) return;
+      n.x = Math.round(it.x + dx);
+      n.y = Math.round(it.y + dy);
+    });
+    requestDraw();
+  } else if (drag.type === 'band') {
+    drag.cur = w;
+    requestDraw();
+  } else if (drag.type === 'link') {
+    drag.cur = w;
+    var over = hitTest(w.x, w.y);
+    hover.nodeId = over.type === 'node' ? over.node.id : (over.type === 'handle' ? over.node.id : null);
+    requestDraw();
+  }
+});
+
+function endDrag(ev) {
+  if (!drag) return;
+  var p = pointerPos(ev);
+  var w = screenToWorld(p.x, p.y);
+  if (drag.type === 'node' && drag.moved) {
+    commit();
+  } else if (drag.type === 'band') {
+    var x1 = Math.min(drag.start.x, drag.cur.x), x2 = Math.max(drag.start.x, drag.cur.x);
+    var y1 = Math.min(drag.start.y, drag.cur.y), y2 = Math.max(drag.start.y, drag.cur.y);
+    if (Math.abs(x2 - x1) > 3 || Math.abs(y2 - y1) > 3) {
+      if (!drag.additive) { sel.nodes = []; sel.edges = []; }
+      model.nodes.forEach(function (n) {
+        var s = sizeOf(n.kind);
+        if (n.x + s.w >= x1 && n.x <= x2 && n.y + s.h >= y1 && n.y <= y2) {
+          if (sel.nodes.indexOf(n.id) < 0) sel.nodes.push(n.id);
+        }
+      });
+      model.edges.forEach(function (e) {
+        var g = edgeGeometry(e);
+        if (!g) return;
+        if (g.mid.x >= x1 && g.mid.x <= x2 && g.mid.y >= y1 && g.mid.y <= y2) {
+          if (sel.edges.indexOf(e.id) < 0) sel.edges.push(e.id);
+        }
+      });
+      renderInspector();
+    }
+  } else if (drag.type === 'link') {
+    var over = hitTest(w.x, w.y);
+    var targetNode = over.type === 'node' ? over.node : (over.type === 'handle' ? over.node : null);
+    if (targetNode && targetNode.id !== drag.fromId) {
+      var e = connect(drag.fromId, targetNode.id);
+      if (e) { selectOnly('edge', e.id); commit(); }
+    } else if (!targetNode) {
+      /* dropped on empty space: create the next task there, already wired up */
+      var n = addNode('serviceTask', w.x, w.y, { silent: true });
+      connect(drag.fromId, n.id);
+      commit();
+    }
+  }
+  drag = null;
+  hover.nodeId = null;
+  requestDraw();
+}
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', function () { drag = null; requestDraw(); });
+
+cv.addEventListener('dblclick', function (ev) {
+  var p = pointerPos(ev);
+  var w = screenToWorld(p.x, p.y);
+  var hit = hitTest(w.x, w.y);
+  if (hit.type === 'edge') {
+    selectOnly('edge', hit.edge.id);
+    focusField('f-edge-name');
+  } else if (hit.type === 'node') {
+    selectOnly('node', hit.node.id);
+    focusField('f-name');
+  } else {
+    addNode('serviceTask', w.x, w.y);
+    focusField('f-name');
+  }
+});
+cv.addEventListener('contextmenu', function (ev) { ev.preventDefault(); });
+cv.addEventListener('wheel', function (ev) {
+  ev.preventDefault();
+  var p = pointerPos(ev);
+  zoomAt(p.x, p.y, ev.deltaY < 0 ? 1.12 : 1 / 1.12);
+}, { passive: false });
+
+/* drag from the palette onto the canvas */
+cv.addEventListener('dragover', function (ev) { ev.preventDefault(); ev.dataTransfer.dropEffect = 'copy'; });
+cv.addEventListener('drop', function (ev) {
+  ev.preventDefault();
+  var kind = ev.dataTransfer.getData('text/plain');
+  if (ALL_KINDS.indexOf(kind) < 0) return;
+  var p = pointerPos(ev);
+  var w = screenToWorld(p.x, p.y);
+  addNode(kind, w.x, w.y);
+});
+
+/* minimap navigation */
+function miniNavigate(ev) {
+  var m = mini._map;
+  if (!m) return;
+  var r = mini.getBoundingClientRect();
+  var mx = (ev.clientX - r.left) * (mini.width / r.width);
+  var my = (ev.clientY - r.top) * (mini.height / r.height);
+  var wx = (mx - m.ox) / m.sc, wy = (my - m.oy) / m.sc;
+  view.tx = cv.clientWidth / 2 - wx * view.scale;
+  view.ty = cv.clientHeight / 2 - wy * view.scale;
+  requestDraw();
+}
+var miniDrag = false;
+mini.addEventListener('pointerdown', function (ev) { miniDrag = true; mini.setPointerCapture(ev.pointerId); miniNavigate(ev); });
+mini.addEventListener('pointermove', function (ev) { if (miniDrag) miniNavigate(ev); });
+mini.addEventListener('pointerup', function () { miniDrag = false; });
+
+/* ============================== keyboard ============================== */
+function typingInField(t) {
+  if (!t) return false;
+  var tag = t.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t.isContentEditable;
+}
+window.addEventListener('keydown', function (ev) {
+  if (ev.code === 'Space' && !typingInField(ev.target)) {
+    spaceDown = true;
+    if (!drag) cv.style.cursor = 'grab';
+    ev.preventDefault();
+    return;
+  }
+  var meta = ev.ctrlKey || ev.metaKey;
+  if (typingInField(ev.target)) {
+    if (ev.key === 'Escape') ev.target.blur();
+    return;
+  }
+  var k = ev.key.toLowerCase();
+  if (meta && k === 'z' && !ev.shiftKey) { ev.preventDefault(); undo(); return; }
+  if (meta && ((k === 'z' && ev.shiftKey) || k === 'y')) { ev.preventDefault(); redo(); return; }
+  if (meta && k === 'c') { ev.preventDefault(); copySelection(); return; }
+  if (meta && k === 'v') { ev.preventDefault(); pasteClipboard(); return; }
+  if (meta && k === 'a') {
+    ev.preventDefault();
+    sel.nodes = model.nodes.map(function (n) { return n.id; });
+    sel.edges = model.edges.map(function (e) { return e.id; });
+    renderInspector(); requestDraw();
+    return;
+  }
+  if (ev.key === 'Delete' || ev.key === 'Backspace') { ev.preventDefault(); deleteSelection(); return; }
+  if (ev.key === 'Escape') {
+    hideMenu();
+    if (drag) { drag = null; requestDraw(); }
+    clearSelection();
+    return;
+  }
+});
+window.addEventListener('keyup', function (ev) {
+  if (ev.code === 'Space') { spaceDown = false; cv.style.cursor = dragMode === 'pan' ? 'grab' : 'default'; }
+});
+
+/* ============================== context menu ============================== */
+var menu = document.getElementById('ctxmenu');
+function showMenu(ev, items) {
+  menu.innerHTML = '';
+  items.forEach(function (it) {
+    if (it === '-') { menu.appendChild(document.createElement('hr')); return; }
+    var b = document.createElement('button');
+    b.textContent = it.label;
+    if (it.danger) b.className = 'danger';
+    b.onclick = function () { hideMenu(); it.run(); };
+    menu.appendChild(b);
+  });
+  menu.style.display = 'block';
+  var mw = menu.offsetWidth || 170, mh = menu.offsetHeight || 120;
+  menu.style.left = Math.min(ev.clientX, window.innerWidth - mw - 8) + 'px';
+  menu.style.top = Math.min(ev.clientY, window.innerHeight - mh - 8) + 'px';
+  /* Marked so the dismiss-on-outside-click listener below ignores the very
+     pointerdown that opened the menu, whichever phase it sees it in. */
+  ev.__openedMenu = true;
+}
+function hideMenu() { menu.style.display = 'none'; }
+window.addEventListener('pointerdown', function (ev) {
+  if (ev.__openedMenu) return;
+  if (menu.style.display === 'block' && !menu.contains(ev.target)) hideMenu();
+}, true);
+
+function nodeMenu(ev, n) {
+  showMenu(ev, [
+    { label: 'Edit…', run: function () { selectOnly('node', n.id); focusField('f-name'); } },
+    { label: 'Duplicate', run: function () { copySelection(); pasteClipboard(); } },
+    '-',
+    { label: 'Delete node', danger: true, run: function () { deleteSelection(); } }
+  ]);
+}
+function edgeMenu(ev, e) {
+  showMenu(ev, [
+    { label: 'Edit label / condition…', run: function () { selectOnly('edge', e.id); focusField('f-edge-name'); } },
+    { label: 'Reverse direction', run: function () { var t = e.from; e.from = e.to; e.to = t; commit(); } },
+    '-',
+    { label: 'Delete flow', danger: true, run: function () { deleteSelection(); } }
+  ]);
+}
+function canvasMenu(ev, w) {
+  var items = PRIMARY_KINDS.map(function (kind) {
+    return { label: 'Add ' + KIND_LABEL[kind], run: function () { addNode(kind, w.x, w.y); } };
+  });
+  items.push('-');
+  items.push({ label: 'Paste', run: function () { pasteClipboard(); } });
+  items.push({ label: 'Fit view', run: function () { fitToContent(); } });
+  showMenu(ev, items);
+}
+
+/* ============================== palette UI ============================== */
+function kindIcon(kind) {
+  var stroke = kind === 'startEvent' ? 'var(--accent-soft)' : (kind === 'endEvent' ? 'var(--muted)' : 'var(--cyan)');
+  if (kind === 'startEvent' || kind === 'endEvent') {
+    return '<svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="8" fill="none" stroke="' +
+      stroke + '" stroke-width="' + (kind === 'endEvent' ? 3 : 1.6) + '"/></svg>';
+  }
+  if (isGateway(kind)) {
+    return '<svg width="22" height="22" viewBox="0 0 22 22"><path d="M11 2 L20 11 L11 20 L2 11 Z" fill="none" stroke="' +
+      stroke + '" stroke-width="1.6"/>' +
+      (kind === 'parallelGateway'
+        ? '<path d="M11 7 V15 M7 11 H15" stroke="' + stroke + '" stroke-width="1.8"/>'
+        : '<path d="M8 8 L14 14 M14 8 L8 14" stroke="' + stroke + '" stroke-width="1.8"/>') +
+      '</svg>';
+  }
+  return '<svg width="22" height="22" viewBox="0 0 22 22"><rect x="2" y="5" width="18" height="12" rx="3" fill="none" stroke="var(--accent-soft)" stroke-width="1.6"/></svg>';
+}
+function buildPalette() {
+  var box = document.getElementById('palette');
+  box.innerHTML = '';
+  PRIMARY_KINDS.forEach(function (kind) {
+    var el = document.createElement('div');
+    el.className = 'pal-item';
+    el.draggable = true;
+    el.innerHTML = kindIcon(kind) + '<span>' + KIND_LABEL[kind] + '</span><span class="el">' + kind + '</span>';
+    el.addEventListener('dragstart', function (ev) { ev.dataTransfer.setData('text/plain', kind); ev.dataTransfer.effectAllowed = 'copy'; });
+    el.addEventListener('click', function () {
+      var c = screenToWorld(cv.clientWidth / 2, cv.clientHeight / 2);
+      addNode(kind, c.x + (Math.random() * 40 - 20), c.y + (Math.random() * 40 - 20));
+    });
+    box.appendChild(el);
+  });
+}
+
+/* ============================== inspector ============================== */
+var inspector = document.getElementById('inspector');
+function focusField(id) {
+  window.setTimeout(function () {
+    var el = document.getElementById(id);
+    if (el) { el.focus(); if (el.select) el.select(); }
+  }, 0);
+}
+function el(tag, cls, text) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+function field(labelText, id, value, opts) {
+  var wrap = el('div', 'field');
+  var lbl = el('span', 'lbl', labelText);
+  wrap.appendChild(lbl);
+  var input = document.createElement(opts && opts.multiline ? 'textarea' : 'input');
+  if (!(opts && opts.multiline)) input.type = 'text';
+  if (opts && opts.mono) input.className = 'mono';
+  if (opts && opts.placeholder) input.placeholder = opts.placeholder;
+  input.id = id;
+  input.value = clean(value);
+  wrap.appendChild(input);
+  return { wrap: wrap, input: input };
+}
+function bindText(input, apply) {
+  input.addEventListener('input', function () { apply(input.value); refresh(); });
+  input.addEventListener('change', function () { apply(input.value); commit(); });
+}
+function renderInspector() {
+  inspector.innerHTML = '';
+  var h = el('h1', null, 'Inspector');
+  inspector.appendChild(h);
+
+  if (sel.nodes.length === 1 && sel.edges.length === 0) { renderNodeInspector(findNode(sel.nodes[0])); return; }
+  if (sel.edges.length === 1 && sel.nodes.length === 0) { renderEdgeInspector(findEdge(sel.edges[0])); return; }
+  if (sel.nodes.length + sel.edges.length > 1) {
+    inspector.appendChild(el('div', 'sub', sel.nodes.length + ' node(s) and ' + sel.edges.length + ' flow(s) selected.'));
+    var del = el('button', 'ghost-btn danger', 'Delete selection');
+    del.onclick = deleteSelection;
+    inspector.appendChild(del);
+    var dup = el('button', 'ghost-btn', 'Duplicate selection');
+    dup.onclick = function () { copySelection(); pasteClipboard(); };
+    inspector.appendChild(dup);
+    return;
+  }
+  inspector.appendChild(el('div', 'sub', 'Nothing selected.'));
+  inspector.appendChild(el('div', 'empty-hint',
+    'Click a node or a sequence flow to edit it. Drag from a node’s round handle to another node to connect them. ' +
+    'Drop a connection on empty canvas to create the next task already wired up.'));
+  var stats = el('div', 'note', model.nodes.length + ' node(s) · ' + model.edges.length + ' flow(s) · ' +
+    (model.nodes.filter(function (n) { return n.kind === 'startEvent'; }).length ? 'has a start event' : 'no start event — GraphRunner refuses to run'));
+  inspector.appendChild(stats);
+}
+function renderNodeInspector(n) {
+  if (!n) { inspector.appendChild(el('div', 'sub', 'Nothing selected.')); return; }
+  inspector.appendChild(el('div', 'sub', KIND_LABEL[n.kind] || n.kind));
+
+  var f = field('Label (BPMN name)', 'f-name', n.name);
+  bindText(f.input, function (v) { n.name = v; });
+  inspector.appendChild(f.wrap);
+
+  /* kind */
+  var kw = el('div', 'field');
+  kw.appendChild(el('span', 'lbl', 'Element kind'));
+  var select = document.createElement('select');
+  select.id = 'f-kind';
+  var g1 = document.createElement('optgroup');
+  g1.label = 'Produced by Fonebrew';
+  PRIMARY_KINDS.forEach(function (k) {
+    var o = document.createElement('option');
+    o.value = k; o.textContent = KIND_LABEL[k] + '  (' + k + ')';
+    o.selected = (k === n.kind);
+    g1.appendChild(o);
+  });
+  select.appendChild(g1);
+  var g2 = document.createElement('optgroup');
+  g2.label = 'Read-safe, run-untested';
+  OTHER_KINDS.forEach(function (k) {
+    var o = document.createElement('option');
+    o.value = k; o.textContent = KIND_LABEL[k] + '  (' + k + ')';
+    o.selected = (k === n.kind);
+    g2.appendChild(o);
+  });
+  select.appendChild(g2);
+  select.onchange = function () { n.kind = select.value; renderInspector(); commit(); };
+  kw.appendChild(select);
+  inspector.appendChild(kw);
+
+  if (PRIMARY_KINDS.indexOf(n.kind) < 0) {
+    inspector.appendChild(el('div', 'warn',
+      'Fonebrew parses ' + n.kind + ' but never writes it, and GraphRunner’s behaviour on it is untested. ' +
+      (n.kind === 'task'
+        ? 'The phone’s own add-node menu does emit plain task, so this one is safe in practice.'
+        : 'Prefer serviceTask for an AI step.')));
+  }
+
+  inspector.appendChild(el('div', 'group-label', 'aarso:meta'));
+  var fm = field('model', 'f-model', n.ext.model, { mono: true, placeholder: 'e.g. local:qwen2.5-7b-instruct' });
+  bindText(fm.input, function (v) { setExt(n, 'model', v); });
+  inspector.appendChild(fm.wrap);
+
+  var fr = field('role', 'f-role', n.ext.role, { placeholder: 'e.g. Proposer' });
+  bindText(fr.input, function (v) { setExt(n, 'role', v); });
+  inspector.appendChild(fr.wrap);
+
+  var fs = field('systemPrompt', 'f-prompt', n.ext.systemPrompt, { multiline: true, placeholder: 'Instructions for this step…' });
+  bindText(fs.input, function (v) { setExt(n, 'systemPrompt', v); });
+  inspector.appendChild(fs.wrap);
+
+  if (n.kind === 'startEvent') {
+    inspector.appendChild(el('div', 'group-label', 'Provenance (start event)'));
+    inspector.appendChild(el('div', 'note', 'The keys a distilled loop carries. Blank keys are not written.'));
+    PROVENANCE_KEYS.forEach(function (key) {
+      var pf = field(key, 'f-prov-' + key, n.ext[key], key === 'summary' ? { multiline: true } : { mono: key !== 'summary' });
+      bindText(pf.input, function (v) { setExt(n, key, v); });
+      inspector.appendChild(pf.wrap);
+    });
+  }
+
+  /* every other ext key: kept and re-emitted, editable here rather than invisible */
+  var extras = Object.keys(n.ext).filter(function (k) {
+    if (NAMED_EXT_KEYS.indexOf(k) >= 0) return false;
+    if (n.kind === 'startEvent' && PROVENANCE_KEYS.indexOf(k) >= 0) return false;
+    return true;
+  });
+  inspector.appendChild(el('div', 'group-label', 'Other attributes'));
+  inspector.appendChild(el('div', 'note',
+    'Anything else on this node’s <aarso:meta> — imported attributes are preserved and re-exported verbatim.'));
+  var extBox = el('div');
+  extras.forEach(function (k) {
+    var row = el('div', 'ext-row');
+    var ki = document.createElement('input'); ki.type = 'text'; ki.className = 'k mono'; ki.value = k;
+    var vi = document.createElement('input'); vi.type = 'text'; vi.value = clean(n.ext[k]);
+    var rm = el('button', null, '×'); rm.title = 'Remove attribute';
+    ki.addEventListener('change', function () {
+      var nk = ki.value.trim();
+      if (!nk || nk === k) { ki.value = k; return; }
+      var v = n.ext[k];
+      delete n.ext[k];
+      n.ext[nk] = v;
+      renderInspector(); commit();
+    });
+    vi.addEventListener('input', function () { n.ext[k] = vi.value; refresh(); });
+    vi.addEventListener('change', function () { n.ext[k] = vi.value; commit(); });
+    rm.onclick = function () { delete n.ext[k]; renderInspector(); commit(); };
+    row.appendChild(ki); row.appendChild(vi); row.appendChild(rm);
+    extBox.appendChild(row);
+  });
+  inspector.appendChild(extBox);
+  var add = el('button', 'ghost-btn', '+ Add attribute');
+  add.onclick = function () {
+    var base = 'custom', i = 1, key = base;
+    while (Object.prototype.hasOwnProperty.call(n.ext, key)) { key = base + (++i); }
+    n.ext[key] = '';
+    renderInspector(); commit();
+  };
+  inspector.appendChild(add);
+
+  inspector.appendChild(el('div', 'group-label', 'Position'));
+  var pos = el('div', 'note', 'dc:Bounds x=' + Math.round(n.x) + ' y=' + Math.round(n.y) +
+    ' · id ' + n.id + '. Fonebrew reads these as raw pixels, roughly 0–800 per axis.');
+  inspector.appendChild(pos);
+
+  var del = el('button', 'ghost-btn danger', 'Delete node');
+  del.onclick = deleteSelection;
+  inspector.appendChild(del);
+}
+function setExt(n, key, value) {
+  if (clean(value) === '') delete n.ext[key];
+  else n.ext[key] = value;
+}
+function renderEdgeInspector(e) {
+  if (!e) { inspector.appendChild(el('div', 'sub', 'Nothing selected.')); return; }
+  var from = findNode(e.from), to = findNode(e.to);
+  inspector.appendChild(el('div', 'sub', 'Sequence flow · ' +
+    ((from && from.name) || e.from) + ' → ' + ((to && to.name) || e.to)));
+
+  var fn = field('Label (BPMN name)', 'f-edge-name', e.name, { placeholder: 'approve / refine / else' });
+  bindText(fn.input, function (v) { e.name = v; });
+  inspector.appendChild(fn.wrap);
+  inspector.appendChild(el('div', 'note', 'GraphRunner branches a gateway on this label. "else" is the fallback edge.'));
+
+  var fc = field('Condition expression', 'f-edge-cond', e.condition, { mono: true, placeholder: 'trials < 2' });
+  bindText(fc.input, function (v) { e.condition = v; });
+  inspector.appendChild(fc.wrap);
+  inspector.appendChild(el('div', 'note',
+    'Written as a bpmn:conditionExpression with xsi:type="bpmn:tFormalExpression". It is an opaque string, ' +
+    'not FEEL or any registered expression language — GraphRunner matches it ad hoc, so keep to patterns it already emits.'));
+
+  var rev = el('button', 'ghost-btn', 'Reverse direction');
+  rev.onclick = function () { var t = e.from; e.from = e.to; e.to = t; renderInspector(); commit(); };
+  inspector.appendChild(rev);
+  var del = el('button', 'ghost-btn danger', 'Delete flow');
+  del.onclick = deleteSelection;
+  inspector.appendChild(del);
+}
+
+/* ============================== xml panel ============================== */
+var xmlPanel = document.getElementById('xmlPanel');
+document.getElementById('xmlHead').onclick = function () {
+  xmlPanel.classList.toggle('collapsed');
+  document.getElementById('xmlCaret').textContent = xmlPanel.classList.contains('collapsed') ? '▸' : '▾';
+  requestDraw();
+};
+document.getElementById('btnCopyXml').onclick = function (ev) {
+  ev.stopPropagation();
+  var text = writeXml();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () { showOk('BPMN copied to the clipboard.'); },
+      function () { showError('The browser refused clipboard access — select the text in the preview instead.'); });
+  } else {
+    showError('This browser has no clipboard API — select the text in the preview instead.');
+  }
+};
+function refresh() {
+  document.getElementById('xmlOut').textContent = writeXml();
+  updateHint();
+  requestDraw();
+}
+function updateHint() {
+  var bits = [];
+  bits.push(model.nodes.length + ' nodes · ' + model.edges.length + ' flows');
+  if (!model.nodes.some(function (n) { return n.kind === 'startEvent'; })) bits.push('no start event');
+  bits.push(dragMode === 'pan' ? 'drag empties to pan · Shift+drag to select' : 'drag empties to select · Space+drag to pan');
+  document.getElementById('hintBar').textContent = bits.join('  ·  ');
+}
+
+/* ============================== toolbar ============================== */
+document.getElementById('btnUndo').onclick = undo;
+document.getElementById('btnRedo').onclick = redo;
+document.getElementById('btnZoomIn').onclick = function () { zoomAt(cv.clientWidth / 2, cv.clientHeight / 2, 1.2); };
+document.getElementById('btnZoomOut').onclick = function () { zoomAt(cv.clientWidth / 2, cv.clientHeight / 2, 1 / 1.2); };
+document.getElementById('btnFit').onclick = fitToContent;
+function setMode(m) {
+  dragMode = m;
+  document.getElementById('btnModePan').classList.toggle('active', m === 'pan');
+  document.getElementById('btnModeSelect').classList.toggle('active', m === 'select');
+  cv.style.cursor = m === 'pan' ? 'grab' : 'default';
+  updateHint();
+}
+document.getElementById('btnModePan').onclick = function () { setMode('pan'); };
+document.getElementById('btnModeSelect').onclick = function () { setMode('select'); };
+
+document.getElementById('loopName').addEventListener('input', function (e) { model.name = e.target.value; refresh(); });
+document.getElementById('loopName').addEventListener('change', commit);
+document.getElementById('loopId').addEventListener('input', function (e) { model.id = e.target.value; refresh(); });
+document.getElementById('loopId').addEventListener('change', function (e) {
+  model.id = sanitizeId(e.target.value);
+  e.target.value = model.id;
+  commit();
+});
+
+/* ============================== file I/O ============================== */
+document.getElementById('btnExport').onclick = function () {
+  var xml = writeXml();
+  var blob = new Blob([xml], { type: 'application/xml' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = slug(model.name || model.id) + '.bpmn';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+var fileInput = document.getElementById('fileInput');
+document.getElementById('btnOpen').onclick = function () { fileInput.value = ''; fileInput.click(); };
+fileInput.addEventListener('change', function () {
+  var f = fileInput.files && fileInput.files[0];
+  if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function () {
+    try {
+      loadGraph(readXml(String(reader.result)), f.name);
+    } catch (err) {
+      showError('Could not read ' + f.name + ': ' + (err && err.message ? err.message : String(err)));
+    }
+  };
+  reader.onerror = function () { showError('Could not read ' + f.name + ' from disk.'); };
+  reader.readAsText(f);
+});
+document.getElementById('btnClear').onclick = function () {
+  model = { id: sanitizeId(model.id), name: model.name, nodes: [], edges: [] };
+  clearSelection();
+  resetHistory();
+  refresh();
+};
+document.getElementById('btnSample').onclick = function () { loadSample(); };
+
+/* A proposer/critic/gate loop shaped like the phone's default, in the same
+   0-800 coordinate range Fonebrew's own patterns use. */
+function loadSample() {
+  model = {
+    id: 'loop',
+    name: 'Proposer / critic',
+    nodes: [
+      { id: 'start', kind: 'startEvent', name: 'Start', x: 40, y: 150, ext: {} },
+      { id: 'proposer', kind: 'serviceTask', name: 'Proposer', x: 150, y: 70, ext: { role: 'proposer', systemPrompt: 'Propose a concrete answer. Be specific and brief.' } },
+      { id: 'critic', kind: 'serviceTask', name: 'Critic', x: 360, y: 150, ext: { role: 'critic', systemPrompt: 'Critique the proposal. Name what is wrong and what would fix it.' } },
+      { id: 'gate', kind: 'exclusiveGateway', name: 'Approved?', x: 560, y: 150, ext: {} },
+      { id: 'end', kind: 'endEvent', name: 'End', x: 700, y: 250, ext: {} }
+    ],
+    edges: [
+      { id: 'edge-0', from: 'start', to: 'proposer', name: '', condition: '' },
+      { id: 'edge-1', from: 'proposer', to: 'critic', name: '', condition: '' },
+      { id: 'edge-2', from: 'critic', to: 'gate', name: '', condition: '' },
+      { id: 'edge-3', from: 'gate', to: 'proposer', name: 'refine', condition: '' },
+      { id: 'edge-4', from: 'gate', to: 'end', name: 'approve', condition: '' }
+    ]
+  };
+  document.getElementById('loopName').value = model.name;
+  document.getElementById('loopId').value = model.id;
+  clearSelection();
+  resetHistory();
+  fitToContent();
+  renderInspector();
+  refresh();
+}
+
+/* ?load=<url> — the only network request this page ever makes, and only
+   because the URL asked for it. Failures are shown, never swallowed. */
+function maybeLoadFromQuery() {
+  var params = new URLSearchParams(window.location.search);
+  var src = params.get('load');
+  if (!src) return false;
+  var abs;
+  try {
+    abs = new URL(src, window.location.href);
+  } catch (err) {
+    showError('The ?load= parameter is not a usable URL.');
+    return false;
+  }
+  if (abs.protocol !== 'http:' && abs.protocol !== 'https:') {
+    showError('?load= only accepts http(s) URLs — refused ' + abs.protocol);
+    return false;
+  }
+  fetch(abs.href, { credentials: 'omit' }).then(function (res) {
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+    return res.text();
+  }).then(function (text) {
+    loadGraph(readXml(text), abs.href.split('/').pop() || 'the linked loop');
+  })['catch'](function (err) {
+    showError('Could not load ' + abs.href + ' — ' + (err && err.message ? err.message : String(err)) +
+      '. The canvas is showing the starter loop instead.');
+  });
+  return true;
+}
+
+/* ============================== boot ============================== */
+readPalette();
+buildPalette();
+setMode('pan');
+loadSample();
+resizeCanvas();
+fitToContent();
+renderInspector();
+refresh();
+maybeLoadFromQuery();
+window.addEventListener('resize', function () { resizeCanvas(); });
+if (window.ResizeObserver) { new ResizeObserver(function () { resizeCanvas(); }).observe(stage); }
+
+})();
+</script>
+</body>
+</html>

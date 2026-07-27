@@ -1,0 +1,176 @@
+/*
+ * fonebrew.com — the product surface for one cell of the house.
+ *
+ * Layered on top of @asoc/kit's tokens.css, which supplies the ground, ink,
+ * hairline, radius, motion and the provenance hues. Everything here either
+ * rebinds a kit token for this surface only or adds one the kit does not have.
+ * Nothing is forked: the kit's SiteFooter renders under these tokens and picks
+ * up the accent without being touched.
+ *
+ * The one rebinding that matters is --accent. The house's own link hue is
+ * --violet, and it stays available (loops that are councils use it), but this
+ * is a product site for one cell, and that cell's roster accent is #E4572E.
+ * Binding it once here means every link, rule and focus ring on the site
+ * follows the roster rather than drifting from it.
+ */
+
+:root {
+  --accent: #E4572E;
+  --accent-dim: rgba(228, 87, 46, 0.5);
+  --accent-wash: rgba(228, 87, 46, 0.09);
+
+  --bg-sunken: #08080a;
+  --surface-raised: #17171a;
+  --hairline-ghost: rgba(240, 237, 230, 0.06);
+  --ink-dim: rgba(240, 237, 230, 0.48);
+
+  --fs-micro: 0.68rem;
+  --fs-small: 0.78rem;
+  --fs-body: 0.9rem;
+  --fs-lead: 1.05rem;
+  --fs-h3: 1.15rem;
+  --fs-h2: 1.5rem;
+  --fs-h1: clamp(2rem, 5vw, 3.1rem);
+
+  --track-label: 0.1em;
+  --track-tight: -0.02em;
+  --lh-body: 1.62;
+
+  /* The kit footer reads through these; retuned so it lands in this surface's
+     voice instead of the .com marketing one. */
+  --footer-link-hover: var(--accent);
+}
+
+body { font-size: var(--fs-body); }
+
+/* ---- shell + section rhythm ---- */
+
+.page { min-height: 100vh; }
+.band { padding-block: 3.2rem; border-bottom: 1px solid var(--hairline); }
+.band--lead { padding-block: 4.6rem 3.6rem; }
+.band--last { border-bottom: none; }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 0.8rem;
+}
+
+h1, h2, h3 { letter-spacing: var(--track-tight); font-weight: 500; }
+h1 { font-size: var(--fs-h1); line-height: 1.08; margin: 0 0 1rem; }
+h2 { font-size: var(--fs-h2); margin: 0 0 0.9rem; }
+h3 { font-size: var(--fs-h3); margin: 0 0 0.5rem; }
+
+.lead { font-size: var(--fs-lead); line-height: var(--lh-body); color: var(--ink-muted); max-width: 62ch; margin: 0 0 1.4rem; }
+.prose { line-height: var(--lh-body); color: var(--ink-muted); max-width: 68ch; }
+.prose a { color: var(--accent); }
+.note { font-size: var(--fs-small); line-height: var(--lh-body); color: var(--ink-faint); max-width: 68ch; }
+
+/* ---- header ---- */
+
+.head {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(11, 11, 12, 0.86);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--hairline);
+}
+.head__row { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 1rem; }
+.head__mark { font-family: var(--font-brand); font-size: 0.95rem; letter-spacing: 0.01em; text-decoration: none; color: var(--ink); }
+.head__mark .tld { color: var(--ink-faint); }
+.head__nav { display: flex; gap: 1.3rem; }
+.head__nav a {
+  font-family: var(--font-mono); font-size: var(--fs-micro);
+  letter-spacing: var(--track-label); text-transform: uppercase;
+  text-decoration: none; color: var(--ink-muted);
+  transition: color var(--motion-fast) var(--ease);
+}
+.head__nav a:hover, .head__nav a[aria-current='page'] { color: var(--accent); }
+
+.skip-link { position: absolute; left: -999px; top: 0; z-index: 200; background: var(--accent); color: #0b0b0c; padding: 0.6rem 1rem; }
+.skip-link:focus { left: 0; }
+
+.back-link {
+  display: inline-block; margin-bottom: 1.6rem;
+  font-family: var(--font-mono); font-size: var(--fs-micro);
+  letter-spacing: var(--track-label); text-transform: uppercase;
+  text-decoration: none; color: var(--ink-faint);
+}
+.back-link:hover { color: var(--accent); }
+
+/* ---- buttons ---- */
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-mono); font-size: var(--fs-small); letter-spacing: 0.02em;
+  padding: 0.62rem 1.05rem; border-radius: var(--radius);
+  border: 1px solid var(--hairline); color: var(--ink); text-decoration: none;
+  transition: border-color var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease);
+}
+.btn:hover { border-color: var(--accent); background: var(--accent-wash); }
+.btn--primary { border-color: var(--accent); color: var(--accent); }
+.btn--primary:hover { background: var(--accent-wash); }
+.btn-row { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.4rem; }
+
+/* ---- tags + chips ---- */
+
+.tag {
+  display: inline-block;
+  font-family: var(--font-mono); font-size: var(--fs-micro);
+  letter-spacing: var(--track-label); text-transform: uppercase;
+  padding: 0.16rem 0.5rem; border-radius: 999px;
+  border: 1px solid var(--hairline); color: var(--ink-faint);
+}
+.tag--pattern { color: var(--accent); border-color: var(--accent-dim); }
+.tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+/* ---- cards ---- */
+
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.card {
+  position: relative; display: flex; flex-direction: column; gap: 0.75rem;
+  padding: 1.25rem; overflow: hidden;
+  border: 1px solid var(--hairline); border-radius: var(--radius);
+  background: var(--surface); color: inherit; text-decoration: none;
+  transition: border-color var(--motion) var(--ease), transform var(--motion) var(--ease);
+}
+.card:hover { border-color: var(--loop-accent, var(--accent)); transform: translateY(-2px); }
+.card__hint {
+  position: absolute; top: -30%; right: -20%; width: 60%; height: 60%;
+  border-radius: 50%; background: var(--loop-accent, var(--accent));
+  opacity: 0.16; filter: blur(30px); pointer-events: none;
+}
+.card > * { position: relative; z-index: 1; }
+.card__title { font-size: 1rem; letter-spacing: var(--track-tight); }
+.card__summary { margin: 0; font-size: var(--fs-small); line-height: 1.5; color: var(--ink-muted); }
+.card__foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+  font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--ink-faint);
+}
+
+/* ---- record rows (the provenance table) ---- */
+
+.record { margin-top: 1.8rem; border-top: 1px solid var(--hairline); }
+.record__row {
+  display: grid; grid-template-columns: 9.5rem 1fr; gap: 1rem;
+  padding: 0.72rem 0; border-bottom: 1px solid var(--hairline-ghost);
+  font-size: var(--fs-small); line-height: 1.5;
+}
+.record__key { font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-faint); }
+.record__val { color: var(--ink-muted); overflow-wrap: anywhere; }
+.record__val a { color: var(--accent); }
+@media (max-width: 560px) { .record__row { grid-template-columns: 1fr; gap: 0.2rem; } }
+
+/* ---- empty state ---- */
+
+.empty {
+  border: 1px dashed var(--hairline); border-radius: var(--radius);
+  padding: 2.4rem 1.6rem; text-align: center; color: var(--ink-faint);
+  font-size: var(--fs-small); line-height: var(--lh-body);
+}
+
+code, .mono { font-family: var(--font-mono); }
+code { background: var(--bg-sunken); padding: 0.05rem 0.32rem; border-radius: 3px; font-size: 0.94em; }
+.is-hidden { display: none !important; }

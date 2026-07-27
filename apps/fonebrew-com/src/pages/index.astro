@@ -1,0 +1,126 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { getLoops, patternLabel, EDITOR_PATH } from '@asoc/loops'
+
+/*
+ * No `analytics` prop. See BaseLayout's boundary comment: nothing on this site
+ * is counted today, and the footer note says so. If the owner ever wants a
+ * count on this one page, it is `analytics` here and a correction to that note.
+ */
+
+const loops = getLoops()
+
+/*
+ * Distribution, stated as it actually is rather than as it would look best.
+ * The current build is v0.13.0, sideload-only, pushed as `fonebrew-sd.apk` on
+ * the orphan `apk-dist` branch of the source repo (Fonebrew CLAUDE.md, and
+ * docs/STATE.md §10). There is no Play Store listing: a `play` flavour exists
+ * in the build (policy-safe, no overlay/screen-capture/USB-host) but has not
+ * been published, so no store link is invented here. The repo is private as of
+ * this writing, so the link below is honest about not resolving for everyone
+ * yet — a link that 404s silently would be worse than one that says why.
+ */
+const APK_REPO = 'https://github.com/mbaliga/Android-IDE-core'
+const APK_BRANCH = `${APK_REPO}/tree/apk-dist`
+const APK_VERSION = 'v0.13.0'
+const APK_FILE = 'fonebrew-sd.apk'
+
+const RULES = [
+  ['No telemetry', 'No analytics, no phoning home, not ever. Zero dependencies that could.'],
+  ['On-device by default', 'Cloud is opt-in per use and never a hidden fallback. Every cloud provider is marked a watched object on screen.'],
+  ['Your keys stay yours', 'API keys are encrypted at rest via the Android Keystore, never logged, and never sent anywhere but the provider they belong to.'],
+  ['Standard files', 'A loop is standard BPMN 2.0 XML and the message tree is an append-only git-like structure. Both export, both sync to your own Git host.'],
+]
+---
+<BaseLayout
+  title="Fonebrew: a sovereign, on-device AI computing environment for the phone"
+  description="Fonebrew is a local-first Android app for working with multiple AI models. On-device by default, no telemetry, and every workflow is a standard BPMN file you own. Home of the Loop editor and the loop gallery."
+  canonical="https://fonebrew.com/"
+>
+  <section class="shell band band--lead">
+    <p class="eyebrow">A cell of asystemofcells</p>
+    <h1>The phone as the primary device.</h1>
+    <p class="lead">
+      Fonebrew is a local-first Android app for working with several AI models at
+      once: a sovereign, on-device computing environment rather than a chat
+      client. Models run on the phone by default and cloud is opt-in per use,
+      never a silent fallback. Every conversation is one append-only, git-like
+      message tree you can branch, restore and export; every workflow is a
+      <strong>loop</strong> &mdash; a graph of steps saved as standard BPMN 2.0 that
+      syncs to your own Git host. It is the tool the rest of this house was
+      built with.
+    </p>
+    <div class="btn-row">
+      <a class="btn btn--primary" href="/loops/">Browse the loop gallery <span aria-hidden="true">&rarr;</span></a>
+      <a class="btn" href="#get-it">Get the app</a>
+    </div>
+  </section>
+
+  <section class="shell band">
+    <p class="eyebrow">Loops</p>
+    <h2>A workflow you can read.</h2>
+    <p class="prose" style="margin-bottom:1.4rem">
+      A loop is a small graph: steps, gateways that branch on a labelled edge,
+      and a start event carrying its own provenance &mdash; what method it was
+      distilled from, by which model, on what date. Because the file is plain
+      BPMN 2.0 with one narrow extension element, it opens in any BPMN tool, not
+      only in Fonebrew. The
+      <a href={EDITOR_PATH}>editor</a> builds and edits one in the browser;
+      the <a href="/loops/">gallery</a> collects the ones people have made and
+      chosen to share.
+    </p>
+    <div class="btn-row" style="margin-top:0">
+      <a class="btn" href="/loops/">{loops.length} {loops.length === 1 ? 'loop' : 'loops'} in the gallery</a>
+      <a class="btn" href={EDITOR_PATH}>Open the editor</a>
+    </div>
+    {loops.length > 0 && (
+      <p class="note" style="margin-top:1.2rem">
+        Newest: {loops.map((l, i) => (
+          <>{i > 0 && <span> &middot; </span>}<a href={`/loops/${l.slug}/`} style="color:var(--accent)">{l.title}</a> <span class="mono">({patternLabel(l.pattern).toLowerCase()})</span></>
+        ))}
+      </p>
+    )}
+  </section>
+
+  <section class="shell band" id="get-it">
+    <p class="eyebrow">Get it</p>
+    <h2>Sideload, {APK_VERSION}.</h2>
+    <p class="prose">
+      Fonebrew is distributed today as a sideload APK: <code>{APK_FILE}</code>, pushed
+      to the <code>apk-dist</code> branch of the source repository. It targets a
+      recent arm64 Android phone (minSdk 31). <strong>There is no Play Store
+      listing yet</strong> &mdash; a policy-safe build flavour exists, but it has not
+      been published, so there is nothing to link to and nothing here pretends
+      otherwise.
+    </p>
+    <p class="note" style="margin-top:1rem">
+      The repository is private as of this writing, so the link below may not
+      resolve for you until it is opened up.
+    </p>
+    <div class="btn-row">
+      <a class="btn btn--primary" href={APK_BRANCH} rel="noopener noreferrer">
+        {APK_FILE} on <span class="mono">apk-dist</span> <span aria-hidden="true">&nearr;</span>
+      </a>
+      <a class="btn" href={APK_REPO} rel="noopener noreferrer">Source <span aria-hidden="true">&nearr;</span></a>
+    </div>
+  </section>
+
+  <section class="shell band band--last">
+    <p class="eyebrow">The rules it is built to</p>
+    <h2>Legible, not effortless.</h2>
+    <div class="card-grid" style="margin-top:1.4rem">
+      {RULES.map(([title, body]) => (
+        <div class="card" style="cursor:default">
+          <div class="card__hint" aria-hidden="true"></div>
+          <span class="card__title">{title}</span>
+          <p class="card__summary">{body}</p>
+        </div>
+      ))}
+    </div>
+    <p class="note" style="margin-top:1.6rem">
+      Fonebrew is one cell of <a href="https://asystemofcells.com" style="color:var(--accent)">asystemofcells</a>.
+      The engineering surface, including the full roster, lives at
+      <a href="https://asystemofcells.dev" style="color:var(--accent)">asystemofcells.dev</a>.
+    </p>
+  </section>
+</BaseLayout>

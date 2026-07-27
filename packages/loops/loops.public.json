@@ -1,0 +1,51 @@
+{
+  "generated": "hand-authored, 2026-07-27",
+  "notes": "The community gallery behind fonebrew.com/loops. Every entry points at a real .bpmn file under apps/fonebrew-com/public/loops/gallery/, and every field here is either read from that file's own <aarso:meta> provenance or is site metadata (author, tags, accent). The three seed entries are examples written to demonstrate the format, not distillations of any published method: their distilledBy says 'hand-authored' because that is what happened. See CONTRIBUTING.md in apps/fonebrew-com for how a loop gets added.",
+  "loops": [
+    {
+      "slug": "self-critique",
+      "title": "Self-critique",
+      "summary": "One model attempts, scores its own attempt, and retries with written feedback until it passes or runs out of trials.",
+      "pattern": "refine-loop",
+      "author": "mbaliga",
+      "source": "Hand-authored example, docs/design/bpmn-dialect.md",
+      "distilledBy": "hand-authored",
+      "distilledOn": "2026-07-27",
+      "nodes": 6,
+      "edges": 6,
+      "tags": ["reflection", "single-model", "example"],
+      "bpmnPath": "/loops/gallery/self-critique.bpmn",
+      "accent": "#E4572E"
+    },
+    {
+      "slug": "three-voice-debate",
+      "title": "Three-voice debate",
+      "summary": "Three debaters answer in parallel, exchange, revise for a second round, and a judge decides.",
+      "pattern": "debate",
+      "author": "mbaliga",
+      "source": "Hand-authored example, docs/design/bpmn-dialect.md",
+      "distilledBy": "hand-authored",
+      "distilledOn": "2026-07-27",
+      "nodes": 9,
+      "edges": 11,
+      "tags": ["council", "multi-agent", "example"],
+      "bpmnPath": "/loops/gallery/three-voice-debate.bpmn",
+      "accent": "#8e7bff"
+    },
+    {
+      "slug": "draft-edit-check",
+      "title": "Draft, edit, check",
+      "summary": "A plain three-step pipeline: draft it, cut it, then check what it claims.",
+      "pattern": "pipeline",
+      "author": "mbaliga",
+      "source": "Hand-authored example, docs/design/bpmn-dialect.md",
+      "distilledBy": "hand-authored",
+      "distilledOn": "2026-07-27",
+      "nodes": 5,
+      "edges": 4,
+      "tags": ["writing", "single-model", "example"],
+      "bpmnPath": "/loops/gallery/draft-edit-check.bpmn",
+      "accent": "#3ddc84"
+    }
+  ]
+}
