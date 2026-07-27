@@ -43,11 +43,8 @@ export function render(container, state, actions) {
     return;
   }
 
-  const notice = buildFetchErrorNotice(state);
-
   if (state.items.length === 0) {
     paper.appendChild(buildMasthead(state));
-    if (notice) paper.appendChild(notice);
     paper.appendChild(
       state.searchQuery ? buildNoResultsEmptyState(state) : buildNothingFlowedEmptyState(actions)
     );
@@ -65,13 +62,11 @@ export function render(container, state, actions) {
     // The big Nooz nameplate lives on the front page itself; inner pages carry
     // a plain running head -- standard newspaper format.
     if (focus) paper.appendChild(focus);
-    if (notice) paper.appendChild(notice);
     paper.appendChild(buildLoomStrip(state, actions));
     paper.appendChild(buildNewspaper(state, actions));
   } else {
     paper.appendChild(buildMasthead(state));
     if (focus) paper.appendChild(focus);
-    if (notice) paper.appendChild(notice);
     paper.appendChild(buildLoomStrip(state, actions));
     paper.appendChild(buildFrontPage(state, actions));
   }
@@ -259,10 +254,55 @@ function buildNewspaper(state, actions) {
     newspaperSpread = target;
     actions.refreshView();
   };
+  attachMarginTurn(frame, book, doTurn);
 
   wrap.appendChild(frame);
   wrap.appendChild(buildPager(newspaperSpread, maxSpread, shown, pages.length, doTurn));
   return wrap;
+}
+
+// Clicking the blank margin either side of the book turns the page that way --
+// the default way to move through Newspaper mode (its pages are the web's
+// equivalent of the app's immersive, chrome-free reading surface). Clicking
+// and holding repeats the turn, accelerating like a fast-forward/rewind, until
+// released. A plain click (target === frame, i.e. the flex container's own
+// background, not the book or anything in it -- headlines stay clickable)
+// turns once; holding past ~480ms takes over and the trailing click is
+// suppressed so a hold doesn't also count as one more single turn.
+function attachMarginTurn(frame, book, doTurn) {
+  let holdTimer = null;
+  let heldFired = false;
+
+  const isBlank = (evt) => evt.target === frame;
+  const sideOf = (evt) => {
+    const r = book.getBoundingClientRect();
+    const mid = r.width > 0 ? r.left + r.width / 2 : frame.getBoundingClientRect().left + frame.getBoundingClientRect().width / 2;
+    return evt.clientX < mid ? -1 : 1;
+  };
+  const clearHold = () => { clearTimeout(holdTimer); holdTimer = null; };
+
+  frame.addEventListener('click', (evt) => {
+    if (!isBlank(evt)) return;
+    if (heldFired) { heldFired = false; return; }
+    doTurn(sideOf(evt));
+  });
+
+  frame.addEventListener('pointerdown', (evt) => {
+    if (!isBlank(evt)) return;
+    if (evt.button !== undefined && evt.button !== 0) return;
+    const dir = sideOf(evt);
+    clearHold();
+    heldFired = false;
+    let speed = 420; // ms between repeats; shrinks each tick, i.e. accelerates
+    const tick = () => {
+      heldFired = true;
+      doTurn(dir);
+      speed = Math.max(90, speed - 35);
+      holdTimer = setTimeout(tick, speed);
+    };
+    holdTimer = setTimeout(tick, 480); // grace period so a quick tap stays a single turn
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => frame.addEventListener(ev, clearHold));
 }
 
 // Front alone, then two pages per spread when there's room (else one at a time),
@@ -727,24 +767,6 @@ function clampText(text, max) {
 // ---------------------------------------------------------------------------
 // Notices + empty states
 // ---------------------------------------------------------------------------
-
-function buildFetchErrorNotice(state) {
-  const fetchStatus = state.fetchStatus || {};
-  const failed = state.sources.filter((s) => s.enabled && fetchStatus[s.id] === 'error');
-  if (failed.length === 0) return null;
-  const notice = document.createElement('div');
-  notice.className = 'nooz-notice';
-  notice.setAttribute('role', 'status');
-  const label = document.createElement('p');
-  label.className = 'nooz-notice-title';
-  label.textContent = failed.length === 1 ? "Couldn't reach 1 source" : `Couldn't reach ${failed.length} sources`;
-  notice.appendChild(label);
-  const names = document.createElement('p');
-  names.className = 'nooz-notice-detail';
-  names.textContent = failed.map((s) => s.title).join(', ');
-  notice.appendChild(names);
-  return notice;
-}
 
 function buildNoSourcesEmptyState(actions) {
   const wrap = emptyState('Nothing on your paper yet', 'Add a feed, or pick from a short list of pre-checked starter sources -- open Sources from the footer.');
