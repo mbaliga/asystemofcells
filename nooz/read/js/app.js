@@ -23,6 +23,8 @@ import {
 } from './db.js';
 import { fetchFeed } from './feeds.js';
 import { STARTERS } from './starters.js';
+import { renderNewspaperClipping } from './newspaperShare.js';
+import { shouldShowOnboarding, showOnboarding } from './onboarding.js';
 import { loadSettings, getSettings, setSetting } from './settings.js';
 import { installSelectionSearch } from './selection.js';
 import { render as renderStand } from './views/stand.js';
@@ -61,6 +63,14 @@ const DRAWER_VIEWS = new Set(['loom', 'sources', 'clippings', 'settings']);
 // for it. Below it (BBC-style one-liners), we try to extract the real article.
 const RICH_ENOUGH_CHARS = 900;
 
+// Settings > Articles > "Full articles": how many of the currently-visible
+// items get proactively extracted per render, top of the list first. Bounded
+// so a very large feed list can't fire hundreds of extraction requests at
+// once -- the browser's own per-origin connection limit throttles what does
+// run, but there's no reason to even queue more than a page's worth; items
+// past the cap still extract normally the moment they're opened.
+const FULL_ARTICLE_PREFETCH_CAP = 60;
+
 let allItems = [];
 const itemsById = new Map();
 
@@ -86,6 +96,7 @@ let stageEl = null;
 let drawerEl = null;
 let shellEl = null;
 let navLinksEl = {};
+let sourcesBadgeEl = null;
 let toastEl = null;
 let toastTimer = null;
 let searchToggleEl = null;
@@ -114,6 +125,7 @@ async function boot() {
   onRoute(handleRoute);
   installResizeReflow();
   refreshAll();
+  if (shouldShowOnboarding()) showOnboarding();
 }
 
 // The Newspaper layout measures the masthead and fits a spread to the frame, so
@@ -202,6 +214,15 @@ function buildShell() {
       if (DRAWER_VIEWS.has(view) && route.view === view) navigate('stand');
       else navigate(view);
     });
+    // The Sources tab carries an alert dot when a source is failing (that's
+    // where you fix it) -- see updateSourceHealth. No banner on the paper.
+    if (view === 'sources') {
+      sourcesBadgeEl = document.createElement('span');
+      sourcesBadgeEl.className = 'nooz-footer-badge';
+      sourcesBadgeEl.hidden = true;
+      sourcesBadgeEl.setAttribute('aria-hidden', 'true');
+      link.appendChild(sourcesBadgeEl);
+    }
     nav.appendChild(link);
     navLinksEl[view] = link;
   }
@@ -316,7 +337,32 @@ function handleRoute(route) {
   rerender();
 }
 
+// A failing enabled source raises a small alert dot on the Sources tab -- the
+// place it gets resolved -- with the "Couldn't reach ..." detail on hover,
+// rather than a notice banner across the top of the paper.
+function updateSourceHealth() {
+  if (!sourcesBadgeEl || !navLinksEl.sources) return;
+  const fetchStatus = currentState.fetchStatus || {};
+  const failed = (currentState.sources || []).filter(
+    (s) => s.enabled && fetchStatus[s.id] === 'error'
+  );
+  const link = navLinksEl.sources;
+  if (failed.length === 0) {
+    sourcesBadgeEl.hidden = true;
+    link.removeAttribute('title');
+    link.removeAttribute('aria-label');
+    return;
+  }
+  sourcesBadgeEl.hidden = false;
+  const summary = failed.length === 1
+    ? "Couldn't reach 1 source"
+    : `Couldn't reach ${failed.length} sources`;
+  link.title = `${summary}: ${failed.map((s) => s.title || s.url).join(', ')}`;
+  link.setAttribute('aria-label', `${NAV_LABELS.sources} — ${summary}`);
+}
+
 function rerender() {
+  updateSourceHealth();
   const active = document.activeElement;
   let restore = null;
   if (active && viewEl.contains(active) && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
@@ -351,6 +397,10 @@ function rerender() {
     articleStatus: currentState.articleStatus,
     settings: getSettings(),
   };
+
+  if (stateForView.settings.articleDisplay !== 'excerpt') {
+    for (const item of stateForView.items.slice(0, FULL_ARTICLE_PREFETCH_CAP)) ensureArticle(item);
+  }
 
   // Stage: reader / newsstand / Paper (which stays mounted behind an open drawer).
   const stageView = STAGE_VIEWS.has(route.view) ? route.view : 'stand';
@@ -605,20 +655,60 @@ function goTo(view) {
 async function shareItem(itemId) {
   const item = itemsById.get(itemId);
   if (!item) return;
-  const shareData = { title: item.title || 'Nooz', text: item.summary || '', url: item.link || undefined };
+  const source = (currentState.sources || []).find((s) => s.id === item.sourceId);
+  const shareText = item.link ? `${item.title || 'Nooz'} — ${item.link}` : (item.title || 'Nooz');
+
+  // A "newspaper clipping" mockup image, matching the Android app's own
+  // share -- rendered client-side. Never dead-ends: if rendering fails, or
+  // the platform can't share files, this falls through to the plain
+  // link/text share (and, with no Web Share API at all, a direct download
+  // plus a copied link) exactly as share worked before this existed.
+  let blob = null;
+  try {
+    blob = await renderNewspaperClipping({
+      title: item.title,
+      sourceTitle: source ? source.title : null,
+      author: item.author,
+    });
+  } catch (_err) {
+    blob = null;
+  }
+
+  if (blob && navigator.canShare) {
+    const file = new File([blob], 'nooz-clipping.png', { type: 'image/png' });
+    if (navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: item.title || 'Nooz', text: shareText });
+        return;
+      } catch (_err) {
+        /* cancelled -- fall through to the plain share below */
+      }
+    }
+  }
+
   if (navigator.share) {
     try {
-      await navigator.share(shareData);
+      await navigator.share({ title: item.title || 'Nooz', text: item.summary || '', url: item.link || undefined });
     } catch (_err) {
       /* cancelled/unsupported -- not worth surfacing */
     }
     return;
   }
+
+  // No Web Share API at all (desktop Safari/Firefox): download the clipping
+  // if one rendered, and copy the link either way.
+  if (blob) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'nooz-clipping.png';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
   const text = item.link || item.title || '';
   if (!text) return;
   try {
     await navigator.clipboard.writeText(text);
-    showToast('Link copied');
+    showToast(blob ? 'Clipping downloaded, link copied' : 'Link copied');
   } catch (_err) {
     showToast('Could not copy link');
   }
