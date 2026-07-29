@@ -22,6 +22,7 @@
       "oneLiner": "A news reader that shows you what you did not read, not what it thinks you should.",
       "isHub": false,
       "readerUrl": "/nooz/read",
+      "privacyUrl": "/nooz/privacy",
       "verify": ["accent color unconfirmed"]
     },
     {

@@ -1,5 +1,6 @@
 ---
 import ProductLayout from '../layouts/ProductLayout.astro'
+import NoozSections from '../components/products/NoozSections.astro'
 import { getRoster } from '@asoc/roster'
 
 export function getStaticPaths() {
@@ -10,4 +11,6 @@ export function getStaticPaths() {
 
 const { cell } = Astro.props
 ---
-<ProductLayout cell={cell} />
+<ProductLayout cell={cell}>
+  {cell.slug === 'nooz' && <NoozSections />}
+</ProductLayout>
