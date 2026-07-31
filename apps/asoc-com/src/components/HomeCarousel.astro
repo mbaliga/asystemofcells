@@ -18,6 +18,26 @@
 // which real field stands in for each slot in the reference's shape.
 import { getRoster, TISSUES } from '@asoc/roster'
 
+// Per-product tile art (packages/roster's tileArt field) carries its own
+// baked-in wordmark in that product's own display face — Clackpad's own
+// design language, not the house system, exactly as its oneLiner says. The
+// live text that still exists per product (the name above the focused hero)
+// borrows that same face here, scoped to this component only so it never
+// leaks into the house Hyle Print/Grotesk system used everywhere else.
+import '@fontsource/space-mono/700.css'
+import '@fontsource/pt-serif/700.css'
+import '@fontsource/quicksand/700.css'
+import '@fontsource/press-start-2p/400.css'
+import '@fontsource-variable/caveat'
+
+const TILE_FONT = {
+  clackpad: { family: "'Space Mono', monospace", weight: 700, tracking: '-0.01em', scale: 1 },
+  nooz: { family: "'PT Serif', serif", weight: 700, tracking: '0', scale: 1.15 },
+  timely: { family: "'Quicksand', sans-serif", weight: 700, tracking: '0', scale: 1.05 },
+  sphere: { family: "'Press Start 2P', monospace", weight: 400, tracking: '0.02em', scale: 0.62 },
+  meniscus: { family: "'Caveat Variable', cursive", weight: 700, tracking: '0.01em', scale: 1.55 },
+}
+
 const tissueLabel = Object.fromEntries(TISSUES.map((t) => [t.slug, t.label]))
 const statusLabel = { live: 'Live', beta: 'Beta', soon: 'Soon' }
 
@@ -39,6 +59,8 @@ const items = getRoster().map((cell) => ({
   color: cell.accent,
   href: cell.isHub ? cell.hubUrl : `/${cell.slug}`,
   external: !!cell.isHub,
+  art: cell.tileArt || null,
+  font: TILE_FONT[cell.slug] || null,
 }))
 
 // A non-product tile for the in-browser generators. It rides the same carousel
@@ -64,7 +86,17 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
       <div class="home-focus-group" id="homeFocusGroup">
         <div class="home-details" id="homeDetails">
           <div class="hd-title-row">
-            <span class="hd-name" id="home-d-name">{first.name}</span>
+            <span
+              class="hd-name"
+              id="home-d-name"
+              style={
+                first.font
+                  ? `font-family:${first.font.family}; font-weight:${first.font.weight}; letter-spacing:${first.font.tracking}; --hd-scale:${first.font.scale};`
+                  : '--hd-scale:1;'
+              }
+            >
+              {first.name}
+            </span>
             <span class="hd-version" id="homeVersion">{first.status}</span>
           </div>
           <p class="hd-oneliner" id="homeOneLiner">{first.oneLiner}</p>
@@ -72,15 +104,18 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
         <a
           class="home-hero"
           id="homeHero"
-          style={`background:${first.color};`}
+          style={
+            first.art
+              ? `background-image:url(${first.art.focus}); background-color:${first.color};`
+              : `background-color:${first.color};`
+          }
           href={first.href}
           target={first.external ? '_blank' : undefined}
           rel={first.external ? 'noopener noreferrer' : undefined}
           aria-label={`${first.name}: ${first.oneLiner}`}
         >
-          <span class="home-tile-tag" id="home-hero-tag">{first.tissue}</span>
-          <span class="home-see-details" aria-hidden="true">See details &rarr;</span>
-          <span class="home-btn" aria-hidden="true">Explore</span>
+          <span class="home-hero-explore" id="home-hero-explore" aria-hidden="true">Explore &nearr;</span>
+          <span class="home-hero-tissue" id="home-hero-tag">{first.tissue}</span>
         </a>
       </div>
       <div id="homeThumbs" style="display:contents">
@@ -88,14 +123,18 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
           initialThumbs.map((it) => (
             <a
               class="home-thumb"
-              style={`background-color:${it.color};`}
+              style={
+                it.art
+                  ? `background-image:url(${it.art.min}); background-color:${it.color};`
+                  : `background-color:${it.color};`
+              }
               data-index={it.idx}
               href={it.href}
               target={it.external ? '_blank' : undefined}
               rel={it.external ? 'noopener noreferrer' : undefined}
               aria-label={it.name}
             >
-              <span class="home-tile-tag">{it.name}</span>
+              {!it.art && <span class="home-tile-tag">{it.name}</span>}
             </a>
           ))
         }
@@ -224,6 +263,8 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     display: block;
     text-decoration: none;
     color: inherit;
+    background-size: cover;
+    background-position: center top;
     transition: opacity 0.2s;
   }
   .home-thumb:hover,
@@ -231,6 +272,11 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     opacity: 1;
   }
 
+  /* Only the leftover flat-colour tiles (no tileArt yet in the roster) still
+     need this: a small pill naming the product, since nothing is baked into
+     a solid colour fill. Products with real art bake their own wordmark into
+     the image instead — see TILE_FONT / roster tileArt — so this never shows
+     for them (guarded by `{!it.art && ...}` in the markup above). */
   .home-tile-tag {
     position: absolute;
     top: 8px;
@@ -245,10 +291,6 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     border-radius: 2px;
     z-index: 2;
     pointer-events: none;
-  }
-  .home-hero .home-tile-tag {
-    font-size: 8px;
-    padding: 5px 9px;
   }
 
   .home-focus-group {
@@ -271,6 +313,26 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     text-decoration: none;
     color: inherit;
     cursor: pointer;
+    background-size: cover;
+    background-position: center top;
+  }
+  /* A dark scrim at the top only, so the Explore affordance stays legible
+     over any product's art without needing a background chip behind it —
+     the reference tile treatment (owner-supplied, 2026-07-31) keeps the
+     overlay text bare, not badge-boxed. */
+  .home-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Two short fades, not one tall one: the middle of the art stays clear,
+       but Explore (top) and the tissue label (bottom) always sit on a dark
+       enough patch to read regardless of what colour the art itself is —
+       bright watch-face yellows included. */
+    background:
+      linear-gradient(180deg, rgba(10, 10, 10, 0.55) 0%, rgba(10, 10, 10, 0) 26%),
+      linear-gradient(0deg, rgba(10, 10, 10, 0.5) 0%, rgba(10, 10, 10, 0) 22%);
+    z-index: 1;
+    pointer-events: none;
   }
 
   .home-details {
@@ -288,9 +350,14 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     gap: 12px;
   }
   .home-details .hd-name {
+    /* --hd-scale (set inline per product from TILE_FONT) compensates for how
+       differently tall each display face sits at the same nominal size — the
+       pixel face reads huge, the handwritten face reads small, at equal px. */
+    --hd-scale: 1;
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: clamp(15px, 1.7vw, 21px);
+    font-size: calc(clamp(15px, 1.7vw, 21px) * var(--hd-scale));
+    line-height: 1.15;
   }
   .home-details .hd-version {
     font-family: var(--font-mono);
@@ -315,34 +382,29 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     overflow: hidden;
   }
 
-  .home-hero .home-see-details {
+  .home-hero-explore {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 12px;
+    right: 12px;
     z-index: 2;
     font-family: var(--font-mono);
-    font-size: clamp(7px, 0.85vw, 10px);
-    letter-spacing: 0.08em;
+    font-size: clamp(8px, 0.9vw, 11px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: #f3f2ef;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   }
-  .home-hero .home-btn {
+  .home-hero-tissue {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
+    bottom: 12px;
+    left: 12px;
     z-index: 2;
-    font-family: var(--font-ui);
-    font-size: clamp(9px, 0.95vw, 12px);
-    letter-spacing: 0.06em;
-    font-weight: 600;
-    background: #f3f2ef;
-    color: var(--home-ink);
-    border: none;
-    padding: 9px 18px;
-    transition: opacity 0.2s;
-  }
-  .home-hero:hover .home-btn {
-    opacity: 0.85;
+    font-family: var(--font-mono);
+    font-size: clamp(8px, 0.9vw, 11px);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(243, 242, 239, 0.85);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   }
   .home-hero:focus-visible {
     outline: 2px solid #f3f2ef;
@@ -597,6 +659,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     if (homeCardEl) homeCardEl.style.setProperty('--home-accent', item.color)
     document.dispatchEvent(new CustomEvent('asoc:accent', { detail: { color: item.color } }))
     homeHeroEl.style.backgroundColor = item.color
+    homeHeroEl.style.backgroundImage = item.art ? `url(${item.art.focus})` : ''
     homeHeroEl.href = item.href
     homeHeroEl.setAttribute('aria-label', `${item.name}: ${item.oneLiner}`)
     if (item.external) {
@@ -610,6 +673,20 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     homeNameEl.textContent = item.name
     homeVersionEl.textContent = item.status
     homeOneLinerEl.textContent = item.oneLiner
+    // Each product with its own tile art carries its own display face for
+    // this live name text (TILE_FONT); products without art fall back to the
+    // house Hyle Print face untouched.
+    if (item.font) {
+      homeNameEl.style.fontFamily = item.font.family
+      homeNameEl.style.fontWeight = item.font.weight
+      homeNameEl.style.letterSpacing = item.font.tracking
+      homeNameEl.style.setProperty('--hd-scale', item.font.scale)
+    } else {
+      homeNameEl.style.fontFamily = ''
+      homeNameEl.style.fontWeight = ''
+      homeNameEl.style.letterSpacing = ''
+      homeNameEl.style.setProperty('--hd-scale', 1)
+    }
   }
 
   function renderThumbs() {
@@ -617,9 +694,10 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     for (let i = 1; i < items.length; i++) {
       const idx = (homeCurrent + i) % items.length // modulo wrap = the infinite loop
       const it = items[idx]
-      html += `<a class="home-thumb" style="background-color:${it.color}" data-index="${idx}" href="${it.href}"${
+      const bg = it.art ? `background-image:url(${it.art.min});background-color:${it.color}` : `background-color:${it.color}`
+      html += `<a class="home-thumb" style="${bg}" data-index="${idx}" href="${it.href}"${
         it.external ? ' target="_blank" rel="noopener noreferrer"' : ''
-      } aria-label="${it.name}"><span class="home-tile-tag">${it.name}</span></a>`
+      } aria-label="${it.name}">${it.art ? '' : `<span class="home-tile-tag">${it.name}</span>`}</a>`
     }
     homeThumbsEl.innerHTML = html
   }
