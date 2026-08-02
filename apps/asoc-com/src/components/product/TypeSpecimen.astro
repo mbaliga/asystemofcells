@@ -1,0 +1,126 @@
+---
+// The Hyle Deco page is a specimen, not a product tour: the only honest way to
+// show a typeface is to set text in it. The two .ttf files and the licence text
+// under public/fonts/hyle/ are real, so the specimen below is the actual face
+// and the download buttons are actual destinations.
+//
+// The descriptive paragraph is the copy already shipping on /hyle-fonts, moved
+// across rather than rewritten.
+const { tone = 'dark' } = Astro.props
+const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+const LOWER = 'abcdefghijklmnopqrstuvwxyz'
+const FIGURES = '0123456789'
+---
+<section class={`sec sec--${tone} spec`}>
+  <div class="wrap">
+    <div class="spec-stage rv">
+      <p class="spec-line">Hyle Deco</p>
+      <p class="spec-line spec-line--italic">a single thin line of light</p>
+    </div>
+
+    <div class="spec-glyphs rv" style="--rv-delay:120ms">
+      <p class="spec-row">{UPPER}</p>
+      <p class="spec-row">{LOWER}</p>
+      <p class="spec-row spec-row--fig">{FIGURES}</p>
+      <p class="spec-row spec-row--italic">{UPPER}</p>
+    </div>
+
+    <div class="spec-foot rv" style="--rv-delay:200ms">
+      <p class="body spec-copy"><strong>Hyle Deco</strong> is a hairline display typeface drawn for interfaces where one thin line of light on a black screen carries the identity. One constant 44-unit stroke, flat terminals, rounded rectangular bowls, tabular numerals. Two styles: Thin and Thin Italic, drawn by hand by Madhav.</p>
+      <div class="spec-actions">
+        <a class="btn btn--primary" href="/fonts/hyle/HyleDeco-Regular.ttf" download>Download Thin (.ttf)</a>
+        <a class="btn btn--ghost" href="/fonts/hyle/HyleDeco-Italic.ttf" download>Download Thin Italic (.ttf)</a>
+        <a class="spec-licence" href="/fonts/hyle/HyleDeco-OFL.txt" target="_blank" rel="noopener noreferrer">Licence (OFL)</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  /* Hyle Deco is never site type: the only elements set in it are the specimens
+     on /hyle-deco and /hyle-fonts.
+
+     What actually ships, checked against dist: Astro hoists this global block
+     into the single stylesheet it emits for the whole [slug] route, so all
+     fourteen product pages link these two @font-face rules, not just the one
+     page that renders TypeSpecimen. That costs nothing in bytes on the wire
+     beyond the rules themselves, because a browser fetches a @font-face src
+     only when something on the page is actually laid out in that family, and
+     outside /hyle-deco nothing is. /hyle-fonts is a separate route with its own
+     copy of these rules in src/pages/hyle-fonts.astro. */
+  @font-face {
+    font-family: 'Hyle Deco';
+    src: url('/fonts/hyle/HyleDeco-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Hyle Deco';
+    src: url('/fonts/hyle/HyleDeco-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+  }
+</style>
+
+<style>
+  .sec.spec { padding-top: 0; }
+  .spec-stage,
+  .spec-glyphs .spec-row {
+    font-family: 'Hyle Deco', var(--font-ui);
+    font-weight: 400;
+  }
+  .spec-line {
+    font-size: clamp(2.6rem, 11vw, 7rem);
+    line-height: 1.02;
+    letter-spacing: 0.01em;
+    margin: 0;
+  }
+  .spec-line--italic {
+    font-style: italic;
+    font-size: clamp(1.5rem, 6vw, 3.4rem);
+    color: var(--dark-muted);
+    margin-top: 10px;
+  }
+  .spec-glyphs {
+    margin-top: calc(var(--sec-pad) * 0.6);
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    padding-top: 36px;
+  }
+  .spec-row {
+    font-size: clamp(1.05rem, 3.6vw, 2.1rem);
+    line-height: 1.7;
+    letter-spacing: 0.04em;
+    margin: 0;
+    word-break: break-word;
+  }
+  .spec-row--fig { font-variant-numeric: tabular-nums; }
+  .spec-row--italic { font-style: italic; color: var(--dark-muted); }
+
+  .spec-foot {
+    margin-top: calc(var(--sec-pad) * 0.6);
+    display: grid;
+    grid-template-columns: minmax(0, 46ch) auto;
+    gap: 40px;
+    align-items: start;
+  }
+  .spec-foot .spec-copy { margin: 0; }
+  .spec-foot .spec-copy strong { color: var(--dark-ink); font-weight: 600; }
+  .spec-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  .spec-licence {
+    font-size: var(--t-small);
+    color: var(--dark-muted);
+    text-decoration: underline;
+  }
+  .spec-licence:hover { color: var(--dark-ink); }
+
+  @media (max-width: 900px) {
+    .spec-foot { grid-template-columns: 1fr; }
+  }
+</style>

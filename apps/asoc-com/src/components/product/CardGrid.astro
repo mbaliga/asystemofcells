@@ -1,0 +1,67 @@
+---
+// A grid of short, titled cards. Two products use it and they use it
+// differently, which is why `numbered` exists: Clackpad lists what is visible
+// on the keyboard art, so the cards carry a line of description; Figma-suite
+// lists exactly the three plugins its roster line names and nothing more, so
+// the cards are titles with an index and no invented blurb under them.
+const { tone = 'bg', eyebrow = null, title = null, items = [], numbered = false } = Astro.props
+---
+<section class={`sec sec--${tone} cgrid`}>
+  <div class="wrap">
+    {(eyebrow || title) && (
+      <div class="cgrid-head rv">
+        {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+        {title && <h2 class="title cgrid-title">{title}</h2>}
+      </div>
+    )}
+    <ul class="cgrid-list">
+      {items.map((item, i) => (
+        <li class="cgrid-item rv" style={`--rv-delay:${80 + i * 80}ms`}>
+          {numbered && <span class="cgrid-num">{String(i + 1).padStart(2, '0')}</span>}
+          <h3 class="head">{item.title}</h3>
+          {item.body && <p class="body cgrid-body">{item.body}</p>}
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  /* The measure sits on the heading, not on this wrapper: the wrapper is at
+     17px body size, the h2 inside it is 44px, so a ch cap here would resolve
+     against the wrong font size and shred the headline. */
+  .cgrid-head { margin-bottom: 56px; }
+  .cgrid-title { max-width: 24ch; }
+  .cgrid-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border-block: 1px solid var(--line);
+  }
+  .sec--dark .cgrid-list {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+  .cgrid-item { padding: 40px clamp(20px, 2.4vw, 32px) 44px; }
+  .sec--bg .cgrid-item { background: var(--bg); }
+  .sec--surface .cgrid-item { background: var(--surface); }
+  .sec--dark .cgrid-item { background: var(--dark); }
+  .sec--dark .cgrid-num { color: var(--dark-muted); }
+  .cgrid-num {
+    display: block;
+    font-size: var(--t-eyebrow);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .cgrid-item .cgrid-body { max-width: 34ch; }
+
+  @media (max-width: 860px) {
+    .cgrid-list { grid-template-columns: 1fr; }
+  }
+</style>

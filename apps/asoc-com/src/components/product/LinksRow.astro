@@ -1,0 +1,64 @@
+---
+// The closing row. It renders only links that go somewhere: anything without an
+// href is dropped here rather than shipped as a button pointing at '#'. If a
+// product has no real destination at all, the composition module simply does
+// not give it this block.
+const { tone = 'bg', items = [] } = Astro.props
+const links = items.filter((item) => item && item.href)
+---
+{links.length > 0 && (
+  <section class={`sec sec--${tone} lrow`}>
+    <div class="wrap">
+      <ul class="lrow-list">
+        {links.map((item, i) => (
+          <li class="lrow-item rv" style={`--rv-delay:${i * 70}ms`}>
+            <a
+              class="lrow-link"
+              href={item.href}
+              target={item.external ? '_blank' : undefined}
+              rel={item.external ? 'noopener noreferrer' : undefined}
+              download={item.download ? true : undefined}
+            >
+              <span class="lrow-label">{item.label}</span>
+              <span class="lrow-arrow" aria-hidden="true">&rarr;</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}
+
+<style>
+  .sec.lrow { padding-block: calc(var(--sec-pad) * 0.62); }
+  .lrow-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .sec--dark .lrow-list { border-color: rgba(255, 255, 255, 0.16); }
+  .lrow-item { border-bottom: 1px solid var(--line); }
+  .sec--dark .lrow-item { border-color: rgba(255, 255, 255, 0.16); }
+  .lrow-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 22px 2px;
+    text-decoration: none;
+    font-size: var(--t-lead);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+  .lrow-arrow {
+    color: var(--muted);
+    transition: transform 260ms var(--ease);
+  }
+  .sec--dark .lrow-arrow { color: var(--dark-muted); }
+  .lrow-link:hover .lrow-arrow { transform: translateX(4px); }
+  @media (prefers-reduced-motion: reduce) {
+    .lrow-arrow { transition: none; }
+    .lrow-link:hover .lrow-arrow { transform: none; }
+  }
+</style>

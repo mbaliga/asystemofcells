@@ -11,6 +11,10 @@ export function getStaticPaths() {
 
 const { cell } = Astro.props
 ---
+{/* Everything structural about a page lives in src/lib/productPages.js. This
+    slot is only for a product whose sections are hand-written markup rather
+    than block data, which today means Nooz and its nine screenshot rows;
+    productPages.js decides where in the page the slot lands. */}
 <ProductLayout cell={cell}>
   {cell.slug === 'nooz' && <NoozSections />}
 </ProductLayout>

@@ -2,8 +2,15 @@
 import SimplePageLayout from '../layouts/SimplePageLayout.astro'
 
 // The house faces used across the site (Hyle Grotesk / Grotesk Plus / Print)
-// plus the download-only display face, Hyle Deco. Deco is loaded ONLY on this
-// page (scoped @font-face below), never as site type.
+// plus the download-only display face, Hyle Deco. Deco is never site type: the
+// only elements set in it are the specimens on this page and on /hyle-deco.
+//
+// The @font-face rules below are global, not scoped, but they belong to this
+// route, so they ship with this page and no other. The /hyle-deco product page
+// carries its own copy, declared in src/components/product/TypeSpecimen.astro,
+// which Astro bundles into the one stylesheet shared by the [slug] route, so
+// that copy is linked by all fourteen product pages. A browser still fetches
+// the .ttf files only where something is laid out in the family.
 const specimens = [
   {
     family: 'Hyle Grotesk',
@@ -65,7 +72,9 @@ const specimens = [
 </SimplePageLayout>
 
 <style is:global>
-  /* Hyle Deco - loaded ONLY here, for the specimen. It is never site type. */
+  /* Hyle Deco, for the specimen below. These two rules ship with this page and
+     no other; /hyle-deco has its own copy, see the note at the top of the file.
+     Deco is never site type. */
   @font-face {
     font-family: 'Hyle Deco';
     src: url('/fonts/hyle/HyleDeco-Regular.ttf') format('truetype');

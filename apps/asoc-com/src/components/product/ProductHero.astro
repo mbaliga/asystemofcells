@@ -1,0 +1,80 @@
+---
+// The hero for products that have something real to lead with: an app icon, a
+// working destination, or simply a name worth setting large. Products with no
+// asset at all do NOT use this; they use Statement.astro, which is a different
+// page register on purpose.
+//
+// `align` exists because uniform centering across fourteen pages is the tell
+// that gives a template away. Centered is the display moment; left is the
+// editorial column. The composition module picks one per product.
+const {
+  tone = 'dark',
+  align = 'center',
+  eyebrow,
+  name,
+  lead,
+  logo = null,
+  logoAlt = '',
+  status = null,
+  actions = [],
+} = Astro.props
+// Zero-action rule: a button with nowhere to go is worse than no button.
+const links = actions.filter((a) => a && a.href)
+---
+<section class={`sec sec--${tone} hero hero--${align}`}>
+  <div class="wrap">
+    <div class="hero-col">
+      {logo && (
+        <img class="hero-logo rv" src={logo} width="512" height="512" alt={logoAlt} decoding="async" />
+      )}
+      <p class="eyebrow rv" style="--rv-delay:60ms">{eyebrow}</p>
+      <h1 class="display rv" style="--rv-delay:120ms">{name}</h1>
+      <p class="lead rv" style="--rv-delay:180ms">{lead}</p>
+      {links.length > 0 && (
+        <div class="hero-actions rv" style="--rv-delay:240ms">
+          {links.map((a) => (
+            <a
+              class={`btn ${a.primary ? 'btn--primary' : 'btn--ghost'}`}
+              href={a.href}
+              target={a.external ? '_blank' : undefined}
+              rel={a.external ? 'noopener noreferrer' : undefined}
+            >{a.label}</a>
+          ))}
+        </div>
+      )}
+      {status && (
+        <p class="hero-status rv" style="--rv-delay:300ms"><span class="status">{status}</span></p>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  .sec.hero { padding-block: max(var(--sec-pad), 16vh) calc(var(--sec-pad) * 0.85); }
+  .hero-logo {
+    display: block;
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    margin-bottom: 26px;
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 30px;
+  }
+  .hero-status { margin: 26px 0 0; }
+
+  .hero--center .hero-col {
+    max-width: 780px;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .hero--center .hero-actions { justify-content: center; }
+
+  .hero--left .hero-col > .display { max-width: 15ch; }
+</style>

@@ -1,0 +1,51 @@
+---
+// Text column beside one real screenshot. Only Nooz uses this, because Nooz is
+// the only product with real screenshots. The paragraph comes in through the
+// slot so the existing, already-verified Nooz copy can be moved across without
+// being retyped.
+const { tone = 'bg', reverse = false, eyebrow, title, src, alt, width, height } = Astro.props
+---
+<section class={`sec sec--${tone} frow${reverse ? ' frow--rev' : ''}`}>
+  <div class="wrap frow-grid">
+    <div class="frow-text rv">
+      <p class="eyebrow">{eyebrow}</p>
+      <h2 class="title">{title}</h2>
+      <div class="frow-body"><slot /></div>
+    </div>
+    <div class="frow-media rv" style="--rv-delay:120ms">
+      <img class="shot" src={src} width={width} height={height} alt={alt} loading="lazy" decoding="async" />
+    </div>
+  </div>
+</section>
+
+<style>
+  .frow-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(40px, 6vw, 90px);
+    align-items: center;
+  }
+  .frow--rev .frow-text { order: 2; }
+  .frow-body :global(p) {
+    font-size: var(--t-body);
+    line-height: 1.6;
+    color: var(--muted-body);
+    margin: 16px 0 0;
+    max-width: 44ch;
+  }
+  .frow-media { display: flex; justify-content: center; }
+  .shot {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    border-radius: 26px;
+    border: 1px solid var(--line);
+    box-shadow: 0 34px 68px -30px rgba(0, 0, 0, 0.38);
+  }
+
+  @media (max-width: 860px) {
+    .frow-grid { grid-template-columns: 1fr; }
+    .frow--rev .frow-text { order: 0; }
+  }
+</style>

@@ -1,0 +1,58 @@
+---
+// The archetype for the nine products that have no imagery of any kind.
+//
+// The temptation is a flat dark hero with a placeholder rectangle in it, which
+// is how fourteen pages became one page last time. So this goes the other way:
+// light ground, no image slot at all, and the roster oneLiner set at display
+// scale as the artwork. Beside the dark, art-led pages it reads as the second
+// register of one system rather than as the same page with the words swapped.
+//
+// One sentence, one hairline, nothing padded.
+const { tone = 'surface', eyebrow, statement, accent } = Astro.props
+---
+<section class={`sec sec--${tone} stmt`} style={accent ? `--stmt-rule:${accent}` : undefined}>
+  <div class="wrap">
+    <p class="eyebrow rv">{eyebrow}</p>
+    <h1 class="stmt-line rv" style="--rv-delay:100ms">{statement}</h1>
+    <hr class="stmt-rule rv" style="--rv-delay:200ms" />
+  </div>
+</section>
+
+<style>
+  /* Grid, for vertical centring without stretching the child.
+     Two things are needed to keep the shared measure, and the old rule had
+     neither: an explicit full-width column, because an implicit one is
+     auto-sized, and width:100% on .wrap, because a grid item with auto side
+     margins is sized fit-content rather than stretched. Without them .wrap
+     collapsed to 852px and started the statement 124px to the right of the
+     facts and links rows on the same page. */
+  .sec.stmt {
+    min-height: 68vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    padding-block: max(var(--sec-pad), 14vh);
+  }
+  .sec.stmt > .wrap { width: 100%; }
+  /* Hyle Grotesk registers 400/500/700, so 600 would resolve to the bold cut.
+     500 is the medium the statement is meant to be set in. */
+  .stmt-line {
+    font-size: var(--t-statement);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+    max-width: 17ch;
+    margin: 0;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  /* The accent is a 2px rule under the sentence and nothing else. It carries no
+     meaning on its own, so a very dark roster accent staying dark is fine here. */
+  .stmt-rule {
+    width: min(220px, 40%);
+    height: 2px;
+    border: 0;
+    margin: 40px 0 0;
+    background: var(--stmt-rule, var(--line));
+  }
+</style>

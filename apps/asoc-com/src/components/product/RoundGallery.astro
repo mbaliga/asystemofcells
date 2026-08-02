@@ -1,0 +1,73 @@
+---
+// Timely's art is a single render holding two watch faces. Rather than shrink
+// the whole render to a thumbnail, each face is cropped to its own round plate
+// by offsetting the real file inside a circular window: no frame is drawn, no
+// pixel is invented, the crop rectangles below were measured off the file.
+//
+// A scroll-snap track rather than a slideshow, because two items do not need a
+// state machine and a track keeps working with JavaScript off.
+const { tone = 'dark', src, width, height, faces = [], caption = null, title = null, eyebrow = null } = Astro.props
+// Percentages the circular window needs: how wide the image has to be relative
+// to the crop square, and how far up and left it has to sit.
+const plate = (f) => [
+  `--gw:${(width / f.d) * 100}%`,
+  `--gx:${(-f.x / f.d) * 100}%`,
+  `--gy:${(-f.y / f.d) * 100}%`,
+].join(';')
+---
+<section class={`sec sec--${tone} gal`}>
+  <div class="wrap">
+    {(eyebrow || title) && (
+      <div class="gal-head rv">
+        {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+        {title && <h2 class="title gal-title">{title}</h2>}
+      </div>
+    )}
+    <ul class="gal-track">
+      {faces.map((f, i) => (
+        <li class="gal-item rv" style={`--rv-delay:${100 + i * 120}ms`}>
+          <span class="gal-plate" style={plate(f)}>
+            <img class="gal-img" src={src} width={width} height={height} alt={f.alt} loading="lazy" decoding="async" />
+          </span>
+        </li>
+      ))}
+    </ul>
+    {caption && <p class="caption gal-cap rv" style="--rv-delay:320ms">{caption}</p>}
+  </div>
+</section>
+
+<style>
+  /* Measure on the heading, not on the 17px wrapper. See ArtPlate. */
+  .gal-head { margin-bottom: 56px; }
+  .gal-title { max-width: 22ch; }
+  .gal-track {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: clamp(28px, 5vw, 72px);
+    justify-content: center;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .gal-track::-webkit-scrollbar { display: none; }
+  .gal-item { scroll-snap-align: center; flex: 0 0 auto; }
+  .gal-plate {
+    display: block;
+    position: relative;
+    width: clamp(210px, 34vw, 340px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    overflow: hidden;
+  }
+  .gal-img {
+    position: absolute;
+    left: var(--gx);
+    top: var(--gy);
+    width: var(--gw);
+    height: auto;
+    max-width: none;
+  }
+  .gal-cap { text-align: center; }
+</style>
