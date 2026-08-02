@@ -23,6 +23,7 @@ const { title, description, canonical } = Astro.props
         <a class="foot-brand-name" href="/">asystemofcells</a>
         <nav class="foot-links">
           <a href="/about">About</a>
+          <a href="/ethos">Ethos</a>
           <a href="/faq">FAQ</a>
           <a href="/tools">Tools</a>
           <a href="/hyle-fonts">Fonts</a>
@@ -47,7 +48,8 @@ const { title, description, canonical } = Astro.props
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
-    padding: 90px 0 110px;
+    /* No bottom reserve: the footer is in the flow now, not over the page. */
+    padding: 90px 0 0;
   }
   .simple-page .wrap {
     max-width: 1100px;
@@ -76,7 +78,7 @@ const { title, description, canonical } = Astro.props
   .simple-content {
     max-width: 640px;
     margin: 0 auto;
-    padding: 0 6vw;
+    padding: 0 6vw 110px;
   }
   .simple-content .eyebrow {
     font-size: 13px;
@@ -190,19 +192,15 @@ const { title, description, canonical } = Astro.props
     margin: 0;
   }
 
+  /* Same discipline as the product pages: a document footer at the end of the
+     scroll, sized by its content. Pinned at a fixed 52px it sliced its own nav
+     in half as soon as the links wrapped to a second row on a phone. */
   .site-foot {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 60;
-    height: 52px;
-    overflow: hidden;
     background: var(--bg);
     border-top: 1px solid var(--line);
+    padding-block: 20px;
   }
   .site-foot .wrap {
-    height: 100%;
     display: flex;
     align-items: center;
   }

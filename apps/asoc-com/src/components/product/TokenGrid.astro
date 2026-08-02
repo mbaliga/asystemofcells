@@ -1,0 +1,165 @@
+---
+// Hyle has no imagery, but it has something better: the real tokens. Every
+// value below is transcribed from packages/kit/src/styles/tokens.css, so the
+// swatches are the product rather than a picture of it. Nothing here is a
+// chosen-for-looks colour.
+//
+// This section renders on the dark ground because tokens.css is a dark-ground
+// sheet: --ink is #f0ede6 and --ink-muted, --ink-faint and --hairline are all
+// cream at low alpha. Painted on the white product page they were four blank
+// boxes, so the swatches are shown on the #0b0b0c ground the values were drawn
+// for. The product page around this section is white and defines its own --bg,
+// --ink, --surface and --radius, so it is NOT painted with these values, and
+// the copy below does not claim it is.
+//
+// Keep this in sync with tokens.css by hand if that file changes. It is a short
+// list and a build-time import of a CSS file's custom properties would be more
+// machinery than the twelve values are worth.
+const COLOUR = [
+  { name: '--bg', value: '#0b0b0c', note: 'Ground' },
+  { name: '--surface', value: '#121212', note: 'Raised' },
+  { name: '--ink', value: '#f0ede6', note: 'Text' },
+  { name: '--grey', value: '#afafaf', note: 'Neutral' },
+  { name: '--violet', value: '#8e7bff', note: 'House' },
+  // --cyan and --provenance-cloud hold the same literal value in tokens.css.
+  // Both chips are labelled with that fact so two identical swatches read as
+  // what they are and not as a duplicated row. Nothing further is claimed
+  // about why the file defines both.
+  { name: '--cyan', value: '#08fed5', note: 'House', alias: 'Same value as --provenance-cloud' },
+  { name: '--provenance-native', value: '#3ddc84', note: 'On-device' },
+  { name: '--provenance-cloud', value: '#08fed5', note: 'Cloud', alias: 'Same value as --cyan' },
+  { name: '--ink-muted', value: 'rgba(240, 237, 230, 0.62)', note: 'Text, secondary' },
+  { name: '--ink-faint', value: 'rgba(240, 237, 230, 0.34)', note: 'Text, faint' },
+  { name: '--hairline', value: 'rgba(240, 237, 230, 0.12)', note: 'Divider' },
+]
+const SCALAR = [
+  { name: '--radius', value: '10px' },
+  { name: '--ease', value: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+  { name: '--motion-fast', value: '180ms' },
+  { name: '--motion', value: '300ms' },
+  { name: '--shell', value: '1180px' },
+  { name: '--pad', value: '32px, 20px under 720px' },
+]
+const TYPE = [
+  { name: '--font-display', value: 'Hyle Print' },
+  { name: '--font-ui', value: 'Hyle Grotesk' },
+  { name: '--font-brand', value: 'Hyle Grotesk Plus' },
+  { name: '--font-mono', value: 'Hyle Grotesk' },
+]
+const { tone = 'dark' } = Astro.props
+---
+<section class={`sec sec--${tone} tok`}>
+  <div class="wrap">
+    <div class="tok-head rv">
+      <p class="eyebrow">Tokens</p>
+      <h2 class="title tok-title">The values, not a picture of the values.</h2>
+      <p class="body">These are the literal values in packages/kit/src/styles/tokens.css, shown on the #0b0b0c ground that file sets.</p>
+    </div>
+
+    <ul class="tok-swatches">
+      {COLOUR.map((c, i) => (
+        <li class="tok-swatch rv" style={`--rv-delay:${40 + i * 40}ms`}>
+          <span class="tok-chip" style={`background:${c.value}`} aria-hidden="true"></span>
+          <span class="tok-name">{c.name}</span>
+          <span class="tok-value">{c.value}</span>
+          <span class="tok-note">{c.note}</span>
+          {c.alias && <span class="tok-alias">{c.alias}</span>}
+        </li>
+      ))}
+    </ul>
+
+    <div class="tok-cols">
+      <div class="tok-col rv">
+        <h3 class="head">Shape and motion</h3>
+        <dl class="tok-dl">
+          {SCALAR.map((s) => (
+            <div class="tok-pair">
+              <dt>{s.name}</dt>
+              <dd>{s.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <div class="tok-col rv" style="--rv-delay:100ms">
+        <h3 class="head">Type slots</h3>
+        <dl class="tok-dl">
+          {TYPE.map((t) => (
+            <div class="tok-pair">
+              <dt>{t.name}</dt>
+              <dd>{t.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Measure on the heading, not on the 17px wrapper. See ArtPlate. */
+  .tok-head { margin-bottom: 56px; }
+  .tok-title { max-width: 30ch; }
+  .tok-swatches {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 28px 24px;
+  }
+  .tok-swatch { display: grid; gap: 4px; }
+  /* Every chip carries a hairline of its own, so --bg (#0b0b0c) reads as a
+     bordered box of the ground rather than as nothing at all, and --hairline
+     (cream at 0.12) reads as the faint step above the ground that it is. */
+  .tok-chip {
+    display: block;
+    height: 88px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    margin-bottom: 12px;
+  }
+  .sec--dark .tok-chip { border-color: rgba(240, 237, 230, 0.32); }
+  .tok-name {
+    font-size: var(--t-small);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .tok-value,
+  .tok-note {
+    font-size: var(--t-eyebrow);
+    color: var(--muted);
+  }
+  .sec--dark .tok-value,
+  .sec--dark .tok-note,
+  .sec--dark .tok-alias { color: var(--dark-muted); }
+  .tok-note { text-transform: uppercase; letter-spacing: 0.06em; }
+  .tok-alias {
+    font-size: var(--t-eyebrow);
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .tok-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(32px, 5vw, 80px);
+    margin-top: calc(var(--sec-pad) * 0.55);
+  }
+  .tok-dl { margin: 20px 0 0; }
+  .tok-pair {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 13px 0;
+    border-top: 1px solid var(--line);
+    font-size: var(--t-small);
+  }
+  .sec--dark .tok-pair { border-top-color: rgba(255, 255, 255, 0.16); }
+  .tok-pair dt { font-weight: 600; }
+  .tok-pair dd { margin: 0; color: var(--muted); text-align: right; }
+  .sec--dark .tok-pair dd { color: var(--dark-muted); }
+
+  @media (max-width: 760px) {
+    .tok-cols { grid-template-columns: 1fr; }
+  }
+</style>

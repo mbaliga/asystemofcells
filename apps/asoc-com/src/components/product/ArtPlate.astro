@@ -1,0 +1,79 @@
+---
+// One real image, shown large. Nothing is ever drawn here: no device frame, no
+// bezel, no gradient standing in for a screenshot. If a product has no file on
+// disk it does not get this block, it gets a different archetype.
+//
+// `size` is the whole difference between Clackpad's art section (a plate inside
+// the page) and the Sphere/Meniscus minicenter (the image IS the page).
+const {
+  tone = 'surface',
+  size = 'plate',
+  eyebrow = null,
+  headline = null,
+  src,
+  alt,
+  width,
+  height,
+  caption = null,
+} = Astro.props
+// At 'full' this block IS the page (the Sphere and Meniscus minicenters have no
+// hero above them), so its headline is the h1. At 'plate' it sits under a hero
+// that already holds the h1.
+const Heading = size === 'full' ? 'h1' : 'h2'
+---
+<section class={`sec sec--${tone} art art--${size}`}>
+  <div class="wrap">
+    {(eyebrow || headline) && (
+      <div class="art-head rv">
+        {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+        {headline && <Heading class="art-title">{headline}</Heading>}
+      </div>
+    )}
+    <figure class="art-fig rv" style="--rv-delay:120ms">
+      <img class="art-img" src={src} width={width} height={height} alt={alt} loading="lazy" decoding="async" />
+      {caption && <figcaption class="caption art-cap">{caption}</figcaption>}
+    </figure>
+  </div>
+</section>
+
+<style>
+  /* The measure belongs on the heading, never on this wrapper. The wrapper
+     inherits 17px body text, so a ch cap set here resolves against 17px while
+     the heading inside is 44px or 67px, and the headline collapses into a
+     column of single words. Same discipline as .stmt-line and
+     .hero--left .display, which cap the heading element itself. */
+  .art-head { margin-bottom: 56px; }
+  .art-title {
+    font-size: var(--t-title);
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    line-height: 1.1;
+    margin: 0;
+    max-width: 22ch;
+    text-wrap: balance;
+  }
+  .art-fig { margin: 0; }
+  .art-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-inline: auto;
+    border-radius: var(--radius);
+  }
+  /* A light ground needs an edge, otherwise art that fades to white at one
+     corner (Meniscus) bleeds into the page and stops looking deliberate. */
+  .sec--bg .art-img,
+  .sec--surface .art-img { border: 1px solid var(--line); }
+
+  .art--plate .art-img { max-width: 620px; }
+  .art--full .art-img { max-width: 860px; }
+  .art--full .art-head { margin-bottom: 64px; }
+  .art--full .art-title {
+    font-size: var(--t-statement);
+    letter-spacing: -0.028em;
+    /* Wider measure than the plate title because the type is half again as
+       large: 22ch of 67px is a display line, 22ch of 44px is a section line. */
+    max-width: 22ch;
+  }
+  .art-fig .art-cap { text-align: center; max-width: 46ch; margin-inline: auto; }
+</style>

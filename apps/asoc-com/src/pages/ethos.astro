@@ -1,0 +1,34 @@
+---
+// The house thesis. Sourced from the owner's own constellation ethos document,
+// which names these four doctrines as the spine and says explicitly that
+// asystemofcells.com should lead with them. About says what the house is and
+// how it is organised; this says why it is built that way, so the two do not
+// repeat each other. Dev-facing specifics (keystore handling, build-container
+// limits) deliberately stay on the .dev surface.
+import SimplePageLayout from '../layouts/SimplePageLayout.astro'
+---
+<SimplePageLayout
+  title="Ethos: asystemofcells"
+  description="The four rules every app in this house is built against: legibility, sovereignty by default, accessibility as a blocker, and honesty about what has actually been verified."
+  canonical="https://asystemofcells.com/ethos"
+>
+  <p class="eyebrow">Ethos</p>
+  <h1>Every app here is an argument.</h1>
+
+  <p>These apps exist to make a case, not to fill a category. Where a choice comes up between the convenient option and the one that keeps you able to see what is happening, this house takes the second one, and accepts the cost. Four rules follow from that, and they hold across every app.</p>
+
+  <h2>Legibility, and staying in the loop</h2>
+  <p>You should be able to see what a tool is doing on your behalf. When something is routed, generated, or decided for you, that is surfaced rather than smoothed over. This is the rule that costs the most convenience, and it is the one that gets kept anyway.</p>
+
+  <h2>On-device by default, cloud only when you say so</h2>
+  <p>Computing happens on your phone first. Cloud is opt-in for each use rather than a quiet fallback, and when a cloud provider is involved it is marked as what it is: something being watched. No telemetry, no analytics, no phoning home, in any app in the house. It was never wired in, so there is no setting to go and find.</p>
+
+  <h2>Accessibility is a blocker, not a nicety</h2>
+  <p>Colour is never the only thing carrying a meaning. Anything that signals state does it with shape, label, or motion as well, so it survives greyscale, colour blindness, and a bright afternoon outdoors. This is treated as a reason to stop and fix, not a note for later.</p>
+
+  <h2>Honesty about what has actually been checked</h2>
+  <p>Where something is unfinished, it is left visibly unfinished rather than dressed up to look complete. Behaviour that has not been verified on a real device is not described as working. This site follows the same rule: it shows real screenshots of real apps, and where a product does not have them yet, it says less rather than staging something that looks like proof.</p>
+
+  <h2>What that adds up to</h2>
+  <p>A smaller set of apps than a company would ship, built more slowly, that do not ask you to trade away visibility for polish. The <a class="inline-link" href="/about">about page</a> covers how the house is organised, and the <a class="inline-link" href="/privacy">privacy policy</a> states exactly what this website counts and what it does not.</p>
+</SimplePageLayout>

@@ -11,6 +11,8 @@
       "accent": "#E8A33D",
       "oneLiner": "A tactile notepad keyboard that clacks. Its own design language, not the house system, on purpose.",
       "isHub": false,
+      "logo": "/images/logos/clackpad.png",
+      "tileArt": { "min": "/images/tiles/clackpad-min.jpg", "focus": "/images/tiles/clackpad-focus.jpg" },
       "verify": ["accent color unconfirmed", "SKU price undecided ($1 vs ~$4.99 both appear in the repo)"]
     },
     {
@@ -22,6 +24,9 @@
       "oneLiner": "A news reader that shows you what you did not read, not what it thinks you should.",
       "isHub": false,
       "readerUrl": "/nooz/read",
+      "privacyUrl": "/nooz/privacy",
+      "logo": "/images/logos/nooz.png",
+      "tileArt": { "min": "/images/tiles/nooz-min.jpg", "focus": "/images/tiles/nooz-focus.jpg" },
       "verify": ["accent color unconfirmed"]
     },
     {
@@ -69,10 +74,33 @@
       "tissue": "ambient-cells",
       "type": "B",
       "status": "soon",
-      "accent": "#6D5AE0",
+      "accent": "#D8A63D",
       "oneLiner": "A set of honest watchfaces, time told plainly, from the same one-design-many-platforms pipeline as Globe.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "pre-release, private until the faces are finished"]
+      "tileArt": { "min": "/images/tiles/timely-min.jpg", "focus": "/images/tiles/timely-focus.jpg" },
+      "verify": ["accent recoloured to match the shipped watch-face art (was a placeholder violet)"]
+    },
+    {
+      "slug": "sphere",
+      "tissue": "ambient-cells",
+      "type": "B",
+      "status": "soon",
+      "accent": "#A88F4E",
+      "oneLiner": "A minimalist watch face: one abstract mark, rendered in gold and black.",
+      "isHub": false,
+      "tileArt": { "min": "/images/tiles/sphere-min.jpg", "focus": "/images/tiles/sphere-focus.jpg" },
+      "verify": ["new entry seeded from owner-supplied tile art only, no repo/brief yet", "oneLiner is a plain description of the art, not a feature claim", "accent color unconfirmed"]
+    },
+    {
+      "slug": "meniscus",
+      "tissue": "ambient-cells",
+      "type": "B",
+      "status": "soon",
+      "accent": "#2A2A2A",
+      "oneLiner": "A time-only watch face where the hour sits at the line between black and white, like water finding its level.",
+      "isHub": false,
+      "tileArt": { "min": "/images/tiles/meniscus-min.jpg", "focus": "/images/tiles/meniscus-focus.jpg" },
+      "verify": ["new entry seeded from owner-supplied tile art only, no repo/brief yet", "oneLiner is a plain description of the art, not a feature claim", "accent color unconfirmed"]
     },
     {
       "slug": "fonebrew",

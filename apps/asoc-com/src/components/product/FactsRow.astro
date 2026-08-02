@@ -1,0 +1,46 @@
+---
+// A short definition list of things the roster actually states. It exists so a
+// page with little material can end on facts instead of on filler. Every value
+// passed in comes from roster.public.json or from a file on disk; nothing is
+// derived from the roster's internal verify[] notes.
+const { tone = 'bg', items = [] } = Astro.props
+---
+<section class={`sec sec--${tone} facts`}>
+  <div class="wrap">
+    <dl class="facts-list">
+      {items.map((item, i) => (
+        <div class="facts-item rv" style={`--rv-delay:${i * 80}ms`}>
+          <dt class="facts-label">{item.label}</dt>
+          <dd class="facts-value">{item.value}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<style>
+  .sec.facts { padding-block: calc(var(--sec-pad) * 0.62); }
+  .facts-list {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 0;
+    border-top: 1px solid var(--line);
+  }
+  .sec--dark .facts-list { border-color: rgba(255, 255, 255, 0.16); }
+  .facts-item { padding: 26px 0 4px; }
+  .facts-label {
+    font-size: var(--t-eyebrow);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .sec--dark .facts-label { color: var(--dark-muted); }
+  .facts-value {
+    margin: 8px 0 0;
+    font-size: var(--t-body);
+    line-height: 1.45;
+    max-width: 26ch;
+  }
+</style>

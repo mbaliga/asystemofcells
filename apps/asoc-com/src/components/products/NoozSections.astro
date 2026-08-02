@@ -1,0 +1,165 @@
+---
+// Nooz product-page sections, rendered into ProductLayout's slot.
+//
+// Every claim and number in this copy traces to one of the owner's ten app
+// screenshots in /images/nooz/ (2026-07-29). Do not add capabilities that are
+// not visible in a screenshot; the screenshots are the source of truth. The
+// copy below is unchanged from the version that shipped; only the markup moved,
+// off ProductLayout's old global .feature classes and onto the product kit, so
+// the rows now share one type scale and one rhythm with the rest of the system.
+//
+// The tones alternate deliberately and no two --surface rows sit adjacent.
+import FeatureRow from '../product/FeatureRow.astro'
+const IMG = (name) => `/images/nooz/${name}.jpg`
+const W = 800
+const H = 1757
+---
+<FeatureRow
+  tone="bg"
+  eyebrow="Contrast"
+  title="You read 11 of the 652 it let through."
+  src={IMG('contrast-week')}
+  width={W}
+  height={H}
+  alt="Nooz Contrast screen for one week: a dot-matrix world map, reach counts of 652 flowed, 652 through the filter, 11 read, and per-topic gap bars"
+>
+  <p>That line is a real ledger entry from the app. Contrast counts what flowed in, what the filter passed, and what you actually read, then names the widest gap by topic. Nooz shows you what you did not read instead of quietly deciding for you.</p>
+</FeatureRow>
+
+<FeatureRow
+  tone="surface"
+  reverse
+  eyebrow="The reader"
+  title="Set like print, because news is reading."
+  src={IMG('reader')}
+  width={W}
+  height={H}
+  alt="A Nooz article with a serif headline, a halftone photograph, and a 6 minute reading time in the bottom toolbar"
+>
+  <p>Serif headlines on paper tones, photographs rendered as halftone dots, the reading time up front, and the source named on every story. Immersive mode hides the controls and leaves you a bare page.</p>
+</FeatureRow>
+
+<FeatureRow
+  tone="bg"
+  eyebrow="Loaded language"
+  title="Charged wording gets underlined, not deleted."
+  src={IMG('loaded-language')}
+  width={W}
+  height={H}
+  alt="The Nooz loaded-language sheet flagging the word threatened as a loaded verb, with buttons to suggest a neutral rewrite or dismiss"
+>
+  <p>With the highlighter on, Nooz underlines loaded wording as you read. Tap a word to see why it was flagged, ask for a neutral rewrite, or dismiss the note. The article stays exactly as written; the call stays yours.</p>
+</FeatureRow>
+
+<FeatureRow
+  tone="surface"
+  reverse
+  eyebrow="Bring your own model"
+  title="Nooz Flash says nothing until you give it a voice."
+  src={IMG('feed')}
+  width={W}
+  height={H}
+  alt="The Nooz feed with the Nooz Flash setup card, Nooz Cast, and serif headlines with halftone images"
+>
+  <p>The Flash briefing sits at the top of the feed and refuses to run until a model or API key is configured: set up an on-device model or connect a provider of your choosing. Nooz Cast reads an article aloud in a natural voice.</p>
+</FeatureRow>
+
+<FeatureRow
+  tone="bg"
+  eyebrow="Regions"
+  title="Spin the globe, read a band of it."
+  src={IMG('region-globe')}
+  width={W}
+  height={H}
+  alt="The Nooz region picker: a dotted globe set to a Europe and Africa band with a topic-mix ring around it"
+>
+  <p>The region picker is a globe: drag to spin, pinch to widen the band. Choose a slice like Europe &amp; Africa and the ring around it shows that band's topic mix, with Reset to Global one tap away.</p>
+</FeatureRow>
+
+<FeatureRow
+  tone="surface"
+  reverse
+  eyebrow="Region & topics"
+  title="Numbers about your reading, for you alone."
+  src={IMG('region-topics')}
+  width={W}
+  height={H}
+  alt="Nooz Region and Topics stats: coverage, breadth of the stream versus you, per-topic over and under weights, and what changed since the previous period"
+>
+  <p>Coverage, the breadth of the stream against the breadth of you, and each topic's over or under weight in what you read. When the mix changes, Nooz splits the why: how much because the stream shifted, how much because you chose differently.</p>
+</FeatureRow>
+
+<FeatureRow
+  tone="bg"
+  eyebrow="Clippings"
+  title="Saved stories become clippings, torn edges and all."
+  src={IMG('clippings')}
+  width={W}
+  height={H}
+  alt="The Nooz clippings drawer: saved stories as torn paper cards with mastheads, topic tags, and clipped dates"
+>
+  <p>What you keep lands in a drawer of paper clippings: the masthead across the top, the topic in the corner, the date you clipped it. Share one onward or bookmark it for later.</p>
+</FeatureRow>
+
+<FeatureRow
+  tone="surface"
+  reverse
+  eyebrow="Reading"
+  title="Three faces, three sizes, and real paper grain."
+  src={IMG('reading-settings')}
+  width={W}
+  height={H}
+  alt="Nooz reading settings: theme, the three Hyle fonts, text sizes named Rice, Peanut and Almond, paper grain, and immersive reading toggles"
+>
+  <p>Type comes in the house faces: Hyle Grotesk Classic, Hyle Grotesk Plus, and Hyle Print. Sizes are named Rice, Peanut, and Almond; paper grain runs from none to coarse; read articles turn grey or get struck through, your pick.</p>
+</FeatureRow>
+
+<section class="sec sec--bg nz-days">
+  <div class="wrap">
+    <div class="nz-days-head rv">
+      <p class="eyebrow">Day by day</p>
+      <h2 class="title">The ledger works one day at a time, too.</h2>
+      <p class="body">Pick a single day or a range and Contrast redraws for just that window: what flowed, what got through, what you read.</p>
+    </div>
+    <div class="nz-pair">
+      <img class="nz-shot rv" style="--rv-delay:120ms" src={IMG('contrast-day')} width={W} height={H} loading="lazy" decoding="async" alt="Nooz Contrast for a single day, counting what flowed and what was read that day" />
+      <img class="nz-shot rv" style="--rv-delay:220ms" src={IMG('calendar')} width={W} height={H} loading="lazy" decoding="async" alt="The Nooz calendar sheet for picking a single day or a range" />
+    </div>
+  </div>
+</section>
+
+<style>
+  /* The only row that is not a text-beside-image pair: one centred head over
+     two screenshots, because the day view and the calendar are one idea.
+     The measures sit on the heading and the paragraph, not on this wrapper:
+     the wrapper is at 17px body size and the h2 inside it is 44px, so a ch cap
+     here would resolve against the wrong font size. */
+  .nz-days-head {
+    margin: 0 auto 64px;
+    text-align: center;
+  }
+  .nz-days .nz-days-head .title {
+    max-width: 20ch;
+    margin-inline: auto;
+  }
+  .nz-days .nz-days-head .body { max-width: 46ch; margin-inline: auto; }
+  .nz-pair {
+    display: flex;
+    justify-content: center;
+    gap: clamp(28px, 5vw, 72px);
+    flex-wrap: wrap;
+  }
+  /* Same max-width discipline as FeatureRow's .shot. Without the cap these
+     two lazy images decode at their 800px natural width and render 2.7 times
+     the size of the phones in every row above. */
+  .nz-shot {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    flex: 0 1 280px;
+    height: auto;
+    border-radius: 26px;
+    border: 1px solid var(--line);
+    box-shadow: 0 34px 68px -30px rgba(0, 0, 0, 0.38);
+  }
+</style>
