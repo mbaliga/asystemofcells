@@ -71,11 +71,16 @@ const PAGES = {
       size: 'plate',
       eyebrow: 'The keyboard',
       headline: 'Three rows of keys, a toolbar, and a strip of suggestions.',
-      src: '/images/tiles/clackpad-focus.jpg',
-      width: 1200,
-      height: 1601,
-      alt: 'Clackpad tile art: a phone render showing the Clackpad keyboard, with a row of word suggestions, a toolbar, and three rows of bevelled keys',
-      caption: 'Tile art for Clackpad, not a raw device screenshot.',
+      // Cropped to the keyboard rather than showing the whole tile. In the full
+      // tile the phone floats in a large gradient, so at the plate width the
+      // keys came out around 90px tall and unreadable, which made the section
+      // and the three cards below it describe something the reader could not
+      // actually see.
+      src: '/images/tiles/clackpad-keyboard.jpg',
+      width: 645,
+      height: 290,
+      alt: 'The Clackpad keyboard: a strip of word suggestions, a toolbar carrying ?123, emoji, layouts, punctuation, ctrl and alt, then three rows of bevelled keys with digits printed above the top row and symbols above the home row',
+      caption: 'Cropped from the Clackpad tile art, not a raw device screenshot.',
     },
     {
       type: 'cards',
@@ -89,7 +94,7 @@ const PAGES = {
         },
         {
           title: 'Numbers and symbols in place',
-          body: 'Digits ride above the top letter row and symbols above the home row, printed on the keys they belong to.',
+          body: 'Digits ride above the top letter row, and symbols sit above the two rows below it, printed on the keys they belong to.',
         },
         {
           title: 'A suggestion strip',
