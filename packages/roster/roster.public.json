@@ -11,6 +11,7 @@
       "accent": "#E8A33D",
       "oneLiner": "A tactile notepad keyboard that clacks. Its own design language, not the house system, on purpose.",
       "isHub": false,
+      "logo": "/images/logos/clackpad.png",
       "tileArt": { "min": "/images/tiles/clackpad-min.jpg", "focus": "/images/tiles/clackpad-focus.jpg" },
       "verify": ["accent color unconfirmed", "SKU price undecided ($1 vs ~$4.99 both appear in the repo)"]
     },
@@ -24,6 +25,7 @@
       "isHub": false,
       "readerUrl": "/nooz/read",
       "privacyUrl": "/nooz/privacy",
+      "logo": "/images/logos/nooz.png",
       "tileArt": { "min": "/images/tiles/nooz-min.jpg", "focus": "/images/tiles/nooz-focus.jpg" },
       "verify": ["accent color unconfirmed"]
     },

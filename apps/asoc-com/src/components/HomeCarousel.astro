@@ -61,6 +61,11 @@ const items = getRoster().map((cell) => ({
   external: !!cell.isHub,
   art: cell.tileArt || null,
   font: TILE_FONT[cell.slug] || null,
+  // The product's real app icon, copied verbatim from its own repo (roster
+  // `logo`). Icon plus name is the lockup, the same convention an app store
+  // uses. Products whose icon has not been brought over yet simply render the
+  // name alone, so this degrades without a broken-image gap.
+  logo: cell.logo || null,
 }))
 
 // A non-product tile for the in-browser generators. It rides the same carousel
@@ -86,16 +91,28 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
       <div class="home-focus-group" id="homeFocusGroup">
         <div class="home-details" id="homeDetails">
           <div class="hd-title-row">
-            <span
-              class="hd-name"
-              id="home-d-name"
-              style={
-                first.font
-                  ? `font-family:${first.font.family}; font-weight:${first.font.weight}; letter-spacing:${first.font.tracking}; --hd-scale:${first.font.scale};`
-                  : '--hd-scale:1;'
-              }
-            >
-              {first.name}
+            <span class="hd-lockup">
+              <img
+                class="hd-logo"
+                id="home-d-logo"
+                src={first.logo || ''}
+                alt=""
+                width="40"
+                height="40"
+                decoding="async"
+                hidden={!first.logo}
+              />
+              <span
+                class="hd-name"
+                id="home-d-name"
+                style={
+                  first.font
+                    ? `font-family:${first.font.family}; font-weight:${first.font.weight}; letter-spacing:${first.font.tracking}; --hd-scale:${first.font.scale};`
+                    : '--hd-scale:1;'
+                }
+              >
+                {first.name}
+              </span>
             </span>
             <span class="hd-version" id="homeVersion">{first.status}</span>
           </div>
@@ -348,6 +365,24 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     align-items: baseline;
     justify-content: space-between;
     gap: 12px;
+  }
+  /* Icon and name travel together as one lockup, so the status stays pinned to
+     the far edge no matter how wide the name is. */
+  .home-details .hd-lockup {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    min-width: 0;
+  }
+  .home-details .hd-logo {
+    flex: 0 0 auto;
+    width: clamp(22px, 2.3vw, 30px);
+    height: auto;
+    border-radius: 22%;
+    display: block;
+  }
+  .home-details .hd-logo[hidden] {
+    display: none;
   }
   .home-details .hd-name {
     /* --hd-scale (set inline per product from TILE_FONT) compensates for how
@@ -639,6 +674,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   const homeDetailsEl = document.getElementById('homeDetails')
   const homeThumbsEl = document.getElementById('homeThumbs')
   const homeNameEl = document.getElementById('home-d-name')
+  const homeLogoEl = document.getElementById('home-d-logo')
   const homeVersionEl = document.getElementById('homeVersion')
   const homeOneLinerEl = document.getElementById('homeOneLiner')
 
@@ -671,6 +707,15 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     }
     homeHeroTagEl.textContent = item.tissue
     homeNameEl.textContent = item.name
+    // Swap the app icon with the name. Hiding rather than blanking the src
+    // avoids a broken-image frame for products whose icon is not in yet.
+    if (item.logo) {
+      homeLogoEl.src = item.logo
+      homeLogoEl.hidden = false
+    } else {
+      homeLogoEl.hidden = true
+      homeLogoEl.removeAttribute('src')
+    }
     homeVersionEl.textContent = item.status
     homeOneLinerEl.textContent = item.oneLiner
     // Each product with its own tile art carries its own display face for
@@ -750,7 +795,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     { passive: false },
   )
 
-  // Keyboard parity for the same scrub gesture — the wheel listener above
+  // Keyboard parity for the same scrub gesture. The wheel listener above
   // is the primary mechanism the reference specifies; this just makes the
   // same step reachable without a wheel/trackpad.
   homeGallery.addEventListener('keydown', (e) => {
