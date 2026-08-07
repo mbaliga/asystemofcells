@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getLoops, getLoop, patternLabel, PATTERNS, editorUrl, EDITOR_LOAD_PARAM } from '@asoc/loops'
+
+export function getStaticPaths() {
+  return getLoops().map((loop) => ({ params: { slug: loop.slug }, props: { loop } }))
+}
+
+const { loop } = Astro.props
+const pattern = PATTERNS.find((p) => p.key === loop.pattern)
+const related = getLoops().filter((l) => l.pattern === loop.pattern && l.slug !== loop.slug)
+
+/*
+ * `editorUrl()` builds /loops/editor.html?load=<path>. Both the path and the param
+ * name live in @asoc/loops as exported constants, so if the editor turns out to
+ * read its file from a differently-named param, that is one line there rather
+ * than a find-and-replace across these pages.
+ */
+const openHref = editorUrl(loop)
+---
+<BaseLayout
+  title={`${loop.title}: a Fonebrew loop`}
+  description={loop.summary}
+  canonical={`https://fonebrew.app/loops/${loop.slug}/`}
+>
+  <section class="shell band band--lead">
+    <a class="back-link" href="/loops/">&larr; gallery</a>
+    <p class="eyebrow">{patternLabel(loop.pattern)} &middot; {loop.nodes} nodes, {loop.edges} flows</p>
+    <h1 style="display:flex;align-items:center;gap:0.7rem">
+      <span style={`display:inline-block;width:12px;height:12px;border-radius:50%;background:${loop.accent};flex:0 0 auto`} aria-hidden="true"></span>
+      {loop.title}
+    </h1>
+    <p class="lead">{loop.summary}</p>
+
+    <div class="btn-row">
+      <a class="btn btn--primary" href={openHref}>Open in editor <span aria-hidden="true">&rarr;</span></a>
+      <a class="btn" href={loop.bpmnPath} download={`${loop.slug}.bpmn`}>Download .bpmn</a>
+    </div>
+
+    {pattern && <p class="note" style="margin-top:1.2rem">{pattern.blurb}</p>}
+  </section>
+
+  <section class="shell band">
+    <p class="eyebrow">Provenance</p>
+    <h2>What this file says about itself.</h2>
+    <p class="prose">
+      Everything below the first two rows is read out of the loop's own start
+      event &mdash; the <code>&lt;aarso:meta&gt;</code> element the format carries for
+      exactly this purpose. It travels with the file, so the record does not
+      depend on this page existing.
+    </p>
+
+    <div class="record">
+      <div class="record__row">
+        <span class="record__key">author</span>
+        <span class="record__val">{loop.author}</span>
+      </div>
+      <div class="record__row">
+        <span class="record__key">tags</span>
+        <span class="record__val">
+          {(loop.tags || []).length ? (
+            <span class="tag-row">{loop.tags.map((t) => <span class="tag">{t}</span>)}</span>
+          ) : (
+            <span style="color:var(--ink-faint)">&mdash;</span>
+          )}
+        </span>
+      </div>
+      <div class="record__row">
+        <span class="record__key">pattern</span>
+        <span class="record__val">
+          <a href={`/loops/?pattern=${loop.pattern}`}>{patternLabel(loop.pattern)}</a>
+          <span style="color:var(--ink-faint)"> (<code>{loop.pattern}</code>)</span>
+        </span>
+      </div>
+      <div class="record__row">
+        <span class="record__key">source</span>
+        <span class="record__val">{loop.source}</span>
+      </div>
+      <div class="record__row">
+        <span class="record__key">distilled by</span>
+        <span class="record__val">{loop.distilledBy}</span>
+      </div>
+      <div class="record__row">
+        <span class="record__key">distilled on</span>
+        <span class="record__val">{loop.distilledOn}</span>
+      </div>
+      <div class="record__row">
+        <span class="record__key">shape</span>
+        <span class="record__val">{loop.nodes} nodes, {loop.edges} sequence flows</span>
+      </div>
+      <div class="record__row">
+        <span class="record__key">file</span>
+        <span class="record__val"><a href={loop.bpmnPath}><code>{loop.bpmnPath}</code></a></span>
+      </div>
+    </div>
+
+    <p class="note" style="margin-top:1.6rem">
+      The loop opens on a phone the same way it opens in the editor: it is one
+      standard BPMN 2.0 process with <code>isExecutable="false"</code>, because
+      Fonebrew's runner is its own, not a spec-conformant BPMN engine. Gateway
+      conditions are plain strings that only that runner interprets &mdash; a
+      general BPMN tool will show them, not evaluate them.
+    </p>
+  </section>
+
+  {related.length > 0 && (
+    <section class="shell band band--last">
+      <p class="eyebrow">Also {patternLabel(loop.pattern).toLowerCase()}</p>
+      <div class="card-grid" style="margin-top:1rem">
+        {related.map((l) => (
+          <a class="card" href={`/loops/${l.slug}/`} style={`--loop-accent:${l.accent}`}>
+            <div class="card__hint" aria-hidden="true"></div>
+            <span class="card__title">{l.title}</span>
+            <p class="card__summary">{l.summary}</p>
+            <span class="card__foot"><span>by {l.author}</span><span>{l.nodes} nodes</span></span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {related.length === 0 && (
+    <section class="shell band band--last">
+      <p class="note" style="margin:0">
+        Loading a loop into the editor passes its path as
+        <code>?{EDITOR_LOAD_PARAM}=</code>. Nothing is uploaded: the editor
+        fetches the file from this same site and works on it in your browser.
+      </p>
+    </section>
+  )}
+</BaseLayout>

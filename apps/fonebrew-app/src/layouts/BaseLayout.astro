@@ -1,0 +1,126 @@
+---
+/*
+ * The shell for every Astro-rendered page on fonebrew.app.
+ *
+ * ANALYTICS BOUNDARY, read before adding a page.
+ *
+ * Same house rule as asoc-com's BaseLayout, same asymmetry: count pages that
+ * DESCRIBE the house, never pages where someone MAKES, READS, or RUNS
+ * something. `analytics` therefore defaults to FALSE and pages opt in, never
+ * out — a marketing page that forgets loses one datapoint, a tool page that
+ * forgets breaks a printed promise.
+ *
+ * On this site the boundary is currently absolute, and deliberately: **nothing
+ * on fonebrew.app is counted at all.** The owner has not asked for it, so the
+ * `analytics` prop below exists and every page declines it.
+ *
+ * That "declines it" has to be structural, and here is the part worth reading
+ * before you change anything. `@vercel/analytics/astro` does its work from a
+ * bundled <script>, and **Astro collects a page's scripts from the static module
+ * graph, not from what actually renders.** A plain `import Analytics from
+ * '@vercel/analytics/astro'` at the top of this file therefore puts the
+ * analytics chunk on every page in the app even when `{analytics && …}` is false
+ * on all of them. Verified against real builds of this app: with a static
+ * import, all five pages emitted a <script> pulling in the 2.9 kB
+ * @vercel/analytics chunk. Moving it behind `await import(...)` did not help
+ * either — Astro walks dynamic imports too, and the chunk still landed on every
+ * page. The script does not *send* anything without a <vercel-analytics> element
+ * to construct, but it loads and runs, which is exactly the distinction .com's
+ * BaseLayout documents about `beforeSend` being a send-suppressor rather than a
+ * load-suppressor. A footer that says "no third-party scripts" has to be true.
+ *
+ * So the module is simply not in this app's graph. **To turn analytics on:
+ * uncomment the two marked lines below, then pass `analytics` on the pages that
+ * describe the house — and correct the footer note at the bottom of this file in
+ * the same commit,** because it currently promises something stronger than
+ * "cookieless". `@vercel/analytics` stays in package.json so that is not also an
+ * install.
+ *
+ * (This is not a latent bug on the other two apps: every Astro page in asoc-com
+ * and asoc-dev already opts in, so neither has a page that is opted out and
+ * leaking. It would become one the day either grows a page that opts out, and
+ * this comment is the note for whoever hits that.)
+ *
+ * The Loop editor sits outside all of this structurally rather than by
+ * configuration: it is a static file at public/loops/editor.html, which Astro
+ * copies verbatim and never injects into, so no change in this file can reach
+ * it. An editor is the most load-bearing possible example of a page where
+ * someone MAKES something. It must never be counted.
+ */
+import '@asoc/kit/hyle-fonts.css'
+import '@asoc/kit/tokens.css'
+import '../styles/fonebrew.css'
+import Seo from '@asoc/kit/Seo.astro'
+import SiteFooter from '@asoc/kit/SiteFooter.astro'
+import { EDITOR_PATH } from '@asoc/loops'
+// import Analytics from '@vercel/analytics/astro'   <-- uncomment to enable (1/2)
+
+const { title, description, canonical, jsonLd, analytics = false } = Astro.props
+
+const path = Astro.url.pathname
+
+const NAV = [
+  { label: 'Loops', href: '/loops/' },
+  { label: 'Editor', href: EDITOR_PATH },
+  { label: 'Get it', href: '/#get-it' },
+]
+
+const FOOTER_COLS = [
+  {
+    title: 'Fonebrew',
+    links: [
+      { label: 'What it is', href: '/' },
+      { label: 'Loop gallery', href: '/loops/' },
+      { label: 'Loop editor', href: EDITOR_PATH },
+      { label: 'Get the app', href: '/#get-it' },
+    ],
+  },
+  {
+    title: 'House',
+    links: [
+      { label: 'asystemofcells.com', href: 'https://asystemofcells.com' },
+      { label: 'For developers', href: 'https://asystemofcells.dev' },
+      { label: 'The making of it', href: 'https://mdhv.xyz' },
+    ],
+  },
+  {
+    title: 'Terms',
+    links: [
+      { label: 'Privacy policy', href: 'https://asystemofcells.com/privacy' },
+      { label: 'Contact', href: 'https://asystemofcells.com/contact' },
+    ],
+  },
+]
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0b0c" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <Seo title={title} description={description} canonical={canonical} jsonLd={jsonLd} />
+  {/* {analytics && <Analytics />}   <-- uncomment to enable (2/2) */}
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="head">
+    <div class="shell head__row">
+      <a class="head__mark" href="/">fonebrew<span class="tld">.com</span></a>
+      <nav class="head__nav" aria-label="Primary">
+        {NAV.map((n) => (
+          <a href={n.href} aria-current={path === n.href ? 'page' : undefined}>{n.label}</a>
+        ))}
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="page">
+    <slot />
+  </main>
+  <SiteFooter
+    cols={FOOTER_COLS}
+    motto="cells interlinked within one stem"
+    note="No analytics on this site: no cookies, no page counts, no third-party scripts. The app itself never phones home."
+  />
+</body>
+</html>
