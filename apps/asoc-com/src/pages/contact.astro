@@ -13,8 +13,15 @@ const EMAIL = 'nooz@asystemofcells.com'
 
   {EMAIL ? (
     <p>
+      {/* Google Play's News policy reviewer must see the address in the raw
+          HTML. Cloudflare's Email Address Obfuscation was rewriting it into a
+          JS-decoded "[email protected]" placeholder, which reads as NO contact
+          info to any client that doesn't run that script -- these email_off
+          comments are Cloudflare's own documented opt-out for a region. */}
+      <Fragment set:html="<!--email_off-->" />
       Bug reports, feature requests, or anything else - email
       <a class="inline-link" href={`mailto:${EMAIL}`}> {EMAIL}</a>.
+      <Fragment set:html="<!--/email_off-->" />
     </p>
   ) : (
     <p>Contact details are being finalized. Check back shortly, or find the maker at <a class="inline-link" href="https://mdhv.xyz" target="_blank" rel="noopener noreferrer">mdhv.xyz</a> in the meantime.</p>
