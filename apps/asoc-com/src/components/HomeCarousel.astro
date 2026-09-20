@@ -1,21 +1,22 @@
 ---
 // component: HomeCarousel
 //
-// The real asystemofcells.com landing mechanism — ported from the
-// owner-confirmed design reference (apple_style_reconstruction6.html's
-// "home" page, itself sourced from asoc_landing.html): a plinth-backed
-// card, one focused hero tile + a scrolling thumbnail strip, wheel-scrubbed
-// and looped infinitely via modulo indexing.
+// The asystemofcells.com landing mechanism, v2 - "the constellation" on
+// desktop, "the reel" on mobile. Same roster data, same step-through
+// interaction model as the v1 wheel-scrubbed plinth card, restyled toward the
+// owner's immersive-portfolio reference: on desktop a scattered, tilted stack
+// of glass-like cards on a near-black stage (one focused "hero" slot + four
+// upcoming satellites, all real roster entries, all painted by the house
+// texture engine instead of stock photography); on mobile a full-bleed
+// backdrop with a vertically scroll-snapped stack of name pills that dim by
+// distance from the focal centre line.
 //
-// Its layout (a warm off-white card on a stone-charcoal plinth, one focused
-// hero tile + a scrolling thumbnail strip) is its own thing, scoped under
-// [data-page="home"]. Type is the house Hyle system (Hyle Print display,
-// Hyle Grotesk body) via the shared --font-* tokens, so the whole site now
-// speaks in one voice.
+// Both scenes share one state machine (`homeCurrent`, wheel/keyboard/scroll
+// all just move it) and one accent-driven backdrop system, so the two are
+// reskins of the same mechanism rather than two apps bolted together.
 //
-// Data is the real roster (packages/roster), not the reference file's
-// placeholder Music/Fitness/TV demo items — see the mapping below for
-// which real field stands in for each slot in the reference's shape.
+// Data is the real roster (packages/roster) - see the mapping below for which
+// real field stands in for each slot.
 import { getRoster, TISSUES } from '@asoc/roster'
 
 const tissueLabel = Object.fromEntries(TISSUES.map((t) => [t.slug, t.label]))
@@ -31,7 +32,7 @@ function titleCase(slug) {
 const items = getRoster().map((cell) => ({
   key: cell.slug,
   name: titleCase(cell.slug),
-  // No real version numbers exist in the roster — status stands in for the
+  // No real version numbers exist in the roster - status stands in for the
   // small meta line the reference used a version string for.
   status: statusLabel[cell.status] || cell.status,
   tissue: tissueLabel[cell.tissue] || cell.tissue,
@@ -41,8 +42,9 @@ const items = getRoster().map((cell) => ({
   external: !!cell.isHub,
 }))
 
-// A non-product tile for the in-browser generators. It rides the same carousel
-// (and drives the backdrop hue) but points at the /tools hub, not a roster slug.
+// A non-product tile for the in-browser generators. It rides the same
+// constellation/reel (and can be stepped to like any other cell) and points
+// at the /tools hub, not a roster slug.
 items.push({
   key: 'tools',
   name: 'Tools',
@@ -54,51 +56,86 @@ items.push({
   external: false,
 })
 
+const total = items.length
 const first = items[0]
-const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
+// Desktop satellite slots preview the next four items after the focused one,
+// wrapping via modulo - the same infinite-loop indexing the v1 thumbnail
+// strip used, just landing on four fixed stage positions instead of a row.
+const satelliteSlots = [1, 2, 3, 4].map((offset) => ({ offset, item: items[offset % total] }))
+const pad2 = (n) => String(n).padStart(2, '0')
 ---
 
 <div class="home-outer" data-page="home">
   <div class="home-card">
-    <div class="home-gallery" id="homeGallery">
-      <div class="home-focus-group" id="homeFocusGroup">
-        <div class="home-details" id="homeDetails">
-          <div class="hd-title-row">
-            <span class="hd-name" id="home-d-name">{first.name}</span>
-            <span class="hd-version" id="homeVersion">{first.status}</span>
-          </div>
-          <p class="hd-oneliner" id="homeOneLiner">{first.oneLiner}</p>
-        </div>
+    <!-- ============================================================ -->
+    <!-- Desktop: the constellation - a fixed arrangement of five card -->
+    <!-- slots (hero + four satellites). Slot geometry never moves;    -->
+    <!-- only which roster item occupies each slot changes on step.    -->
+    <!-- ============================================================ -->
+    <div class="scene scene--desktop" id="sceneDesktop" aria-hidden="false">
+      <div class="stage" id="stage" role="group" aria-label="Featured cells - scroll or use arrow keys to step through">
+        <span class="stage-index" id="stageIndex" aria-hidden="true">{pad2(1)} / {pad2(total)}</span>
+
         <a
-          class="home-hero"
-          id="homeHero"
-          style={`background:${first.color};`}
+          class="card card--hero"
+          id="cardHero"
           href={first.href}
           target={first.external ? '_blank' : undefined}
           rel={first.external ? 'noopener noreferrer' : undefined}
           aria-label={`${first.name}: ${first.oneLiner}`}
         >
-          <span class="home-tile-tag" id="home-hero-tag">{first.tissue}</span>
-          <span class="home-see-details" aria-hidden="true">See details &rarr;</span>
-          <span class="home-btn" aria-hidden="true">Explore</span>
+          <span class="card__tag" id="heroTag">{first.tissue}</span>
+          <span class="card__status" id="heroStatus">{first.status}</span>
+          <span class="card__foot">
+            <span class="card__name" id="heroName">{first.name}</span>
+            <span class="card__cta" aria-hidden="true">Explore &rarr;</span>
+          </span>
         </a>
+
+        {satelliteSlots.map(({ offset, item }) => (
+          <a
+            class="card card--sat"
+            data-slot={offset}
+            id={`cardSat${offset}`}
+            href={item.href}
+            target={item.external ? '_blank' : undefined}
+            rel={item.external ? 'noopener noreferrer' : undefined}
+            aria-label={item.name}
+          >
+            <span class="card__tag">{item.tissue}</span>
+            <span class="card__name">{item.name}</span>
+          </a>
+        ))}
       </div>
-      <div id="homeThumbs" style="display:contents">
-        {
-          initialThumbs.map((it) => (
-            <a
-              class="home-thumb"
-              style={`background-color:${it.color};`}
-              data-index={it.idx}
-              href={it.href}
-              target={it.external ? '_blank' : undefined}
-              rel={it.external ? 'noopener noreferrer' : undefined}
-              aria-label={it.name}
-            >
-              <span class="home-tile-tag">{it.name}</span>
-            </a>
-          ))
-        }
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Mobile: the reel - full-bleed backdrop + a scroll-snapped     -->
+    <!-- vertical stack of every roster item as a name pill. Every     -->
+    <!-- pill is a real link (works with no JS); JS only adds the      -->
+    <!-- focus-by-distance dimming and keeps the backdrop in sync.     -->
+    <!-- ============================================================ -->
+    <div class="scene scene--mobile" id="sceneMobile" aria-hidden="true">
+      <div class="reel" id="reel">
+        <div class="reel-spacer" aria-hidden="true"></div>
+        {items.map((it, i) => (
+          <a
+            class="pill"
+            data-index={i}
+            data-color={it.color}
+            href={it.href}
+            target={it.external ? '_blank' : undefined}
+            rel={it.external ? 'noopener noreferrer' : undefined}
+          >
+            <span class="pill__name">{it.name}</span>
+            <span class="pill__tissue">{it.tissue}</span>
+          </a>
+        ))}
+        <div class="reel-spacer" aria-hidden="true"></div>
+      </div>
+      <div class="reel-caption" id="reelCaption" aria-live="polite">
+        <p class="reel-oneliner" id="reelOneLiner">{first.oneLiner}</p>
+        <span class="reel-status" id="reelStatus">{first.status}</span>
       </div>
     </div>
 
@@ -136,34 +173,35 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
 </div>
 
 <style is:global>
-  /* Global (not Astro-scoped): the thumbnail strip is re-rendered client-side
-     on every carousel step via innerHTML, and elements created that way never
-     receive Astro's auto-injected data-astro-cid scoping attribute, so scoped
-     styles would silently stop matching them after the first cycle. Namespaced
-     instead the same way the reference does it: every selector below is under
-     [data-page="home"] or a home-*-prefixed class, so nothing here can collide
-     with packages/kit's tokens.css or component classes. */
-  /* Registered so it interpolates: when JS swaps the focused product's colour,
-     the card's accent-tinted gradients morph hue smoothly instead of snapping.
-     This is what makes the scroll-through colour change buttery, not abrupt. */
+  /* Global (not Astro-scoped): several elements below are re-rendered or
+     re-targeted client-side (card slots retint on every step), and the
+     search results list is built via innerHTML - neither receives Astro's
+     auto-injected data-astro-cid scoping attribute. Namespaced instead the
+     same way v1 did it: every selector is under [data-page="home"] or a
+     home-, card__- or pill__-prefixed class, so nothing collides with
+     packages/kit's tokens.css or component classes. */
   @property --home-accent {
     syntax: '<color>';
     inherits: true;
-    initial-value: #c98a3d;
+    initial-value: #8e7bff;
+  }
+  @property --float-y {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
   }
 
   [data-page='home'] {
-    --home-card: #efeeec;
-    --home-card-2: #e8e7e5;
-    --home-ink: #1a1a1a;
-    /* Darker than the reference's #6f6f6f on purpose. The backdrop used to be
-       a near-white wash, so mid grey was safe; it is now a real gradient, and
-       on the warm accents (Clackpad, Fonebrew, Figma Suite) the footer strip
-       sits on coral rather than cream, where #6f6f6f falls under 3:1. This
-       still reads as clearly secondary against the #1a1a1a ink. */
-    --home-muted: #4a4a4a;
+    /* Near-black, not the flat #0b0b0c token - the stage wants to read as a
+       void the cards float in, one shade off true black so the vignette has
+       somewhere to go. */
+    --home-bg: #050506;
+    --home-ink: #f0ede6;
+    --home-muted: rgba(240, 237, 230, 0.58);
     --home-ease: cubic-bezier(0.4, 0, 0.2, 1);
-    --home-accent: #c98a3d;
+    --home-accent: #8e7bff;
+    --home-panel: #16161a;
+    --home-hairline: rgba(240, 237, 230, 0.14);
   }
 
   .home-outer {
@@ -177,180 +215,283 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   .home-card {
     position: relative;
     width: 100%;
-    /* The real backdrop is a <canvas> painted by the house texture engine
-       (packages/kit/src/texture/texture.js), which is the same rendering core
-       the /tools generator uses. It is prepended as .texture-backdrop by the
-       module script at the bottom of this file and covers this box entirely.
-
-       What is left here is the no-JS / pre-hydration fallback: a plain CSS
-       gradient in the same 3-stop shape and the same corner orientation
-       (accent top-right, white bottom-left; CSS 225deg equals the engine's
-       135deg). It carries no grain, because CSS cannot produce per-pixel grain
-       composited in soft-light, and pretending otherwise with a turbulence
-       tile at 7% opacity is exactly what made the old backdrop look like a
-       flat milky wash instead of the generator's output. */
-    background-color: var(--home-card);
-    background-image: linear-gradient(
-      225deg,
-      var(--home-accent) 0%,
-      color-mix(in srgb, var(--home-accent) 40%, white) 35%,
-      #ffffff 100%
-    );
-    transition: --home-accent 750ms var(--home-ease);
+    background: var(--home-bg);
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
 
-  .home-gallery {
+  /* ---------------------------------------------------------- desktop --- */
+
+  .scene--desktop {
     flex: 1;
-    display: flex;
-    align-items: flex-end;
-    gap: 8px;
-    padding: 0 3.2%;
     position: relative;
     z-index: 3;
-    overflow: hidden;
-  }
-
-  .home-thumb {
-    flex: 0 0 auto;
-    width: min(156px, 13.2vw);
-    aspect-ratio: 3 / 4;
-    align-self: flex-end;
-    position: relative;
-    overflow: hidden;
-    opacity: 0.8;
     display: block;
-    text-decoration: none;
-    color: inherit;
-    transition: opacity 0.2s;
-  }
-  .home-thumb:hover,
-  .home-thumb:focus-visible {
-    opacity: 1;
   }
 
-  .home-tile-tag {
+  .stage {
     position: absolute;
-    top: 8px;
-    left: 8px;
+    inset: 0;
+    perspective: 1400px;
+  }
+
+  .stage-index {
+    position: absolute;
+    top: clamp(14px, 2.2vw, 28px);
+    right: clamp(16px, 3.2%, 40px);
+    z-index: 6;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.85vw, 11px);
+    letter-spacing: 0.14em;
+    color: var(--home-muted);
+  }
+
+  .card {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    aspect-ratio: 3 / 4;
+    border-radius: 6px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--home-ink);
+    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.75);
+    background-color: #1a1a1a; /* pre-canvas fallback so a slow paint never shows a see-through hole */
+    transform: translate(calc(var(--px, 0) * var(--parallax, 0px)), calc(var(--py, 0) * var(--parallax, 0px)))
+      rotate(var(--tilt, 0deg)) translateY(var(--float-y, 0px));
+    animation: cardFloat var(--float-dur, 7s) ease-in-out infinite alternate;
+    animation-delay: var(--float-delay, 0s);
+    transition: box-shadow var(--home-ease) 200ms;
+  }
+  .card:hover,
+  .card:focus-visible {
+    box-shadow: 0 40px 80px -18px rgba(0, 0, 0, 0.85);
+  }
+  /* The card texture always ramps to a pale end (paletteFromAccent's third
+     stop is white) - which end of the card that lands on depends on the
+     accent's hue, so the name label needs a guaranteed-dark scrim under it
+     rather than relying on text-shadow against an unpredictable background. */
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 46%;
+    z-index: 1;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
+    pointer-events: none;
+  }
+  .card:focus-visible {
+    outline: 2px solid var(--home-ink);
+    outline-offset: 3px;
+  }
+  @keyframes cardFloat {
+    from { --float-y: 0px; }
+    to { --float-y: -10px; }
+  }
+
+  .card--hero {
+    width: clamp(230px, 25vw, 380px);
+    top: 15%;
+    left: 6%;
+    --tilt: -3deg;
+    --parallax: 10px;
+    --float-dur: 8s;
+    z-index: 5;
+  }
+  .card--sat {
+    width: clamp(108px, 12.5vw, 190px);
+    z-index: 2;
+  }
+  .card--sat[data-slot='1'] { top: 3%; left: 37%; --tilt: 6deg; --parallax: 5px; --float-dur: 6.5s; --float-delay: -1.2s; z-index: 2; }
+  .card--sat[data-slot='2'] { top: 33%; left: 53%; --tilt: -6deg; --parallax: 7px; --float-dur: 7.5s; --float-delay: -3.4s; z-index: 4; width: clamp(130px, 14.5vw, 220px); }
+  .card--sat[data-slot='3'] { top: 6%; left: 71%; --tilt: 9deg; --parallax: 4px; --float-dur: 6s; --float-delay: -0.6s; z-index: 1; }
+  .card--sat[data-slot='4'] { top: 47%; left: 84%; --tilt: -10deg; --parallax: 6px; --float-dur: 7s; --float-delay: -2.1s; z-index: 3; }
+
+  .card__tag {
+    position: relative;
+    z-index: 2;
+    align-self: flex-start;
+    margin: 10px;
     font-family: var(--font-mono);
     font-size: 7px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     padding: 4px 7px;
-    background: rgba(20, 20, 20, 0.6);
+    background: rgba(0, 0, 0, 0.4);
     color: #f3f2ef;
     border-radius: 2px;
-    z-index: 2;
     pointer-events: none;
   }
-  .home-hero .home-tile-tag {
-    font-size: 8px;
-    padding: 5px 9px;
-  }
+  .card--hero .card__tag { font-size: 8px; padding: 5px 9px; }
 
-  .home-focus-group {
-    flex: 0 0 auto;
-    align-self: flex-end;
-    display: flex;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .home-hero {
-    flex: 0 0 auto;
-    width: min(486px, 43.2vw);
-    min-width: 270px;
-    aspect-ratio: 3 / 4;
-    position: relative;
-    overflow: hidden;
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
-  }
-
-  .home-details {
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: min(486px, 43.2vw);
-    min-width: 270px;
-  }
-  .home-details .hd-title-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .home-details .hd-name {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(15px, 1.7vw, 21px);
-  }
-  .home-details .hd-version {
-    font-family: var(--font-mono);
-    font-size: clamp(8px, 0.9vw, 11px);
-    letter-spacing: 0.04em;
-    color: var(--home-muted);
-    white-space: nowrap;
-  }
-  .home-details .hd-oneliner {
-    /* Hidden for now per owner request - kept in the DOM (not removed) so
-       the JS that updates it on carousel-cycle keeps working untouched,
-       and this is a one-line revert if it comes back. */
-    display: none;
-    margin: 0;
-    font-family: var(--font-ui);
-    font-weight: 500;
-    font-size: clamp(10px, 1.05vw, 13px);
-    line-height: 1.5;
-    color: var(--home-muted);
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .home-hero .home-see-details {
+  .card__status {
     position: absolute;
+    z-index: 2;
     top: 10px;
     right: 10px;
-    z-index: 2;
     font-family: var(--font-mono);
-    font-size: clamp(7px, 0.85vw, 10px);
+    font-size: 8px;
     letter-spacing: 0.08em;
-    color: #f3f2ef;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--home-ink);
+    color: #16161a;
+    pointer-events: none;
+    animation: pillBob 3.2s ease-in-out infinite alternate;
   }
-  .home-hero .home-btn {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    z-index: 2;
-    font-family: var(--font-ui);
-    font-size: clamp(9px, 0.95vw, 12px);
-    letter-spacing: 0.06em;
-    font-weight: 600;
-    background: #f3f2ef;
-    color: var(--home-ink);
-    border: none;
-    padding: 9px 18px;
-    transition: opacity 0.2s;
-  }
-  .home-hero:hover .home-btn {
-    opacity: 0.85;
-  }
-  .home-hero:focus-visible {
-    outline: 2px solid #f3f2ef;
-    outline-offset: 3px;
+  @keyframes pillBob {
+    from { transform: translateY(0); }
+    to { transform: translateY(-4px); }
   }
 
+  .card__foot {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 12px;
+  }
+  .card__name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: #f3f2ef;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  }
+  .card--hero .card__name { font-size: clamp(16px, 1.9vw, 23px); }
+  .card--sat .card__name {
+    position: absolute;
+    z-index: 2;
+    left: 10px;
+    bottom: 10px;
+    right: 10px;
+    font-size: clamp(11px, 1.1vw, 14px);
+  }
+  .card--hero .card__cta {
+    font-family: var(--font-ui);
+    font-size: clamp(9px, 0.9vw, 11px);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    background: #f3f2ef;
+    color: #16161a;
+    padding: 8px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: none; }
+    .card__status { animation: none; }
+  }
+
+  /* ----------------------------------------------------------- mobile --- */
+
+  .scene--mobile { display: none; }
+
+  @media (max-width: 880px) {
+    .scene--desktop { display: none; }
+    .scene--mobile {
+      display: block;
+      flex: 1;
+      position: relative;
+      z-index: 3;
+      overflow: hidden;
+    }
+    .reel {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-snap-type: y proximity;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding-inline: 8vw;
+    }
+    .reel-spacer { flex: 0 0 auto; height: 40vh; scroll-snap-align: none; }
+    .pill {
+      flex: 0 0 auto;
+      scroll-snap-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      text-decoration: none;
+      color: var(--home-ink);
+      opacity: 0.4;
+      transform: scale(0.86);
+      transition: opacity 260ms var(--home-ease), transform 260ms var(--home-ease);
+      padding: 6px 10px;
+    }
+    .pill--focused { opacity: 1; transform: scale(1); }
+    .pill__name {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(20px, 7.2vw, 30px);
+      white-space: nowrap;
+    }
+    .pill__tissue {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--home-muted);
+    }
+    .pill--focused .pill__tissue { color: var(--home-ink); }
+    .pill:focus-visible { outline: 2px solid var(--home-ink); outline-offset: 4px; opacity: 1; transform: scale(1); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pill { transition: none; }
+    }
+
+    .reel-caption {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 56px 8vw 16px;
+      background: linear-gradient(to top, var(--home-bg) 42%, rgba(5, 5, 6, 0));
+      pointer-events: none;
+    }
+    .reel-oneliner {
+      margin: 0;
+      max-width: 64%;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--home-muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .reel-status {
+      flex: 0 0 auto;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--home-ink);
+      color: #16161a;
+    }
+  }
+
+  /* ------------------------------------------------------------ footer -- */
+
   .home-foot {
-    z-index: 3;
+    z-index: 5;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -424,26 +565,10 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   }
 
   @media (max-width: 720px) {
-    .home-card {
-      min-height: 560px;
-    }
-    .home-hero,
-    .home-details {
-      width: min(351px, 78.3vw);
-    }
-    .home-thumb {
-      width: min(115px, 24vw);
-    }
-    .home-legal-links {
-      gap: 10px;
-    }
+    .home-legal-links { gap: 10px; }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .home-thumb {
-      transition: none;
-    }
-  }
+  /* ------------------------------------------------------------- search - */
 
   .search-overlay {
     position: fixed;
@@ -453,8 +578,8 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     align-items: flex-start;
     justify-content: center;
     padding: 12vh 5vw 0;
-    background: rgba(20, 18, 16, 0.55);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
   }
   .search-overlay.open {
     display: flex;
@@ -464,9 +589,10 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     max-height: 70vh;
     display: flex;
     flex-direction: column;
-    background: var(--home-card);
+    background: var(--home-panel);
+    border: 1px solid var(--home-hairline);
     border-radius: 14px;
-    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
     overflow: hidden;
     font-family: var(--font-ui);
   }
@@ -475,7 +601,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     align-items: center;
     gap: 10px;
     padding: 16px 18px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid var(--home-hairline);
   }
   .search-input-row svg {
     flex: 0 0 auto;
@@ -503,7 +629,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     font-size: 11px;
     letter-spacing: 0.06em;
     color: var(--home-muted);
-    background: rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.08);
     border: none;
     border-radius: 4px;
     padding: 4px 8px;
@@ -532,7 +658,7 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   }
   .search-result:hover,
   .search-result.active {
-    background: rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.08);
   }
   .search-result-swatch {
     flex: 0 0 auto;
@@ -565,90 +691,170 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   }
 </style>
 
-<script define:vars={{ items }}>
-  const HOME_STEP_THRESHOLD = 60
+<script type="application/json" id="rosterData" set:html={JSON.stringify(items)} />
+
+<script>
+  // The constellation + reel engine. A real ES module (not define:vars) so it
+  // can import the texture engine directly; roster data comes in via the JSON
+  // island above rather than a build-time inject, matching the search script
+  // below it.
+  import { mountTextureBackdrop, hexToRgb, rgbToHex } from '@asoc/kit/texture.js'
+
+  const items = JSON.parse(document.getElementById('rosterData').textContent)
+  const total = items.length
+
+  // The ambient stage/reel backdrops go near-black, not the bright
+  // accent-to-white ramp the cards themselves use - paletteFromAccent always
+  // ends in white, which read as a bright warm wash covering the whole void
+  // instead of an AMOLED stage the cards float in. Mixing the accent down
+  // toward the stage's own near-black keeps a coloured glow at the centre
+  // that still fades to true black at the edges. `strength` controls how much
+  // of the accent survives the mix - the reel gets a slightly richer glow
+  // than the desktop stage, since it has no coloured cards of its own to
+  // carry colour.
+  function ambientPalette(hex, strength) {
+    const c = hexToRgb(hex)
+    const core = rgbToHex({ r: c.r * strength, g: c.g * strength, b: c.b * strength })
+    return [core, '#050506']
+  }
+
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches
   const fadeMs = reducedMotion ? 0 : 220
 
-  const homeCardEl = document.querySelector('.home-card')
-  const homeGallery = document.getElementById('homeGallery')
-  const homeHeroEl = document.getElementById('homeHero')
-  const homeHeroTagEl = document.getElementById('home-hero-tag')
-  const homeDetailsEl = document.getElementById('homeDetails')
-  const homeThumbsEl = document.getElementById('homeThumbs')
-  const homeNameEl = document.getElementById('home-d-name')
-  const homeVersionEl = document.getElementById('homeVersion')
-  const homeOneLinerEl = document.getElementById('homeOneLiner')
+  const stageEl = document.getElementById('stage')
+  const stageIndexEl = document.getElementById('stageIndex')
+  const heroEl = document.getElementById('cardHero')
+  const heroTagEl = document.getElementById('heroTag')
+  const heroStatusEl = document.getElementById('heroStatus')
+  const heroNameEl = document.getElementById('heroName')
+  const satEls = [1, 2, 3, 4].map((n) => document.getElementById(`cardSat${n}`))
+
+  const reelEl = document.getElementById('reel')
+  const pillEls = reelEl ? Array.from(reelEl.querySelectorAll('.pill')) : []
+  const reelOneLinerEl = document.getElementById('reelOneLiner')
+  const reelStatusEl = document.getElementById('reelStatus')
 
   let homeCurrent = 0
   let homeAnimating = false
 
-  // Seed the backdrop with the first product's accent (applyHero only runs on
-  // subsequent steps; the first tile is server-rendered).
-  if (homeCardEl && items[homeCurrent]) {
-    homeCardEl.style.setProperty('--home-accent', items[homeCurrent].color)
+  const pad2 = (n) => String(n).padStart(2, '0')
+
+  // --- backdrops -------------------------------------------------------
+  // One dim ambient glow behind the desktop stage (the cards themselves
+  // carry the colour there), one richer full-bleed wash behind the mobile
+  // reel (there are no coloured cards to carry it on that screen). A card
+  // gets its own small backdrop too, retinted (not remounted) on every step.
+
+  const desktopBackdrop = mountTextureBackdrop(stageEl, {
+    palette: ambientPalette(first().color, 0.4),
+    fill: 'radial',
+    stops: [0, 0.5],
+    texType: 'grain',
+    grain: 20,
+    scale: 12,
+    vig: 22,
+    motion: reducedMotion ? 'none' : 'drift',
+    speed: 16,
+  })
+
+  const mobileStage = document.getElementById('sceneMobile')
+  const mobileBackdrop = mountTextureBackdrop(mobileStage, {
+    palette: ambientPalette(first().color, 0.55),
+    fill: 'radial',
+    stops: [0, 0.64],
+    texType: 'grain',
+    grain: 30,
+    scale: 10,
+    vig: 16,
+    motion: reducedMotion ? 'none' : 'drift',
+    speed: 20,
+  })
+
+  const heroBackdrop = mountTextureBackdrop(heroEl, {
+    accent: first().color,
+    fill: 'linear',
+    angle: 150,
+    texType: 'grain',
+    grain: 34,
+    scale: 9,
+    vig: 0,
+    motion: 'none',
+  })
+  const satBackdrops = satEls.map((el, i) => {
+    const item = items[(1 + i) % total]
+    return mountTextureBackdrop(el, {
+      accent: item.color,
+      fill: 'linear',
+      angle: 150,
+      texType: 'grain',
+      grain: 34,
+      scale: 9,
+      vig: 0,
+      motion: 'none',
+    })
+  })
+
+  function first() {
+    return items[0]
   }
 
-  function applyHero(item) {
-    // Drive the backdrop hue from the focused product. The CSS variable still
-    // drives the no-JS fallback gradient; the canvas backdrop listens for the
-    // event, because this script is a define:vars script (opted out of Vite
-    // bundling) and so cannot import the texture module directly.
-    if (homeCardEl) homeCardEl.style.setProperty('--home-accent', item.color)
-    document.dispatchEvent(new CustomEvent('asoc:accent', { detail: { color: item.color } }))
-    homeHeroEl.style.backgroundColor = item.color
-    homeHeroEl.href = item.href
-    homeHeroEl.setAttribute('aria-label', `${item.name}: ${item.oneLiner}`)
-    if (item.external) {
-      homeHeroEl.setAttribute('target', '_blank')
-      homeHeroEl.setAttribute('rel', 'noopener noreferrer')
+  // --- desktop: apply the current index to the five fixed slots --------
+
+  function applyStage(idx) {
+    const hero = items[idx]
+    heroEl.href = hero.href
+    heroEl.setAttribute('aria-label', `${hero.name}: ${hero.oneLiner}`)
+    if (hero.external) {
+      heroEl.setAttribute('target', '_blank')
+      heroEl.setAttribute('rel', 'noopener noreferrer')
     } else {
-      homeHeroEl.removeAttribute('target')
-      homeHeroEl.removeAttribute('rel')
+      heroEl.removeAttribute('target')
+      heroEl.removeAttribute('rel')
     }
-    homeHeroTagEl.textContent = item.tissue
-    homeNameEl.textContent = item.name
-    homeVersionEl.textContent = item.status
-    homeOneLinerEl.textContent = item.oneLiner
-  }
+    heroTagEl.textContent = hero.tissue
+    heroStatusEl.textContent = hero.status
+    heroNameEl.textContent = hero.name
+    heroBackdrop.setAccent(hero.color)
+    desktopBackdrop.setPalette(ambientPalette(hero.color, 0.4))
 
-  function renderThumbs() {
-    let html = ''
-    for (let i = 1; i < items.length; i++) {
-      const idx = (homeCurrent + i) % items.length // modulo wrap = the infinite loop
-      const it = items[idx]
-      html += `<a class="home-thumb" style="background-color:${it.color}" data-index="${idx}" href="${it.href}"${
-        it.external ? ' target="_blank" rel="noopener noreferrer"' : ''
-      } aria-label="${it.name}"><span class="home-tile-tag">${it.name}</span></a>`
-    }
-    homeThumbsEl.innerHTML = html
+    satEls.forEach((el, i) => {
+      const item = items[(idx + i + 1) % total]
+      el.href = item.href
+      el.setAttribute('aria-label', item.name)
+      if (item.external) {
+        el.setAttribute('target', '_blank')
+        el.setAttribute('rel', 'noopener noreferrer')
+      } else {
+        el.removeAttribute('target')
+        el.removeAttribute('rel')
+      }
+      const tagEl = el.querySelector('.card__tag')
+      const nameEl = el.querySelector('.card__name')
+      if (tagEl) tagEl.textContent = item.tissue
+      if (nameEl) nameEl.textContent = item.name
+      satBackdrops[i].setAccent(item.color)
+    })
+
+    stageIndexEl.textContent = `${pad2(idx + 1)} / ${pad2(total)}`
   }
 
   function cycleTo(idx) {
     if (homeAnimating || idx === homeCurrent) return
     homeAnimating = true
-
-    const commit = () => {
-      homeCurrent = idx
-      applyHero(items[idx])
-      renderThumbs()
-    }
+    homeCurrent = idx
 
     if (fadeMs === 0) {
-      commit()
+      applyStage(idx)
       homeAnimating = false
       return
     }
 
-    homeHeroEl.style.transition = `opacity ${fadeMs}ms ease`
-    homeDetailsEl.style.transition = `opacity ${fadeMs}ms ease`
-    homeHeroEl.style.opacity = '0.4'
-    homeDetailsEl.style.opacity = '0'
-
+    stageEl.style.transition = `opacity ${fadeMs}ms ease`
+    stageEl.style.opacity = '0.55'
     setTimeout(() => {
-      commit()
-      homeHeroEl.style.opacity = '1'
-      homeDetailsEl.style.opacity = '1'
+      applyStage(idx)
+      stageEl.style.opacity = '1'
       setTimeout(() => {
         homeAnimating = false
       }, fadeMs)
@@ -656,15 +862,15 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
   }
 
   let homeWheelAccum = 0
-  homeGallery.addEventListener(
+  const HOME_STEP_THRESHOLD = 60
+  stageEl.addEventListener(
     'wheel',
     (e) => {
       e.preventDefault()
       if (homeAnimating) return
       homeWheelAccum += Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX
       if (Math.abs(homeWheelAccum) > HOME_STEP_THRESHOLD) {
-        const next =
-          homeWheelAccum > 0 ? (homeCurrent + 1) % items.length : (homeCurrent - 1 + items.length) % items.length
+        const next = homeWheelAccum > 0 ? (homeCurrent + 1) % total : (homeCurrent - 1 + total) % total
         homeWheelAccum = 0
         cycleTo(next)
       }
@@ -672,67 +878,85 @@ const initialThumbs = items.slice(1).map((it, i) => ({ ...it, idx: i + 1 }))
     { passive: false },
   )
 
-  // Keyboard parity for the same scrub gesture — the wheel listener above
-  // is the primary mechanism the reference specifies; this just makes the
-  // same step reachable without a wheel/trackpad.
-  homeGallery.addEventListener('keydown', (e) => {
+  stageEl.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault()
-      cycleTo((homeCurrent + 1) % items.length)
+      cycleTo((homeCurrent + 1) % total)
     } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
       e.preventDefault()
-      cycleTo((homeCurrent - 1 + items.length) % items.length)
+      cycleTo((homeCurrent - 1 + total) % total)
     }
   })
-</script>
 
-<script type="application/json" id="rosterData" set:html={JSON.stringify(items)} />
-
-<script>
-  // The home backdrop, painted by the same engine as /tools/texture-background.
-  //
-  // Values follow the owner's reference settings: linear fill, 135 degrees,
-  // grain at 40, scale 1.0x, no vignette. The palette is derived per product
-  // from its roster accent so every cell gets a version of that look.
-  //
-  // Motion is 'drift', not the reference's 'rotate', and this is a deliberate
-  // departure: a rotating linear gradient swings its saturated end through a
-  // full circle, so once per cycle the darkest corner passes under the
-  // wordmark and the product title and takes their contrast with it. Drift
-  // translates the gradient instead of spinning it, so the accent corner stays
-  // put (top-right, over empty space) and the white end stays under the type.
-  // If the swing is wanted anyway, this is a one-word change to 'rotate'.
-  import { mountTextureBackdrop, REFERENCE_STOPS } from '@asoc/kit/texture.js'
-
-  const card = document.querySelector('.home-card')
-  const rosterEl = document.getElementById('rosterData')
-
-  if (card && rosterEl) {
-    const roster = JSON.parse(rosterEl.textContent)
-    const backdrop = mountTextureBackdrop(card, {
-      accent: roster[0]?.color || '#c98a3d',
-      fill: 'linear',
-      angle: 135,
-      stops: REFERENCE_STOPS,
-      texType: 'grain',
-      grain: 40,
-      scale: 10,
-      vig: 0,
-      motion: 'drift',
-      speed: 22,
+  // Mouse parallax: cards drift a few px opposite the cursor, depth-weighted
+  // per card via the --parallax custom property each already declares.
+  if (canHover && !reducedMotion) {
+    stageEl.addEventListener('mousemove', (e) => {
+      const r = stageEl.getBoundingClientRect()
+      const px = (e.clientX - r.left) / r.width - 0.5
+      const py = (e.clientY - r.top) / r.height - 0.5
+      stageEl.style.setProperty('--px', px.toFixed(3))
+      stageEl.style.setProperty('--py', py.toFixed(3))
     })
-    document.addEventListener('asoc:accent', (e) => backdrop.setAccent(e.detail.color))
+    stageEl.addEventListener('mouseleave', () => {
+      stageEl.style.setProperty('--px', '0')
+      stageEl.style.setProperty('--py', '0')
+    })
   }
+
+  // --- mobile: focus-by-distance-from-centre on the pill reel -----------
+
+  if (reelEl && pillEls.length) {
+    let reelTicking = false
+
+    function updateReelFocus() {
+      reelTicking = false
+      const viewportMid = window.innerHeight / 2
+      let nearest = pillEls[0]
+      let nearestDist = Infinity
+      pillEls.forEach((pill) => {
+        const r = pill.getBoundingClientRect()
+        const mid = r.top + r.height / 2
+        const dist = Math.abs(mid - viewportMid)
+        if (dist < nearestDist) {
+          nearestDist = dist
+          nearest = pill
+        }
+      })
+      // Only the single nearest pill is "focused" - a threshold-based check
+      // here (anything within one pill-height of centre) could tag two
+      // adjacent pills at once when the scroll settles between them.
+      pillEls.forEach((pill) => pill.classList.toggle('pill--focused', pill === nearest))
+      const idx = Number(nearest.dataset.index)
+      if (idx !== homeCurrent) {
+        homeCurrent = idx
+        const item = items[idx]
+        mobileBackdrop.setPalette(ambientPalette(item.color, 0.55))
+        if (reelOneLinerEl) reelOneLinerEl.textContent = item.oneLiner
+        if (reelStatusEl) reelStatusEl.textContent = item.status
+      }
+    }
+
+    reelEl.addEventListener(
+      'scroll',
+      () => {
+        if (!reelTicking) {
+          reelTicking = true
+          requestAnimationFrame(updateReelFocus)
+        }
+      },
+      { passive: true },
+    )
+    updateReelFocus()
+  }
+
+  applyStage(0)
 </script>
 
 <script>
   // Search - client-side fuzzy match over the same roster data, no backend.
   // No server, no third-party API - Fuse.js fuzzy-matches the roster data
   // that's already bundled into this page at build time, entirely client-side.
-  // A separate, normally-bundled script from the carousel logic above:
-  // `define:vars` scripts are opted out of Vite's bundling (so the browser
-  // can't resolve a bare "fuse.js" import), so `items` comes in via a JSON
-  // data island instead, read at runtime rather than injected at build time.
   import Fuse from 'fuse.js'
 
   const items = JSON.parse(document.getElementById('rosterData').textContent)
