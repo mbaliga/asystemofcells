@@ -75,18 +75,24 @@ const first = items[0]
 // near the bottom-right, ends large near the top-left, but the paths fan out
 // across the whole stage (short/long, upper/lower) instead of stacking on a
 // single diagonal - the reference reads as a loose scatter of cards, not a
-// queue on a line. All offsets are vw/vh from stage-centre; tilt is fixed
-// for a lane's entire flight (the reference cards never visibly re-rotate
-// mid-flight). Durations vary a little per lane so the loop doesn't feel
-// metronomic.
+// queue on a line. All offsets are vw/vh from stage-centre. Durations vary a
+// little per lane so the loop doesn't feel metronomic.
+//
+// tiltStart/tiltEnd (not a single fixed tilt): each lane tumbles rather than
+// holding one angle for its whole flight - rotation interpolates tiltStart
+// -> 0deg over the first half of the path and 0deg -> tiltEnd over the
+// second half (see the flow keyframes' explicit 50% stop), so every card
+// reads perfectly orthogonal for a moment as it crosses the stage's centre -
+// the "in focus" moment .flow-focus (below) also keys off of - and tumbles
+// on either side of that.
 const FLOW_LANES = [
-  { sx: 34, sy: 30, ex: -40, ey: -36, sScale: 0.4, eScale: 1.25, tilt: -6, duration: 4.6 },
-  { sx: 40, sy: 16, ex: -46, ey: -22, sScale: 0.36, eScale: 1.2, tilt: 8, duration: 5.0 },
-  { sx: 20, sy: 36, ex: -30, ey: -44, sScale: 0.42, eScale: 1.3, tilt: -10, duration: 4.4 },
-  { sx: 40, sy: 34, ex: -18, ey: -12, sScale: 0.4, eScale: 1.1, tilt: 5, duration: 5.2 },
-  { sx: 14, sy: 40, ex: -46, ey: -8, sScale: 0.38, eScale: 1.28, tilt: -4, duration: 4.8 },
-  { sx: 46, sy: 6, ex: -12, ey: -40, sScale: 0.4, eScale: 1.2, tilt: 11, duration: 5.4 },
-  { sx: 26, sy: 22, ex: -38, ey: -30, sScale: 0.4, eScale: 1.22, tilt: -8, duration: 4.9 },
+  { sx: 34, sy: 30, ex: -40, ey: -36, sScale: 0.4, eScale: 1.25, tiltStart: -24, tiltEnd: 18, duration: 4.6 },
+  { sx: 40, sy: 16, ex: -46, ey: -22, sScale: 0.36, eScale: 1.2, tiltStart: 30, tiltEnd: -16, duration: 5.0 },
+  { sx: 20, sy: 36, ex: -30, ey: -44, sScale: 0.42, eScale: 1.3, tiltStart: -34, tiltEnd: 22, duration: 4.4 },
+  { sx: 40, sy: 34, ex: -18, ey: -12, sScale: 0.4, eScale: 1.1, tiltStart: 20, tiltEnd: -12, duration: 5.2 },
+  { sx: 14, sy: 40, ex: -46, ey: -8, sScale: 0.38, eScale: 1.28, tiltStart: -16, tiltEnd: 26, duration: 4.8 },
+  { sx: 46, sy: 6, ex: -12, ey: -40, sScale: 0.4, eScale: 1.2, tiltStart: 32, tiltEnd: -20, duration: 5.4 },
+  { sx: 26, sy: 22, ex: -38, ey: -30, sScale: 0.4, eScale: 1.22, tiltStart: -28, tiltEnd: 15, duration: 4.9 },
 ]
 // Bounded the same way v2's satellite count was: with fewer items in the
 // roster than lanes, fewer lanes just means fewer distinct cards on stage at
@@ -126,13 +132,23 @@ const lanes = FLOW_LANES.slice(0, LANE_COUNT).map((lane, i) => ({
             rel={lane.item.external ? 'noopener noreferrer' : undefined}
             aria-label={`${lane.item.tissue}: ${lane.item.name}`}
             tabindex="-1"
-            style={`--sx:${lane.sx}vw; --sy:${lane.sy}vh; --ex:${lane.ex}vw; --ey:${lane.ey}vh; --s-scale:${lane.sScale}; --e-scale:${lane.eScale}; --tilt:${lane.tilt}deg; animation-duration:${lane.duration}s; animation-delay:${lane.delay}s;`}
+            style={`--sx:${lane.sx}vw; --sy:${lane.sy}vh; --ex:${lane.ex}vw; --ey:${lane.ey}vh; --s-scale:${lane.sScale}; --e-scale:${lane.eScale}; --tilt-start:${lane.tiltStart}deg; --tilt-end:${lane.tiltEnd}deg; animation-duration:${lane.duration}s; animation-delay:${lane.delay}s;`}
           >
             <span class="flow-card__tag">{lane.item.tissue}</span>
             <span class="flow-card__status">{lane.item.status}</span>
             <span class="flow-card__name">{lane.item.name}</span>
           </a>
         ))}
+      </div>
+
+      <!-- Decorative echo of whichever card is currently "in focus" - the
+           one JS finds is closest to perfectly orthogonal as lanes tumble
+           through the stage's centre (see the rAF loop below). Not a live
+           region: it's a visual-only duplicate of the flow-card's own
+           accessible name, which stays reachable via .flow-fallback/search
+           regardless of animation state. -->
+      <div class="flow-focus" id="flowFocus" aria-hidden="true">
+        <span class="flow-focus__name" id="flowFocusName">{first.name}</span>
       </div>
 
       <!-- Every item, in plain roster order, real tab-focusable links -
@@ -324,28 +340,53 @@ const lanes = FLOW_LANES.slice(0, LANE_COUNT).map((lane, i) => ({
        drifting to exit large near the top-left) at linear speed - the
        apparent "faster/bigger near the end" feel comes from real growth in
        scale over the same path, not from an eased timing function. Each
-       lane supplies its own --sx/--sy/--ex/--ey/--s-scale/--e-scale/--tilt/
-       animation-duration/animation-delay inline (see FLOW_LANES). */
+       lane supplies its own --sx/--sy/--ex/--ey/--s-scale/--e-scale/
+       --tilt-start/--tilt-end/animation-duration/animation-delay inline
+       (see FLOW_LANES). Cards also tumble rather than holding one angle -
+       see the keyframes' explicit 50% stop. */
     animation-name: flow;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
     animation-play-state: running;
   }
   .flow-card:hover,
+  .flow-card:focus-visible,
+  .flow-card--focused {
+    z-index: 15;
+  }
+  .flow-card:hover,
   .flow-card:focus-visible {
     /* A constantly-moving target can't be clicked, so hovering (or focusing,
        for the rare case a lane is reachable - see .flow-fallback for the
        real tab path) freezes just that one lane mid-flight; the rest keep
-       flowing. */
+       flowing. Wins the stacking order over .flow-card--focused too (z-index
+       20 > 15), so interacting with a card always brings it fully forward. */
     animation-play-state: paused;
     z-index: 20;
     box-shadow: 0 40px 80px -18px rgba(0, 0, 0, 0.85);
   }
   @keyframes flow {
-    0% { transform: translate(var(--sx), var(--sy)) scale(var(--s-scale)) rotate(var(--tilt)); opacity: 0; }
+    0% {
+      transform: translate(var(--sx), var(--sy)) scale(var(--s-scale)) rotate(var(--tilt-start));
+      opacity: 0;
+    }
     6% { opacity: 1; }
+    /* The tumble's midpoint: rotation crosses exactly through orthogonal
+       (0deg) here, at the same path-position .flow-focus's JS calls "in
+       focus" (see the rAF loop below, which detects this directly off the
+       live computed rotation rather than assuming every lane reaches this
+       keyframe at the same wall-clock moment). Position/scale are also
+       given explicitly (the midpoint of each lane's own start/end) so this
+       stop doesn't disturb their otherwise-linear progress. */
+    50% {
+      transform: translate(calc((var(--sx) + var(--ex)) / 2), calc((var(--sy) + var(--ey)) / 2))
+        scale(calc((var(--s-scale) + var(--e-scale)) / 2)) rotate(0deg);
+    }
     90% { opacity: 1; }
-    100% { transform: translate(var(--ex), var(--ey)) scale(var(--e-scale)) rotate(var(--tilt)); opacity: 0; }
+    100% {
+      transform: translate(var(--ex), var(--ey)) scale(var(--e-scale)) rotate(var(--tilt-end));
+      opacity: 0;
+    }
   }
   /* Same guaranteed-dark scrim as v2's cards: the texture always ramps to a
      pale end, and which corner that lands on depends on the accent's hue. */
@@ -405,6 +446,27 @@ const lanes = FLOW_LANES.slice(0, LANE_COUNT).map((lane, i) => ({
     font-size: clamp(12px, 1.3vw, 17px);
     color: var(--home-card-ink);
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Fixed chrome, never part of the flow: the brand wordmark anchors
+     bottom-left (.home-brand, in .home-foot, unchanged), this anchors the
+     current in-focus product's name top-right - the two fixed reference
+     points the reference clips hold steady while everything else moves. */
+  .flow-focus {
+    position: absolute;
+    top: clamp(14px, 2.2vw, 28px);
+    right: clamp(16px, 3.2%, 40px);
+    z-index: 6;
+    pointer-events: none;
+  }
+  .flow-focus__name {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.85vw, 11px);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--home-muted);
+    transition: opacity 200ms var(--home-ease);
   }
 
   /* Real links, real tab-focusable, in plain roster order - always in the
@@ -484,6 +546,7 @@ const lanes = FLOW_LANES.slice(0, LANE_COUNT).map((lane, i) => ({
 
   @media (prefers-reduced-motion: reduce) {
     .flow-stage { display: none; }
+    .flow-focus { display: none; }
     .flow-fallback {
       position: static;
       width: auto;
@@ -934,6 +997,10 @@ const lanes = FLOW_LANES.slice(0, LANE_COUNT).map((lane, i) => ({
     if (nameEl) nameEl.textContent = item.name
   }
 
+  // Tracks what each lane is *currently* showing (not just at load) so the
+  // "in focus" label below always names the right item, even mid-lap.
+  const laneCurrentItems = flowCardEls.map((el, i) => items[i % total])
+
   // No prefers-reduced-motion gate needed here: under reduced motion
   // .flow-stage is display:none (see the CSS media query), so the CSS
   // animation never runs and animationiteration simply never fires - this
@@ -946,10 +1013,60 @@ const lanes = FLOW_LANES.slice(0, LANE_COUNT).map((lane, i) => ({
       // start); each subsequent lap advances by the lane count so every
       // lane's sequence is disjoint and, between them, covers the roster.
       const nextIdx = (i + lap * flowCardEls.length) % total
+      laneCurrentItems[i] = items[nextIdx]
       applyLane(el, items[nextIdx])
       laneBackdrops[i].backdrop.setAccent(items[nextIdx].color)
     })
   })
+
+  // --- desktop: "in focus" = whichever lane is currently orthogonal ------
+  //
+  // The tumble's zero-crossing (the @keyframes flow 50% stop) is what "in
+  // focus" means, so this reads it directly off each card's live computed
+  // transform rather than assuming every lane reaches it at the same
+  // wall-clock moment (they don't - durations/delays differ per lane) or
+  // trying to duplicate the keyframe's timing math in JS. Robust to a lane
+  // being paused mid-tumble by hover/focus, too, since it reads the actual
+  // current angle rather than a predicted one.
+  const flowFocusNameEl = document.getElementById('flowFocusName')
+  let focusedLane = -1
+
+  function currentRotationDeg(el) {
+    const t = getComputedStyle(el).transform
+    if (!t || t === 'none') return 0
+    const values = t.startsWith('matrix3d(')
+      ? t.slice(9, -1).split(',').map(Number)
+      : t.slice(7, -1).split(',').map(Number)
+    // matrix(a, b, ...) - 2D; matrix3d's a/b live at indices 0/1 too.
+    const [a, b] = values
+    return Math.atan2(b, a) * (180 / Math.PI)
+  }
+
+  function tickFocus() {
+    let bestIdx = 0
+    let bestAbs = Infinity
+    flowCardEls.forEach((el, i) => {
+      const angle = Math.abs(currentRotationDeg(el))
+      if (angle < bestAbs) {
+        bestAbs = angle
+        bestIdx = i
+      }
+    })
+    if (bestIdx !== focusedLane) {
+      if (focusedLane >= 0) flowCardEls[focusedLane].classList.remove('flow-card--focused')
+      focusedLane = bestIdx
+      flowCardEls[bestIdx].classList.add('flow-card--focused')
+      if (flowFocusNameEl) {
+        flowFocusNameEl.style.opacity = '0'
+        setTimeout(() => {
+          flowFocusNameEl.textContent = laneCurrentItems[bestIdx].name
+          flowFocusNameEl.style.opacity = '1'
+        }, 200)
+      }
+    }
+    requestAnimationFrame(tickFocus)
+  }
+  if (flowCardEls.length) requestAnimationFrame(tickFocus)
 
   // --- mobile: focus-by-distance-from-centre on the pill reel -----------
 
