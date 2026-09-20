@@ -1,19 +1,30 @@
 ---
 // component: HomeCarousel
 //
-// The asystemofcells.com landing mechanism, v2 - "the constellation" on
-// desktop, "the reel" on mobile. Same roster data, same step-through
-// interaction model as the v1 wheel-scrubbed plinth card, restyled toward the
-// owner's immersive-portfolio reference: on desktop a scattered, tilted stack
-// of glass-like cards on a near-black stage (one focused "hero" slot + four
-// upcoming satellites, all real roster entries, all painted by the house
-// texture engine instead of stock photography); on mobile a full-bleed
-// backdrop with a vertically scroll-snapped stack of name pills that dim by
-// distance from the focal centre line.
+// The asystemofcells.com landing mechanism, v3 - "the flow" on desktop, "the
+// reel" on mobile. Real roster data on both.
 //
-// Both scenes share one state machine (`homeCurrent`, wheel/keyboard/scroll
-// all just move it) and one accent-driven backdrop system, so the two are
-// reskins of the same mechanism rather than two apps bolted together.
+// v3 replaces v2's desktop "constellation" (fixed hero + four satellite
+// slots, content swapped on a discrete wheel/keyboard step) with a
+// continuous diagonal conveyor traced frame-by-frame from the owner's
+// reference clips: cards spawn small near the bottom-right, drift up-left
+// while growing, and exit large near the top-left, several overlapping at
+// once along hand-varied paths (not one straight line - see FLOW_LANES).
+// It's ambient/continuous rather than step-driven because that's what the
+// reference actually is: nothing in it demonstrates a discrete "step
+// forward" interaction, it's a looping showreel. Each lane is a real link
+// that recycles to the next roster item every time its own loop restarts
+// (invisible, since it's cropped to nothing at that point in the path), so
+// over time every item flies past. Hover/focus pauses a card's own lane so
+// it's actually clickable; prefers-reduced-motion swaps the whole flow for
+// a plain static grid of every item, motion-free and immediately complete
+// (a keyboard/AT user isn't required to wait for a specific item's lane to
+// come around - search, further down, is the other complete, motion-free
+// path to any item at any time).
+//
+// The mobile reel is unchanged from v2: a full-bleed backdrop behind a
+// vertically scroll-snapped stack of name pills that dim by distance from
+// the focal centre line.
 //
 // Data is the real roster (packages/roster) - see the mapping below for which
 // real field stands in for each slot.
@@ -58,61 +69,90 @@ items.push({
 
 const total = items.length
 const first = items[0]
-// Desktop satellite slots preview the next few items after the focused one,
-// wrapping via modulo - the same infinite-loop indexing the v1 thumbnail
-// strip used, just landing on up to four fixed stage positions instead of a
-// row. Capped at total-1 (not a flat 4): with fewer than 5 items in the
-// roster, offset % total would wrap around and land back on an index already
-// showing elsewhere (or on the hero itself) - fewer, distinct satellites
-// beats a silently duplicated card.
-const SATELLITE_COUNT = Math.min(4, Math.max(0, total - 1))
-const satelliteSlots = Array.from({ length: SATELLITE_COUNT }, (_, i) => {
-  const offset = i + 1
-  return { offset, item: items[offset % total] }
-})
-const pad2 = (n) => String(n).padStart(2, '0')
+
+// Seven hand-varied flight paths, traced against the reference clips rather
+// than derived from one formula: each lane spawns small at its own point
+// near the bottom-right, ends large near the top-left, but the paths fan out
+// across the whole stage (short/long, upper/lower) instead of stacking on a
+// single diagonal - the reference reads as a loose scatter of cards, not a
+// queue on a line. All offsets are vw/vh from stage-centre; tilt is fixed
+// for a lane's entire flight (the reference cards never visibly re-rotate
+// mid-flight). Durations vary a little per lane so the loop doesn't feel
+// metronomic.
+const FLOW_LANES = [
+  { sx: 34, sy: 30, ex: -40, ey: -36, sScale: 0.4, eScale: 1.25, tilt: -6, duration: 4.6 },
+  { sx: 40, sy: 16, ex: -46, ey: -22, sScale: 0.36, eScale: 1.2, tilt: 8, duration: 5.0 },
+  { sx: 20, sy: 36, ex: -30, ey: -44, sScale: 0.42, eScale: 1.3, tilt: -10, duration: 4.4 },
+  { sx: 40, sy: 34, ex: -18, ey: -12, sScale: 0.4, eScale: 1.1, tilt: 5, duration: 5.2 },
+  { sx: 14, sy: 40, ex: -46, ey: -8, sScale: 0.38, eScale: 1.28, tilt: -4, duration: 4.8 },
+  { sx: 46, sy: 6, ex: -12, ey: -40, sScale: 0.4, eScale: 1.2, tilt: 11, duration: 5.4 },
+  { sx: 26, sy: 22, ex: -38, ey: -30, sScale: 0.4, eScale: 1.22, tilt: -8, duration: 4.9 },
+]
+// Bounded the same way v2's satellite count was: with fewer items in the
+// roster than lanes, fewer lanes just means fewer distinct cards on stage at
+// once rather than two lanes silently showing the same item.
+const LANE_COUNT = Math.min(FLOW_LANES.length, total)
+// A fixed stagger (not each lane's own duration/count) so the spread across
+// the cycle stays even even though durations vary per lane.
+const FLOW_STAGGER = 0.7
+const lanes = FLOW_LANES.slice(0, LANE_COUNT).map((lane, i) => ({
+  ...lane,
+  item: items[i % total],
+  // Negative delays start each lane already mid-flight and spread across
+  // the cycle at first paint, instead of every lane launching from spawn
+  // in lockstep the moment the page loads.
+  delay: -(i * FLOW_STAGGER),
+}))
 ---
 
 <div class="home-outer" data-page="home">
   <div class="home-card">
     <!-- ============================================================ -->
-    <!-- Desktop: the constellation - a fixed arrangement of five card -->
-    <!-- slots (hero + four satellites). Slot geometry never moves;    -->
-    <!-- only which roster item occupies each slot changes on step.    -->
+    <!-- Desktop: the flow - a continuous diagonal conveyor of cards.   -->
+    <!-- Each lane's own CSS animation loops independently forever;     -->
+    <!-- JS only retints/relinks a lane's content each time its loop    -->
+    <!-- restarts. prefers-reduced-motion swaps this for a static grid  -->
+    <!-- of every item (see .flow-fallback below) instead of animating. -->
     <!-- ============================================================ -->
     <div class="scene scene--desktop" id="sceneDesktop" aria-hidden="false">
-      <div class="stage" id="stage" role="group" aria-label="Featured cells - scroll or use arrow keys to step through">
-        <span class="stage-index" id="stageIndex" aria-hidden="true">{pad2(1)} / {pad2(total)}</span>
-        <span class="sr-only" id="stageAnnounce" aria-live="polite"></span>
-
-        <a
-          class="card card--hero"
-          id="cardHero"
-          href={first.href}
-          target={first.external ? '_blank' : undefined}
-          rel={first.external ? 'noopener noreferrer' : undefined}
-          aria-label={`${first.name}, ${first.status}: ${first.oneLiner}`}
-        >
-          <span class="card__tag" id="heroTag">{first.tissue}</span>
-          <span class="card__status" id="heroStatus">{first.status}</span>
-          <span class="card__foot">
-            <span class="card__name" id="heroName">{first.name}</span>
-            <span class="card__cta" aria-hidden="true">Explore &rarr;</span>
-          </span>
-        </a>
-
-        {satelliteSlots.map(({ offset, item }) => (
+      <div class="flow-stage" id="flowStage" aria-hidden="true">
+        {lanes.map((lane, i) => (
           <a
-            class="card card--sat"
-            data-slot={offset}
-            id={`cardSat${offset}`}
-            href={item.href}
-            target={item.external ? '_blank' : undefined}
-            rel={item.external ? 'noopener noreferrer' : undefined}
-            aria-label={`${item.tissue}: ${item.name}`}
+            class="flow-card"
+            id={`flowCard${i}`}
+            data-lane={i}
+            href={lane.item.href}
+            target={lane.item.external ? '_blank' : undefined}
+            rel={lane.item.external ? 'noopener noreferrer' : undefined}
+            aria-label={`${lane.item.tissue}: ${lane.item.name}`}
+            tabindex="-1"
+            style={`--sx:${lane.sx}vw; --sy:${lane.sy}vh; --ex:${lane.ex}vw; --ey:${lane.ey}vh; --s-scale:${lane.sScale}; --e-scale:${lane.eScale}; --tilt:${lane.tilt}deg; animation-duration:${lane.duration}s; animation-delay:${lane.delay}s;`}
           >
-            <span class="card__tag">{item.tissue}</span>
-            <span class="card__name">{item.name}</span>
+            <span class="flow-card__tag">{lane.item.tissue}</span>
+            <span class="flow-card__status">{lane.item.status}</span>
+            <span class="flow-card__name">{lane.item.name}</span>
+          </a>
+        ))}
+      </div>
+
+      <!-- Every item, in plain roster order, real tab-focusable links -
+           visually hidden (standard sr-only clip) whenever the flow is
+           running so it isn't a second, redundant on-screen copy, but never
+           gated on a lane's animation cycle actually reaching that item.
+           Under prefers-reduced-motion this becomes the visible page
+           instead of the flow (see the media query below). -->
+      <div class="flow-fallback">
+        {items.map((it) => (
+          <a
+            class="flow-fallback__card"
+            href={it.href}
+            target={it.external ? '_blank' : undefined}
+            rel={it.external ? 'noopener noreferrer' : undefined}
+            style={`--fb-accent:${it.color}`}
+          >
+            <span class="flow-fallback__tag">{it.tissue}</span>
+            <span class="flow-fallback__name">{it.name}</span>
+            <span class="flow-fallback__status">{it.status}</span>
           </a>
         ))}
       </div>
@@ -256,50 +296,60 @@ const pad2 = (n) => String(n).padStart(2, '0')
     display: block;
   }
 
-  .stage {
+  .flow-stage {
     position: absolute;
     inset: 0;
-    perspective: 1400px;
+    overflow: hidden;
   }
 
-  .stage-index {
+  .flow-card {
     position: absolute;
-    top: clamp(14px, 2.2vw, 28px);
-    right: clamp(16px, 3.2%, 40px);
-    z-index: 6;
-    font-family: var(--font-mono);
-    font-size: clamp(9px, 0.85vw, 11px);
-    letter-spacing: 0.14em;
-    color: var(--home-muted);
-  }
-
-  .card {
-    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: clamp(150px, 16vw, 260px);
+    aspect-ratio: 3 / 4;
+    margin-top: calc(clamp(150px, 16vw, 260px) * 4 / 3 / -2);
+    margin-left: calc(clamp(150px, 16vw, 260px) / -2);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    aspect-ratio: 3 / 4;
     border-radius: 6px;
     overflow: hidden;
     text-decoration: none;
     color: var(--home-ink);
     box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.75);
     background-color: #1a1a1a; /* pre-canvas fallback so a slow paint never shows a see-through hole */
-    transform: translate(calc(var(--px, 0) * var(--parallax, 0px)), calc(var(--py, 0) * var(--parallax, 0px)))
-      rotate(var(--tilt, 0deg)) translateY(var(--float-y, 0px));
-    animation: cardFloat var(--float-dur, 7s) ease-in-out infinite alternate;
-    animation-delay: var(--float-delay, 0s);
-    transition: box-shadow var(--home-ease) 200ms;
+    /* Traced against the reference clips frame-by-frame: every card follows
+       the same shape of path (spawn small near the bottom-right, grow while
+       drifting to exit large near the top-left) at linear speed - the
+       apparent "faster/bigger near the end" feel comes from real growth in
+       scale over the same path, not from an eased timing function. Each
+       lane supplies its own --sx/--sy/--ex/--ey/--s-scale/--e-scale/--tilt/
+       animation-duration/animation-delay inline (see FLOW_LANES). */
+    animation-name: flow;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-play-state: running;
   }
-  .card:hover,
-  .card:focus-visible {
+  .flow-card:hover,
+  .flow-card:focus-visible {
+    /* A constantly-moving target can't be clicked, so hovering (or focusing,
+       for the rare case a lane is reachable - see .flow-fallback for the
+       real tab path) freezes just that one lane mid-flight; the rest keep
+       flowing. */
+    animation-play-state: paused;
+    z-index: 20;
     box-shadow: 0 40px 80px -18px rgba(0, 0, 0, 0.85);
   }
-  /* The card texture always ramps to a pale end (paletteFromAccent's third
-     stop is white) - which end of the card that lands on depends on the
-     accent's hue, so the name label needs a guaranteed-dark scrim under it
-     rather than relying on text-shadow against an unpredictable background. */
-  .card::after {
+  @keyframes flow {
+    0% { transform: translate(var(--sx), var(--sy)) scale(var(--s-scale)) rotate(var(--tilt)); opacity: 0; }
+    6% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translate(var(--ex), var(--ey)) scale(var(--e-scale)) rotate(var(--tilt)); opacity: 0; }
+  }
+  /* Same guaranteed-dark scrim as v2's cards: the texture always ramps to a
+     pale end, and which corner that lands on depends on the accent's hue. */
+  .flow-card::after {
     content: '';
     position: absolute;
     inset: auto 0 0 0;
@@ -308,34 +358,12 @@ const pad2 = (n) => String(n).padStart(2, '0')
     background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
     pointer-events: none;
   }
-  .card:focus-visible {
+  .flow-card:focus-visible {
     outline: 2px solid var(--home-ink);
     outline-offset: 3px;
   }
-  @keyframes cardFloat {
-    from { --float-y: 0px; }
-    to { --float-y: -10px; }
-  }
 
-  .card--hero {
-    width: clamp(230px, 25vw, 380px);
-    top: 15%;
-    left: 6%;
-    --tilt: -3deg;
-    --parallax: 10px;
-    --float-dur: 8s;
-    z-index: 5;
-  }
-  .card--sat {
-    width: clamp(108px, 12.5vw, 190px);
-    z-index: 2;
-  }
-  .card--sat[data-slot='1'] { top: 3%; left: 37%; --tilt: 6deg; --parallax: 5px; --float-dur: 6.5s; --float-delay: -1.2s; z-index: 2; }
-  .card--sat[data-slot='2'] { top: 33%; left: 53%; --tilt: -6deg; --parallax: 7px; --float-dur: 7.5s; --float-delay: -3.4s; z-index: 4; width: clamp(130px, 14.5vw, 220px); }
-  .card--sat[data-slot='3'] { top: 6%; left: 71%; --tilt: 9deg; --parallax: 4px; --float-dur: 6s; --float-delay: -0.6s; z-index: 1; }
-  .card--sat[data-slot='4'] { top: 47%; left: 84%; --tilt: -10deg; --parallax: 6px; --float-dur: 7s; --float-delay: -2.1s; z-index: 3; }
-
-  .card__tag {
+  .flow-card__tag {
     position: relative;
     z-index: 2;
     align-self: flex-start;
@@ -346,16 +374,14 @@ const pad2 = (n) => String(n).padStart(2, '0')
     text-transform: uppercase;
     padding: 4px 7px;
     /* Opaque enough on its own to stay WCAG-AA-legible regardless of which
-       part of the card's accent-to-white gradient sits behind it - unlike
-       the name label, this chip has no scrim under it to lean on. */
+       part of the card's accent-to-white gradient sits behind it - this
+       chip has no scrim under it to lean on. */
     background: rgba(0, 0, 0, 0.72);
     color: var(--home-card-ink);
     border-radius: 2px;
     pointer-events: none;
   }
-  .card--hero .card__tag { font-size: 8px; padding: 5px 9px; }
-
-  .card__status {
+  .flow-card__status {
     position: absolute;
     z-index: 2;
     top: 10px;
@@ -369,52 +395,109 @@ const pad2 = (n) => String(n).padStart(2, '0')
     background: var(--home-ink);
     color: var(--home-panel);
     pointer-events: none;
-    animation: pillBob 3.2s ease-in-out infinite alternate;
   }
-  @keyframes pillBob {
-    from { transform: translateY(0); }
-    to { transform: translateY(-4px); }
-  }
-
-  .card__foot {
+  .flow-card__name {
     position: relative;
     z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin: 12px;
-  }
-  .card__name {
+    margin: 10px;
     font-family: var(--font-display);
     font-weight: 600;
+    font-size: clamp(12px, 1.3vw, 17px);
     color: var(--home-card-ink);
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   }
-  .card--hero .card__name { font-size: clamp(16px, 1.9vw, 23px); }
-  .card--sat .card__name {
+
+  /* Real links, real tab-focusable, in plain roster order - always in the
+     DOM so completeness never depends on a lane's loop reaching an item.
+     Visually hidden (standard sr-only clip) while the flow is what's shown,
+     the same way SiteHeader's own .skip-link is hidden until focused - so it
+     reveals itself as a real, usable panel the moment a keyboard user tabs
+     into it, rather than landing them on an invisible 1px focus ring. Also
+     becomes the visible page outright under reduced motion, below. */
+  .flow-fallback {
     position: absolute;
-    z-index: 2;
-    left: 10px;
-    bottom: 10px;
-    right: 10px;
-    font-size: clamp(11px, 1.1vw, 14px);
-  }
-  .card--hero .card__cta {
-    font-family: var(--font-ui);
-    font-size: clamp(9px, 0.9vw, 11px);
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    background: var(--home-card-ink);
-    color: var(--home-panel);
-    padding: 8px 14px;
-    border-radius: 999px;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
     white-space: nowrap;
+    border: 0;
+  }
+  /* Scoped to no-preference: under reduced motion, .flow-fallback is already
+     the plain static grid below, and :focus-within's higher specificity
+     would otherwise win the cascade over that media query and pop it into a
+     floating panel the moment a link inside it is focused. */
+  @media (prefers-reduced-motion: no-preference) {
+    .flow-fallback:focus-within {
+      position: fixed;
+      inset: auto 4vw 92px 4vw;
+      width: auto;
+      height: auto;
+      max-height: 55vh;
+      margin: 0;
+      overflow: auto;
+      clip: auto;
+      white-space: normal;
+      z-index: 30;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+      padding: 16px;
+      background: var(--home-panel);
+      border: 1px solid var(--home-hairline);
+      border-radius: 12px;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+    }
+  }
+  .flow-fallback__card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px;
+    border-radius: 6px;
+    border: 1px solid var(--home-hairline);
+    border-top: 3px solid var(--fb-accent, var(--home-ink));
+    text-decoration: none;
+    color: var(--home-ink);
+  }
+  .flow-fallback__tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--home-muted);
+  }
+  .flow-fallback__name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .flow-fallback__status {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--home-muted);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .card { animation: none; }
-    .card__status { animation: none; }
+    .flow-stage { display: none; }
+    .flow-fallback {
+      position: static;
+      width: auto;
+      height: auto;
+      padding: 6vh 4vw;
+      margin: 0;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 14px;
+      align-content: center;
+    }
   }
 
   /* ----------------------------------------------------------- mobile --- */
@@ -754,26 +837,9 @@ const pad2 = (n) => String(n).padStart(2, '0')
     return [core, STAGE_VOID]
   }
 
-  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-  const hoverQuery = window.matchMedia('(hover: hover) and (pointer: fine)')
-  let reducedMotion = reducedMotionQuery.matches
-  let canHover = hoverQuery.matches
-  let fadeMs = reducedMotion ? 0 : 220
-
-  const stageEl = document.getElementById('stage')
   const sceneDesktopEl = document.getElementById('sceneDesktop')
-  const stageIndexEl = document.getElementById('stageIndex')
-  const stageAnnounceEl = document.getElementById('stageAnnounce')
-  const heroEl = document.getElementById('cardHero')
-  const heroTagEl = document.getElementById('heroTag')
-  const heroStatusEl = document.getElementById('heroStatus')
-  const heroNameEl = document.getElementById('heroName')
-  // Bounded the same way the frontmatter's satelliteSlots is - with fewer
-  // than 5 total items there are simply fewer satellite DOM nodes to find.
-  const SATELLITE_COUNT = Math.min(4, Math.max(0, total - 1))
-  const satEls = Array.from({ length: SATELLITE_COUNT }, (_, i) => document.getElementById(`cardSat${i + 1}`)).filter(
-    Boolean,
-  )
+  const flowStageEl = document.getElementById('flowStage')
+  const flowCardEls = Array.from(flowStageEl.querySelectorAll('.flow-card'))
 
   const reelEl = document.getElementById('reel')
   const pillEls = reelEl ? Array.from(reelEl.querySelectorAll('.pill')) : []
@@ -781,25 +847,33 @@ const pad2 = (n) => String(n).padStart(2, '0')
   const reelStatusEl = document.getElementById('reelStatus')
 
   let homeCurrent = 0
-  let homeAnimating = false
 
-  const pad2 = (n) => String(n).padStart(2, '0')
+  function first() {
+    return items[0]
+  }
 
   // --- backdrops -------------------------------------------------------
-  // One dim ambient glow behind the desktop stage (the cards themselves
-  // carry the colour there), one richer full-bleed wash behind the mobile
-  // reel (there are no coloured cards to carry it on that screen). A card
-  // gets its own small backdrop too, retinted (not remounted) on every step.
+  // One dim, fixed ambient glow behind the desktop flow (the cards
+  // themselves carry the colour there, and there's no single "current item"
+  // any more to retint it to - every lane is showing something different at
+  // once), one richer full-bleed wash behind the mobile reel that does
+  // retint (there are no coloured cards to carry it on that screen). Each
+  // flow-card gets its own small static backdrop too, retinted (not
+  // remounted) each time its lane's loop brings a new item around.
 
-  const desktopBackdrop = mountTextureBackdrop(stageEl, {
-    palette: ambientPalette(first().color, 0.4),
+  // `motion: 'drift'` unconditionally, not gated on prefers-reduced-motion
+  // here - mountTextureBackdrop already checks that live internally
+  // (texture.js's own reduced.addEventListener('change', ...)), so it stays
+  // correct even if the OS preference changes mid-session without a reload.
+  mountTextureBackdrop(flowStageEl, {
+    palette: ambientPalette('#8e7bff', 0.35),
     fill: 'radial',
     stops: [0, 0.5],
     texType: 'grain',
     grain: 20,
     scale: 12,
     vig: 22,
-    motion: reducedMotion ? 'none' : 'drift',
+    motion: 'drift',
     speed: 16,
   })
 
@@ -812,169 +886,69 @@ const pad2 = (n) => String(n).padStart(2, '0')
     grain: 30,
     scale: 10,
     vig: 16,
-    motion: reducedMotion ? 'none' : 'drift',
+    motion: 'drift',
     speed: 20,
   })
 
-  const heroBackdrop = mountTextureBackdrop(heroEl, {
-    accent: first().color,
-    fill: 'linear',
-    angle: 150,
-    texType: 'grain',
-    grain: 34,
-    scale: 9,
-    vig: 0,
-    motion: 'none',
+  // --- desktop: the flow - each lane cycles its own content forever -----
+  //
+  // The motion itself is pure CSS (see @keyframes flow) and never touched
+  // from here. JS only does two things per lane: paint its current item's
+  // colour onto its own small backdrop canvas, and - once per lap, on
+  // `animationiteration`, which fires exactly when a lane is back at its
+  // invisible/cropped spawn point - swap in the next item so every lane
+  // keeps cycling through the whole roster instead of looping on one card
+  // forever.
+  const laneBackdrops = flowCardEls.map((el) => {
+    const idx = Number(el.dataset.lane)
+    return {
+      idx,
+      backdrop: mountTextureBackdrop(el, {
+        accent: items[idx % total].color,
+        fill: 'linear',
+        angle: 150,
+        texType: 'grain',
+        grain: 34,
+        scale: 9,
+        vig: 0,
+        motion: 'none',
+      }),
+    }
   })
-  const satBackdrops = satEls.map((el, i) => {
-    const item = items[(1 + i) % total]
-    return mountTextureBackdrop(el, {
-      accent: item.color,
-      fill: 'linear',
-      angle: 150,
-      texType: 'grain',
-      grain: 34,
-      scale: 9,
-      vig: 0,
-      motion: 'none',
-    })
-  })
 
-  function first() {
-    return items[0]
-  }
-
-  // --- desktop: apply the current index to the five fixed slots --------
-
-  function applyStage(idx) {
-    const hero = items[idx]
-    heroEl.href = hero.href
-    heroEl.setAttribute('aria-label', `${hero.name}, ${hero.status}: ${hero.oneLiner}`)
-    if (hero.external) {
-      heroEl.setAttribute('target', '_blank')
-      heroEl.setAttribute('rel', 'noopener noreferrer')
+  function applyLane(el, item) {
+    el.href = item.href
+    el.setAttribute('aria-label', `${item.tissue}: ${item.name}`)
+    if (item.external) {
+      el.setAttribute('target', '_blank')
+      el.setAttribute('rel', 'noopener noreferrer')
     } else {
-      heroEl.removeAttribute('target')
-      heroEl.removeAttribute('rel')
+      el.removeAttribute('target')
+      el.removeAttribute('rel')
     }
-    heroTagEl.textContent = hero.tissue
-    heroStatusEl.textContent = hero.status
-    heroNameEl.textContent = hero.name
-    heroBackdrop.setAccent(hero.color)
-    desktopBackdrop.setPalette(ambientPalette(hero.color, 0.4))
+    const tagEl = el.querySelector('.flow-card__tag')
+    const statusEl = el.querySelector('.flow-card__status')
+    const nameEl = el.querySelector('.flow-card__name')
+    if (tagEl) tagEl.textContent = item.tissue
+    if (statusEl) statusEl.textContent = item.status
+    if (nameEl) nameEl.textContent = item.name
+  }
 
-    satEls.forEach((el, i) => {
-      const item = items[(idx + i + 1) % total]
-      el.href = item.href
-      el.setAttribute('aria-label', `${item.tissue}: ${item.name}`)
-      if (item.external) {
-        el.setAttribute('target', '_blank')
-        el.setAttribute('rel', 'noopener noreferrer')
-      } else {
-        el.removeAttribute('target')
-        el.removeAttribute('rel')
-      }
-      const tagEl = el.querySelector('.card__tag')
-      const nameEl = el.querySelector('.card__name')
-      if (tagEl) tagEl.textContent = item.tissue
-      if (nameEl) nameEl.textContent = item.name
-      satBackdrops[i].setAccent(item.color)
+  // No prefers-reduced-motion gate needed here: under reduced motion
+  // .flow-stage is display:none (see the CSS media query), so the CSS
+  // animation never runs and animationiteration simply never fires - this
+  // stays correct even if the OS preference changes live mid-session.
+  flowCardEls.forEach((el, i) => {
+    let lap = 0
+    el.addEventListener('animationiteration', () => {
+      lap += 1
+      // Lane i has already shown items[i % total] (its server-rendered
+      // start); each subsequent lap advances by the lane count so every
+      // lane's sequence is disjoint and, between them, covers the roster.
+      const nextIdx = (i + lap * flowCardEls.length) % total
+      applyLane(el, items[nextIdx])
+      laneBackdrops[i].backdrop.setAccent(items[nextIdx].color)
     })
-
-    stageIndexEl.textContent = `${pad2(idx + 1)} / ${pad2(total)}`
-    // Stepping rewrites the hero/satellite links in place rather than moving
-    // focus, so a keyboard/screen-reader user tabbed onto one of them would
-    // otherwise get no signal that its destination just changed underneath
-    // them - mirrors the reel's own aria-live caption on mobile.
-    if (stageAnnounceEl) stageAnnounceEl.textContent = `${hero.name}, ${hero.status}, ${hero.tissue}`
-  }
-
-  function cycleTo(idx) {
-    if (homeAnimating || idx === homeCurrent) return
-    homeAnimating = true
-    homeCurrent = idx
-
-    if (fadeMs === 0) {
-      applyStage(idx)
-      homeAnimating = false
-      return
-    }
-
-    stageEl.style.transition = `opacity ${fadeMs}ms ease`
-    stageEl.style.opacity = '0.55'
-    setTimeout(() => {
-      applyStage(idx)
-      stageEl.style.opacity = '1'
-      setTimeout(() => {
-        homeAnimating = false
-      }, fadeMs)
-    }, fadeMs)
-  }
-
-  let homeWheelAccum = 0
-  const HOME_STEP_THRESHOLD = 60
-  stageEl.addEventListener(
-    'wheel',
-    (e) => {
-      e.preventDefault()
-      if (homeAnimating) return
-      homeWheelAccum += Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX
-      if (Math.abs(homeWheelAccum) > HOME_STEP_THRESHOLD) {
-        const next = homeWheelAccum > 0 ? (homeCurrent + 1) % total : (homeCurrent - 1 + total) % total
-        homeWheelAccum = 0
-        cycleTo(next)
-      }
-    },
-    { passive: false },
-  )
-
-  stageEl.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault()
-      cycleTo((homeCurrent + 1) % total)
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault()
-      cycleTo((homeCurrent - 1 + total) % total)
-    }
-  })
-
-  // Mouse parallax: cards drift a few px opposite the cursor, depth-weighted
-  // per card via the --parallax custom property each already declares.
-  // Wired through named handlers + a sync function (rather than a one-time
-  // `if` at load) so a live OS-level change to prefers-reduced-motion, or a
-  // mouse being plugged into a touch device mid-session, actually takes
-  // effect without a reload - matching the same live-reactive pattern
-  // texture.js already uses for its own reduced-motion handling.
-  function handleStageMouseMove(e) {
-    const r = stageEl.getBoundingClientRect()
-    const px = (e.clientX - r.left) / r.width - 0.5
-    const py = (e.clientY - r.top) / r.height - 0.5
-    stageEl.style.setProperty('--px', px.toFixed(3))
-    stageEl.style.setProperty('--py', py.toFixed(3))
-  }
-  function handleStageMouseLeave() {
-    stageEl.style.setProperty('--px', '0')
-    stageEl.style.setProperty('--py', '0')
-  }
-  function syncParallax() {
-    stageEl.removeEventListener('mousemove', handleStageMouseMove)
-    stageEl.removeEventListener('mouseleave', handleStageMouseLeave)
-    if (canHover && !reducedMotion) {
-      stageEl.addEventListener('mousemove', handleStageMouseMove)
-      stageEl.addEventListener('mouseleave', handleStageMouseLeave)
-    } else {
-      handleStageMouseLeave()
-    }
-  }
-  syncParallax()
-  reducedMotionQuery.addEventListener('change', (e) => {
-    reducedMotion = e.matches
-    fadeMs = reducedMotion ? 0 : 220
-    syncParallax()
-  })
-  hoverQuery.addEventListener('change', (e) => {
-    canHover = e.matches
-    syncParallax()
   })
 
   // --- mobile: focus-by-distance-from-centre on the pill reel -----------
@@ -1054,14 +1028,15 @@ const pad2 = (n) => String(n).padStart(2, '0')
   }
 
   // --- breakpoint sync: both scenes are always in the DOM; only CSS ------
-  // `display` (the 880px media query) decides which one is shown. Two things
-  // need to track that explicitly rather than assume it never changes
-  // mid-session (a window resize, a foldable rotating, a dev-tools width
-  // drag): the ARIA-hidden state (the template's static attributes only
-  // describe the very first paint, and guess desktop-first even then) and
-  // homeCurrent itself, which the desktop wheel/keyboard stepper and the
-  // mobile scroll observer each update independently with nothing to
-  // reconcile them while only one scene is visible.
+  // `display` (the 880px media query) decides which one is shown. The
+  // ARIA-hidden state needs to track that explicitly rather than assume it
+  // never changes mid-session (a window resize, a foldable rotating, a
+  // dev-tools width drag) - the template's static attributes only describe
+  // the very first paint, and guess desktop-first even then. The flow's own
+  // lanes need no reconciliation on top of that (each keeps looping
+  // independently regardless of which scene is visible); the reel's
+  // scroll-into-view on becoming visible is still worth doing so it's not
+  // left mid-scroll from whatever the viewport happened to be showing.
   const breakpointQuery = window.matchMedia('(max-width: 880px)')
 
   function syncSceneAria(isMobile) {
@@ -1075,12 +1050,8 @@ const pad2 = (n) => String(n).padStart(2, '0')
     if (e.matches) {
       const target = pillEls[homeCurrent]
       if (target) target.scrollIntoView({ block: 'center', behavior: 'auto' })
-    } else {
-      applyStage(homeCurrent)
     }
   })
-
-  applyStage(0)
 </script>
 
 <script>
