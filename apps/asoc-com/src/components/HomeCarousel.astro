@@ -58,10 +58,18 @@ items.push({
 
 const total = items.length
 const first = items[0]
-// Desktop satellite slots preview the next four items after the focused one,
+// Desktop satellite slots preview the next few items after the focused one,
 // wrapping via modulo - the same infinite-loop indexing the v1 thumbnail
-// strip used, just landing on four fixed stage positions instead of a row.
-const satelliteSlots = [1, 2, 3, 4].map((offset) => ({ offset, item: items[offset % total] }))
+// strip used, just landing on up to four fixed stage positions instead of a
+// row. Capped at total-1 (not a flat 4): with fewer than 5 items in the
+// roster, offset % total would wrap around and land back on an index already
+// showing elsewhere (or on the hero itself) - fewer, distinct satellites
+// beats a silently duplicated card.
+const SATELLITE_COUNT = Math.min(4, Math.max(0, total - 1))
+const satelliteSlots = Array.from({ length: SATELLITE_COUNT }, (_, i) => {
+  const offset = i + 1
+  return { offset, item: items[offset % total] }
+})
 const pad2 = (n) => String(n).padStart(2, '0')
 ---
 
@@ -75,6 +83,7 @@ const pad2 = (n) => String(n).padStart(2, '0')
     <div class="scene scene--desktop" id="sceneDesktop" aria-hidden="false">
       <div class="stage" id="stage" role="group" aria-label="Featured cells - scroll or use arrow keys to step through">
         <span class="stage-index" id="stageIndex" aria-hidden="true">{pad2(1)} / {pad2(total)}</span>
+        <span class="sr-only" id="stageAnnounce" aria-live="polite"></span>
 
         <a
           class="card card--hero"
@@ -82,7 +91,7 @@ const pad2 = (n) => String(n).padStart(2, '0')
           href={first.href}
           target={first.external ? '_blank' : undefined}
           rel={first.external ? 'noopener noreferrer' : undefined}
-          aria-label={`${first.name}: ${first.oneLiner}`}
+          aria-label={`${first.name}, ${first.status}: ${first.oneLiner}`}
         >
           <span class="card__tag" id="heroTag">{first.tissue}</span>
           <span class="card__status" id="heroStatus">{first.status}</span>
@@ -100,7 +109,7 @@ const pad2 = (n) => String(n).padStart(2, '0')
             href={item.href}
             target={item.external ? '_blank' : undefined}
             rel={item.external ? 'noopener noreferrer' : undefined}
-            aria-label={item.name}
+            aria-label={`${item.tissue}: ${item.name}`}
           >
             <span class="card__tag">{item.tissue}</span>
             <span class="card__name">{item.name}</span>
@@ -202,6 +211,23 @@ const pad2 = (n) => String(n).padStart(2, '0')
     --home-accent: #8e7bff;
     --home-panel: #16161a;
     --home-hairline: rgba(240, 237, 230, 0.14);
+    /* A distinct near-white from --home-ink: card text sits directly on the
+       grain-textured canvas rather than the page background, and this is
+       the shade that was tuned to read well there. Named so it isn't a
+       silent duplicate of --home-ink or a bare literal repeated per-rule. */
+    --home-card-ink: #f3f2ef;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .home-outer {
@@ -319,8 +345,11 @@ const pad2 = (n) => String(n).padStart(2, '0')
     letter-spacing: 0.14em;
     text-transform: uppercase;
     padding: 4px 7px;
-    background: rgba(0, 0, 0, 0.4);
-    color: #f3f2ef;
+    /* Opaque enough on its own to stay WCAG-AA-legible regardless of which
+       part of the card's accent-to-white gradient sits behind it - unlike
+       the name label, this chip has no scrim under it to lean on. */
+    background: rgba(0, 0, 0, 0.72);
+    color: var(--home-card-ink);
     border-radius: 2px;
     pointer-events: none;
   }
@@ -338,7 +367,7 @@ const pad2 = (n) => String(n).padStart(2, '0')
     padding: 5px 10px;
     border-radius: 999px;
     background: var(--home-ink);
-    color: #16161a;
+    color: var(--home-panel);
     pointer-events: none;
     animation: pillBob 3.2s ease-in-out infinite alternate;
   }
@@ -359,7 +388,7 @@ const pad2 = (n) => String(n).padStart(2, '0')
   .card__name {
     font-family: var(--font-display);
     font-weight: 600;
-    color: #f3f2ef;
+    color: var(--home-card-ink);
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   }
   .card--hero .card__name { font-size: clamp(16px, 1.9vw, 23px); }
@@ -376,8 +405,8 @@ const pad2 = (n) => String(n).padStart(2, '0')
     font-size: clamp(9px, 0.9vw, 11px);
     font-weight: 600;
     letter-spacing: 0.02em;
-    background: #f3f2ef;
-    color: #16161a;
+    background: var(--home-card-ink);
+    color: var(--home-panel);
     padding: 8px 14px;
     border-radius: 999px;
     white-space: nowrap;
@@ -484,7 +513,7 @@ const pad2 = (n) => String(n).padStart(2, '0')
       padding: 5px 10px;
       border-radius: 999px;
       background: var(--home-ink);
-      color: #16161a;
+      color: var(--home-panel);
     }
   }
 
@@ -703,6 +732,13 @@ const pad2 = (n) => String(n).padStart(2, '0')
   const items = JSON.parse(document.getElementById('rosterData').textContent)
   const total = items.length
 
+  const homePageEl = document.querySelector('[data-page="home"]')
+  // Read rather than re-hardcode: --home-bg (the CSS-side void colour) and
+  // this JS-side gradient floor need to be the same colour for the "glow
+  // fades to true black at the edges" seam to actually hold. Falls back to
+  // the CSS's own initial value only if the property somehow isn't there.
+  const STAGE_VOID = (homePageEl && getComputedStyle(homePageEl).getPropertyValue('--home-bg').trim()) || '#050506'
+
   // The ambient stage/reel backdrops go near-black, not the bright
   // accent-to-white ramp the cards themselves use - paletteFromAccent always
   // ends in white, which read as a bright warm wash covering the whole void
@@ -715,20 +751,29 @@ const pad2 = (n) => String(n).padStart(2, '0')
   function ambientPalette(hex, strength) {
     const c = hexToRgb(hex)
     const core = rgbToHex({ r: c.r * strength, g: c.g * strength, b: c.b * strength })
-    return [core, '#050506']
+    return [core, STAGE_VOID]
   }
 
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches
-  const fadeMs = reducedMotion ? 0 : 220
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  const hoverQuery = window.matchMedia('(hover: hover) and (pointer: fine)')
+  let reducedMotion = reducedMotionQuery.matches
+  let canHover = hoverQuery.matches
+  let fadeMs = reducedMotion ? 0 : 220
 
   const stageEl = document.getElementById('stage')
+  const sceneDesktopEl = document.getElementById('sceneDesktop')
   const stageIndexEl = document.getElementById('stageIndex')
+  const stageAnnounceEl = document.getElementById('stageAnnounce')
   const heroEl = document.getElementById('cardHero')
   const heroTagEl = document.getElementById('heroTag')
   const heroStatusEl = document.getElementById('heroStatus')
   const heroNameEl = document.getElementById('heroName')
-  const satEls = [1, 2, 3, 4].map((n) => document.getElementById(`cardSat${n}`))
+  // Bounded the same way the frontmatter's satelliteSlots is - with fewer
+  // than 5 total items there are simply fewer satellite DOM nodes to find.
+  const SATELLITE_COUNT = Math.min(4, Math.max(0, total - 1))
+  const satEls = Array.from({ length: SATELLITE_COUNT }, (_, i) => document.getElementById(`cardSat${i + 1}`)).filter(
+    Boolean,
+  )
 
   const reelEl = document.getElementById('reel')
   const pillEls = reelEl ? Array.from(reelEl.querySelectorAll('.pill')) : []
@@ -758,8 +803,8 @@ const pad2 = (n) => String(n).padStart(2, '0')
     speed: 16,
   })
 
-  const mobileStage = document.getElementById('sceneMobile')
-  const mobileBackdrop = mountTextureBackdrop(mobileStage, {
+  const sceneMobileEl = document.getElementById('sceneMobile')
+  const mobileBackdrop = mountTextureBackdrop(sceneMobileEl, {
     palette: ambientPalette(first().color, 0.55),
     fill: 'radial',
     stops: [0, 0.64],
@@ -804,7 +849,7 @@ const pad2 = (n) => String(n).padStart(2, '0')
   function applyStage(idx) {
     const hero = items[idx]
     heroEl.href = hero.href
-    heroEl.setAttribute('aria-label', `${hero.name}: ${hero.oneLiner}`)
+    heroEl.setAttribute('aria-label', `${hero.name}, ${hero.status}: ${hero.oneLiner}`)
     if (hero.external) {
       heroEl.setAttribute('target', '_blank')
       heroEl.setAttribute('rel', 'noopener noreferrer')
@@ -821,7 +866,7 @@ const pad2 = (n) => String(n).padStart(2, '0')
     satEls.forEach((el, i) => {
       const item = items[(idx + i + 1) % total]
       el.href = item.href
-      el.setAttribute('aria-label', item.name)
+      el.setAttribute('aria-label', `${item.tissue}: ${item.name}`)
       if (item.external) {
         el.setAttribute('target', '_blank')
         el.setAttribute('rel', 'noopener noreferrer')
@@ -837,6 +882,11 @@ const pad2 = (n) => String(n).padStart(2, '0')
     })
 
     stageIndexEl.textContent = `${pad2(idx + 1)} / ${pad2(total)}`
+    // Stepping rewrites the hero/satellite links in place rather than moving
+    // focus, so a keyboard/screen-reader user tabbed onto one of them would
+    // otherwise get no signal that its destination just changed underneath
+    // them - mirrors the reel's own aria-live caption on mobile.
+    if (stageAnnounceEl) stageAnnounceEl.textContent = `${hero.name}, ${hero.status}, ${hero.tissue}`
   }
 
   function cycleTo(idx) {
@@ -890,24 +940,70 @@ const pad2 = (n) => String(n).padStart(2, '0')
 
   // Mouse parallax: cards drift a few px opposite the cursor, depth-weighted
   // per card via the --parallax custom property each already declares.
-  if (canHover && !reducedMotion) {
-    stageEl.addEventListener('mousemove', (e) => {
-      const r = stageEl.getBoundingClientRect()
-      const px = (e.clientX - r.left) / r.width - 0.5
-      const py = (e.clientY - r.top) / r.height - 0.5
-      stageEl.style.setProperty('--px', px.toFixed(3))
-      stageEl.style.setProperty('--py', py.toFixed(3))
-    })
-    stageEl.addEventListener('mouseleave', () => {
-      stageEl.style.setProperty('--px', '0')
-      stageEl.style.setProperty('--py', '0')
-    })
+  // Wired through named handlers + a sync function (rather than a one-time
+  // `if` at load) so a live OS-level change to prefers-reduced-motion, or a
+  // mouse being plugged into a touch device mid-session, actually takes
+  // effect without a reload - matching the same live-reactive pattern
+  // texture.js already uses for its own reduced-motion handling.
+  function handleStageMouseMove(e) {
+    const r = stageEl.getBoundingClientRect()
+    const px = (e.clientX - r.left) / r.width - 0.5
+    const py = (e.clientY - r.top) / r.height - 0.5
+    stageEl.style.setProperty('--px', px.toFixed(3))
+    stageEl.style.setProperty('--py', py.toFixed(3))
   }
+  function handleStageMouseLeave() {
+    stageEl.style.setProperty('--px', '0')
+    stageEl.style.setProperty('--py', '0')
+  }
+  function syncParallax() {
+    stageEl.removeEventListener('mousemove', handleStageMouseMove)
+    stageEl.removeEventListener('mouseleave', handleStageMouseLeave)
+    if (canHover && !reducedMotion) {
+      stageEl.addEventListener('mousemove', handleStageMouseMove)
+      stageEl.addEventListener('mouseleave', handleStageMouseLeave)
+    } else {
+      handleStageMouseLeave()
+    }
+  }
+  syncParallax()
+  reducedMotionQuery.addEventListener('change', (e) => {
+    reducedMotion = e.matches
+    fadeMs = reducedMotion ? 0 : 220
+    syncParallax()
+  })
+  hoverQuery.addEventListener('change', (e) => {
+    canHover = e.matches
+    syncParallax()
+  })
 
   // --- mobile: focus-by-distance-from-centre on the pill reel -----------
 
   if (reelEl && pillEls.length) {
     let reelTicking = false
+    let reelSettleTimer = null
+
+    // Only the single nearest pill is "focused" - a threshold-based check
+    // here (anything within one pill-height of centre) could tag two
+    // adjacent pills at once when the scroll settles between them.
+    function applyPillFocusVisual(idx) {
+      pillEls.forEach((pill) => pill.classList.toggle('pill--focused', Number(pill.dataset.index) === idx))
+    }
+
+    // The state/caption/backdrop commit is split out from the (per-frame)
+    // visual dimming above so it can be debounced: #reelCaption is
+    // aria-live="polite", and most screen readers queue rather than drop
+    // polite announcements, so committing text on every frame during a fast
+    // scroll would read out a backlog of already-stale items well after the
+    // user stopped scrolling. This is also reused by the focusin handler
+    // below for keyboard navigation, where the commit should be immediate.
+    function commitReelFocus(idx) {
+      homeCurrent = idx
+      const item = items[idx]
+      mobileBackdrop.setPalette(ambientPalette(item.color, 0.55))
+      if (reelOneLinerEl) reelOneLinerEl.textContent = item.oneLiner
+      if (reelStatusEl) reelStatusEl.textContent = item.status
+    }
 
     function updateReelFocus() {
       reelTicking = false
@@ -923,18 +1019,11 @@ const pad2 = (n) => String(n).padStart(2, '0')
           nearest = pill
         }
       })
-      // Only the single nearest pill is "focused" - a threshold-based check
-      // here (anything within one pill-height of centre) could tag two
-      // adjacent pills at once when the scroll settles between them.
-      pillEls.forEach((pill) => pill.classList.toggle('pill--focused', pill === nearest))
       const idx = Number(nearest.dataset.index)
-      if (idx !== homeCurrent) {
-        homeCurrent = idx
-        const item = items[idx]
-        mobileBackdrop.setPalette(ambientPalette(item.color, 0.55))
-        if (reelOneLinerEl) reelOneLinerEl.textContent = item.oneLiner
-        if (reelStatusEl) reelStatusEl.textContent = item.status
-      }
+      applyPillFocusVisual(idx)
+      if (idx === homeCurrent) return
+      clearTimeout(reelSettleTimer)
+      reelSettleTimer = setTimeout(() => commitReelFocus(idx), 220)
     }
 
     reelEl.addEventListener(
@@ -947,8 +1036,49 @@ const pad2 = (n) => String(n).padStart(2, '0')
       },
       { passive: true },
     )
+    // Tabbing between two pills that are both already fully on-screen
+    // doesn't trigger a scroll event (the browser only auto-scrolls a
+    // focused element into view when it isn't already visible), so without
+    // this the caption/backdrop could keep describing a stale, previously
+    // scroll-centred pill while a keyboard user is visually focused on a
+    // different one.
+    reelEl.addEventListener('focusin', (e) => {
+      const pill = e.target.closest('.pill')
+      if (!pill) return
+      const idx = Number(pill.dataset.index)
+      clearTimeout(reelSettleTimer)
+      applyPillFocusVisual(idx)
+      commitReelFocus(idx)
+    })
     updateReelFocus()
   }
+
+  // --- breakpoint sync: both scenes are always in the DOM; only CSS ------
+  // `display` (the 880px media query) decides which one is shown. Two things
+  // need to track that explicitly rather than assume it never changes
+  // mid-session (a window resize, a foldable rotating, a dev-tools width
+  // drag): the ARIA-hidden state (the template's static attributes only
+  // describe the very first paint, and guess desktop-first even then) and
+  // homeCurrent itself, which the desktop wheel/keyboard stepper and the
+  // mobile scroll observer each update independently with nothing to
+  // reconcile them while only one scene is visible.
+  const breakpointQuery = window.matchMedia('(max-width: 880px)')
+
+  function syncSceneAria(isMobile) {
+    sceneDesktopEl.setAttribute('aria-hidden', String(isMobile))
+    sceneMobileEl.setAttribute('aria-hidden', String(!isMobile))
+  }
+  syncSceneAria(breakpointQuery.matches)
+
+  breakpointQuery.addEventListener('change', (e) => {
+    syncSceneAria(e.matches)
+    if (e.matches) {
+      const target = pillEls[homeCurrent]
+      if (target) target.scrollIntoView({ block: 'center', behavior: 'auto' })
+    } else {
+      applyStage(homeCurrent)
+    }
+  })
 
   applyStage(0)
 </script>
