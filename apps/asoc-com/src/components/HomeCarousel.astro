@@ -13,8 +13,8 @@
 // train steps every 5/7s (7 steps = 7 objects = 7 slots per loop); each step
 // is an ease-in / whip / long tail (half the move is done by 23% of the step,
 // settled by ~70%, then a hold); cards keep their size (no scaling) and each
-// rotates ~-9..-13deg per slot as it travels, from its own tilt at the
-// centre (-14..+14deg). Cards are 4:5, square-cornered, flat glossy, on a
+// rotates ~-9..-13deg per slot as it travels, passing through exactly 0deg
+// on the centre slot. Cards are 4:5, square-cornered, flat glossy, on a
 // flat black. The stage is the whole viewport; the only chrome floats over
 // it in the two corners the train never crosses - the current centre-slot
 // product's name top-right, the link list and wordmark bottom-left - plus a
@@ -83,27 +83,28 @@ const NRM = { x: 0.5639, y: -0.8258 }
 // against a 410px card).
 const STEP_H = 0.85
 // Lane k rides slot -k (plus `frac`, an along-track nudge so pairs overlap
-// the way the reference's do), offset `lat` card-heights off the line, at
-// `tilt` degrees when on the centre slot and turning `rate` degrees per
-// slot. `aspect`/`scale` size it against one card height. The first seven
+// the way the reference's do), offset `lat` card-heights off the line; each
+// lane is exactly orthogonal (0deg) on the centre slot and turns `rate`
+// degrees per slot either side - owner's rule: the centre card is never
+// tilted. `aspect`/`scale` size it against one card height. The first seven
 // are the reference's seven objects as measured (blue square, small 3D hand,
 // poster, photo, square letter card, yellow card, square portrait); the rest
 // continue the same rhythm for viewports wide enough to need more slots
 // (see the JS `layout()` for how many actually run).
 const LANES = [
-  { frac: 0, lat: 0, tilt: 1, rate: -12.8, aspect: 0.78, scale: 1.0, z: 3 },
-  { frac: 0, lat: 0.03, tilt: -14, rate: -9, aspect: 0.78, scale: 0.64, z: 4 },
-  { frac: 0, lat: -0.1, tilt: -1, rate: -8, aspect: 0.79, scale: 1.02, z: 2 },
-  { frac: 0, lat: -0.09, tilt: 11, rate: -10, aspect: 0.77, scale: 1.07, z: 3 },
-  { frac: 0.34, lat: -0.04, tilt: 8, rate: -9, aspect: 1.0, scale: 0.72, z: 5 },
-  { frac: 0, lat: 0, tilt: 14, rate: -9.8, aspect: 0.83, scale: 0.97, z: 4 },
-  { frac: 0.35, lat: 0.39, tilt: 10, rate: -10, aspect: 0.95, scale: 0.8, z: 5 },
-  { frac: 0, lat: -0.06, tilt: -6, rate: -11, aspect: 0.78, scale: 1.0, z: 3 },
-  { frac: 0.3, lat: 0.22, tilt: 16, rate: -9, aspect: 0.78, scale: 0.82, z: 5 },
-  { frac: 0, lat: -0.12, tilt: 3, rate: -10, aspect: 0.8, scale: 1.04, z: 2 },
-  { frac: 0, lat: 0.05, tilt: -10, rate: -8.5, aspect: 1.0, scale: 0.7, z: 4 },
-  { frac: 0.36, lat: -0.3, tilt: 12, rate: -10, aspect: 0.78, scale: 0.9, z: 5 },
-  { frac: 0, lat: 0.02, tilt: 6, rate: -12, aspect: 0.78, scale: 1.0, z: 3 },
+  { frac: 0, lat: 0, rate: -12.8, aspect: 0.78, scale: 1.0, z: 3 },
+  { frac: 0, lat: 0.03, rate: -9, aspect: 0.78, scale: 0.64, z: 4 },
+  { frac: 0, lat: -0.1, rate: -8, aspect: 0.79, scale: 1.02, z: 2 },
+  { frac: 0, lat: -0.09, rate: -10, aspect: 0.77, scale: 1.07, z: 3 },
+  { frac: 0.34, lat: -0.04, rate: -9, aspect: 1.0, scale: 0.72, z: 5 },
+  { frac: 0, lat: 0, rate: -9.8, aspect: 0.83, scale: 0.97, z: 4 },
+  { frac: 0.35, lat: 0.39, rate: -10, aspect: 0.95, scale: 0.8, z: 5 },
+  { frac: 0, lat: -0.06, rate: -11, aspect: 0.78, scale: 1.0, z: 3 },
+  { frac: 0.3, lat: 0.22, rate: -9, aspect: 0.78, scale: 0.82, z: 5 },
+  { frac: 0, lat: -0.12, rate: -10, aspect: 0.8, scale: 1.04, z: 2 },
+  { frac: 0, lat: 0.05, rate: -8.5, aspect: 1.0, scale: 0.7, z: 4 },
+  { frac: 0.36, lat: -0.3, rate: -10, aspect: 0.78, scale: 0.9, z: 5 },
+  { frac: 0, lat: 0.02, rate: -12, aspect: 0.78, scale: 1.0, z: 3 },
 ]
 // What a typical desktop needs; the JS re-derives this from the real
 // viewport before the first frame and only ever shows that many lanes.
@@ -125,7 +126,7 @@ const lanes = LANES.map((lane, k) => {
   return {
     ...lane,
     item,
-    style: `--kx:${kx.toFixed(4)}; --ky:${ky.toFixed(4)}; --r:${(lane.tilt + lane.rate * along).toFixed(2)}deg; --scale:${lane.scale}; --aspect:${lane.aspect}; --accent:${item.color}; z-index:${lane.z};${k >= SERVER_LANES ? ' display:none;' : ''}`,
+    style: `--kx:${kx.toFixed(4)}; --ky:${ky.toFixed(4)}; --r:${(lane.rate * along).toFixed(2)}deg; --scale:${lane.scale}; --aspect:${lane.aspect}; --accent:${item.color}; z-index:${lane.z};${k >= SERVER_LANES ? ' display:none;' : ''}`,
   }
 })
 ---
@@ -204,7 +205,6 @@ const lanes = LANES.map((lane, k) => {
                 rel={it.external ? 'noopener noreferrer' : undefined}
               >
                 <span class="pill__name">{it.name}</span>
-                <span class="pill__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
               </a>
             </li>
           ))}
@@ -214,20 +214,21 @@ const lanes = LANES.map((lane, k) => {
     </div>
 
     <!-- Floating chrome, over the stage (nothing sits in its own band):
-         links as a list stacked over the wordmark bottom-left, the
-         copyright centre-bottom. -->
+         links as a list over the wordmark bottom-left, the search icon
+         beside the wordmark, the copyright centre-bottom. -->
     <footer class="home-foot">
       <div class="home-foot__left">
         <ul class="home-links">
           <li><a href="/about">About</a></li>
-          <li><a href="/faq">FAQ</a></li>
-          <li><a href="/tools">Tools</a></li>
-          <li><a href="/hyle-fonts">Fonts</a></li>
-          <li><a href="/privacy">Privacy policy</a></li>
+          <li><a href="/privacy">Privacy</a></li>
           <li><a href="/contact">Contact</a></li>
-          <li><button class="home-search-btn" type="button" id="homeSearchBtn">Search</button></li>
         </ul>
-        <span class="home-brand-wordmark">asystemofcells</span>
+        <div class="home-brand">
+          <span class="home-brand-wordmark">asystemofcells</span>
+          <button class="home-search-btn" type="button" id="homeSearchBtn" aria-label="Search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
       </div>
       <span class="home-rights">&copy; 2026 ASYSTEMOFCELLS</span>
     </footer>
@@ -341,18 +342,24 @@ const lanes = LANES.map((lane, k) => {
 
   .flow-focus {
     position: absolute;
-    top: clamp(14px, 2.2vw, 28px);
-    right: clamp(16px, 3.2%, 40px);
+    top: clamp(18px, 2.4vw, 32px);
+    right: 3.4%;
     z-index: 6;
     pointer-events: none;
   }
+  /* Set at the wordmark's own size/weight, not a smaller mono label, so the
+     two fixed points - this name and .home-brand-wordmark - carry equal
+     weight on the page. */
   .flow-focus__name {
     display: inline-block;
-    font-family: var(--font-mono);
-    font-size: clamp(9px, 0.85vw, 11px);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--home-muted);
+    font-family: var(--font-ui);
+    font-weight: 700;
+    font-size: clamp(15px, 2vw, 26px);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    text-transform: none;
+    color: var(--home-ink);
+    white-space: nowrap;
     transition: opacity 150ms linear;
   }
   .flow-focus__name.is-swapping {
@@ -530,16 +537,6 @@ const lanes = LANES.map((lane, k) => {
     .pill-slot.is-near .pill {
       font-weight: 500;
     }
-    .pill__num {
-      position: absolute;
-      top: 0.1em;
-      right: -0.1em;
-      font-family: var(--font-mono);
-      font-weight: 400;
-      font-size: 0.3em;
-      letter-spacing: 0.06em;
-      opacity: 0.55;
-    }
     .pill__name {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -603,8 +600,7 @@ const lanes = LANES.map((lane, k) => {
     align-items: flex-start;
     gap: 7px;
   }
-  .home-links a,
-  .home-search-btn {
+  .home-links a {
     pointer-events: auto;
     font-family: var(--font-mono);
     font-size: clamp(9px, 0.72vw, 11px);
@@ -618,19 +614,46 @@ const lanes = LANES.map((lane, k) => {
     cursor: pointer;
     transition: color 0.15s;
   }
-  .home-links a:hover,
-  .home-search-btn:hover,
-  .home-search-btn:focus-visible {
+  .home-links a:hover {
     color: var(--home-ink);
   }
-  .home-brand-wordmark {
+  .home-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     pointer-events: auto;
+  }
+  .home-brand-wordmark {
     font-family: var(--font-ui);
     font-weight: 700;
     font-size: clamp(15px, 2vw, 26px);
     line-height: 0.95;
     letter-spacing: 0.01em;
     white-space: nowrap;
+  }
+  .home-search-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    color: var(--home-muted);
+    transition: color 0.15s;
+  }
+  .home-search-btn:hover,
+  .home-search-btn:focus-visible {
+    color: var(--home-ink);
+  }
+  .home-search-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
   }
   .home-rights {
     grid-column: 2;
@@ -652,10 +675,17 @@ const lanes = LANES.map((lane, k) => {
     .home-foot__left {
       gap: 10px;
     }
+    /* On the phone the reel takes the whole screen, so the three words go to
+       the top-right corner - the one corner nothing else uses there - and
+       the bottom keeps just the wordmark, the search icon and the
+       copyright. */
     .home-links {
+      position: fixed;
+      top: max(16px, env(safe-area-inset-top));
+      right: 5vw;
+      z-index: 6;
       flex-direction: row;
-      flex-wrap: wrap;
-      gap: 6px 12px;
+      gap: 14px;
     }
     .home-rights {
       grid-column: 1;
@@ -909,7 +939,7 @@ const lanes = LANES.map((lane, k) => {
       }
       el.style.setProperty('--kx', (STEP_H * along * DIR.x + L.lat * NRM.x).toFixed(4))
       el.style.setProperty('--ky', (STEP_H * along * DIR.y + L.lat * NRM.y).toFixed(4))
-      el.style.setProperty('--r', `${(L.tilt + L.rate * along).toFixed(2)}deg`)
+      el.style.setProperty('--r', `${(L.rate * along).toFixed(2)}deg`)
       const a = Math.abs(along)
       if (a < bestAbs) {
         bestAbs = a
