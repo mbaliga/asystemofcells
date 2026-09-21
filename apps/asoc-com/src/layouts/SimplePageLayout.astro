@@ -22,7 +22,8 @@ const { title, description, canonical } = Astro.props
       <div class="wrap foot-simple">
         <a class="foot-brand-name" href="/">asystemofcells</a>
         <!-- site pages first, then the house's own profiles; GitHub is the
-             maker's account because that is where the code lives. -->
+             maker's account because that is where the code lives, and Ko-fi
+             is where the house takes support. -->
         <nav class="foot-links">
           <a href="/about">About</a>
           <a href="/faq">FAQ</a>
@@ -34,6 +35,7 @@ const { title, description, canonical } = Astro.props
           <a href="https://www.instagram.com/asystemofcells" target="_blank" rel="noopener noreferrer">Instagram</a>
           <a href="https://www.linkedin.com/company/asystemofcells" target="_blank" rel="noopener noreferrer">LinkedIn</a>
           <a href="https://github.com/mbaliga" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://ko-fi.com/asystemofcells" target="_blank" rel="noopener noreferrer">Ko-fi</a>
         </nav>
         <span class="foot-rights">&copy; 2026 asystemofcells</span>
       </div>
@@ -218,7 +220,7 @@ const { title, description, canonical } = Astro.props
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 12px;
   }
   .foot-brand-name {
     font-size: 15px;
@@ -230,7 +232,7 @@ const { title, description, canonical } = Astro.props
   .foot-links {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
     flex-wrap: wrap;
   }
   .foot-links a {
@@ -251,9 +253,10 @@ const { title, description, canonical } = Astro.props
     color: var(--muted);
   }
 
-  /* on a phone the bar can't hold ten items in one line, so below 720px it
-     stops floating fixed and becomes a normal footer at the end of the page. */
-  @media (max-width: 720px) {
+  /* below this the bar can't hold all ten items (incl. the brand name and
+     copyright) on one line even at the tightened gaps above, so it stops
+     floating fixed and becomes a normal footer at the end of the page. */
+  @media (max-width: 960px) {
     .simple-page {
       padding-bottom: 24px;
     }
