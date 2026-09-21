@@ -21,13 +21,19 @@ const { title, description, canonical } = Astro.props
     <footer class="site-foot">
       <div class="wrap foot-simple">
         <a class="foot-brand-name" href="/">asystemofcells</a>
+        <!-- site pages first, then the house's own profiles; GitHub is the
+             maker's account because that is where the code lives. -->
         <nav class="foot-links">
           <a href="/about">About</a>
           <a href="/faq">FAQ</a>
           <a href="/tools">Tools</a>
           <a href="/hyle-fonts">Fonts</a>
-          <a href="/privacy">Privacy policy</a>
+          <a href="/privacy">Privacy</a>
           <a href="/contact">Contact</a>
+          <span class="foot-sep" aria-hidden="true"></span>
+          <a href="https://www.instagram.com/asystemofcells" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <a href="https://www.linkedin.com/company/asystemofcells" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://github.com/mbaliga" target="_blank" rel="noopener noreferrer">GitHub</a>
         </nav>
         <span class="foot-rights">&copy; 2026 asystemofcells</span>
       </div>
@@ -235,8 +241,33 @@ const { title, description, canonical } = Astro.props
   .foot-links a:hover {
     color: var(--ink);
   }
+  .foot-sep {
+    width: 1px;
+    height: 12px;
+    background: var(--line);
+  }
   .foot-rights {
     font-size: 12px;
     color: var(--muted);
+  }
+
+  /* on a phone the bar can't hold ten items in one line, so below 720px it
+     stops floating fixed and becomes a normal footer at the end of the page. */
+  @media (max-width: 720px) {
+    .simple-page {
+      padding-bottom: 24px;
+    }
+    .site-foot {
+      position: static;
+      height: auto;
+      overflow: visible;
+      padding: 14px 0 18px;
+    }
+    .foot-simple {
+      row-gap: 10px;
+    }
+    .foot-links {
+      gap: 12px 16px;
+    }
   }
 </style>

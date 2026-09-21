@@ -18,10 +18,15 @@ const DEFAULT_COLS = [
     { label: 'The making of it', href: 'https://mdhv.xyz' },
     { label: 'For developers', href: 'https://asystemofcells.dev' },
   ]},
+  // the house's own profiles for Instagram and LinkedIn; GitHub points at the
+  // maker's personal account because that is where the code actually lives
+  // (the asystemofcells org only redirects); Ko-fi is still a placeholder
+  // until there is a page.
   { title: 'Connect', links: [
+    { label: 'Instagram', href: 'https://www.instagram.com/asystemofcells' },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/company/asystemofcells' },
+    { label: 'GitHub', href: 'https://github.com/mbaliga' },
     { label: 'Ko-fi', href: '#' },
-    { label: 'Instagram', href: '#' },
-    { label: 'LinkedIn', href: '#' },
     { label: 'mdhv', href: 'https://mdhv.xyz' },
   ]},
 ]
@@ -42,7 +47,7 @@ const {
       <div class="site-footer__col">
         <span class="site-footer__title">{col.title}</span>
         <ul>
-          {col.links.map(l => <li><a href={l.href}>{l.label}</a></li>)}
+          {col.links.map(l => <li><a href={l.href} target={l.href.startsWith('http') ? '_blank' : undefined} rel={l.href.startsWith('http') ? 'noopener noreferrer' : undefined}>{l.label}</a></li>)}
         </ul>
       </div>
     ))}
