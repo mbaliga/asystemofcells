@@ -15,16 +15,23 @@
 // settled by ~70%, then a hold); cards keep their size (no scaling) and each
 // rotates ~-9..-13deg per slot as it travels, from its own tilt at the
 // centre (-14..+14deg). Cards are 4:5, square-cornered, flat glossy, on a
-// flat black; a big name sits behind the train and a small one top-right,
-// both naming whichever card is on the centre slot. The motion is driven
-// from JS (one clock, one rAF) rather than per-card CSS animations because
-// the whole train has to step in lockstep, pause together on hover, and
-// "in focus" is then plain arithmetic (the lane nearest slot 0).
+// flat black. The stage is the whole viewport; the only chrome floats over
+// it in the two corners the train never crosses - the current centre-slot
+// product's name top-right, the link list and wordmark bottom-left - plus a
+// small copyright centre-bottom. The motion is driven from JS (one clock,
+// one rAF) rather than per-card CSS animations because the whole train has
+// to step in lockstep, pause together on hover, and "in focus" is then
+// plain arithmetic (the lane nearest slot 0).
 //
-// Mobile - the reel. A vertical list of name pills, one per screen-sixth,
-// the one on the centre line bright and the rest dimming by distance,
-// auto-advancing one pill every 1.25s (measured: 10 items over a 12.5s loop)
-// with a ~0.4s eased slide and a crossfading full-bleed backdrop behind.
+// Mobile - the reel. A vertical list of names, one per screen-sixth, the
+// one on the centre line bright and the rest dimming by distance,
+// auto-advancing one name every 1.25s (measured: 10 items over a 12.5s
+// loop) with a crossfading full-bleed backdrop behind. The centre name is
+// caught in a drop of liquid - a soft-body membrane (a ring of spring-
+// coupled points on a canvas) anchored on the centre line that the passing
+// names drag viscously and that wobbles back, re-wrapping to each new name.
+// The list itself moves like something thick: it lags the finger and
+// settles with a heavy, overshoot-free spring rather than snapping.
 // Swipe/wheel step it by hand; touching it pauses the auto-advance.
 //
 // No texture/grain anywhere any more: flat colour, soft light, crisp edges.
@@ -128,13 +135,12 @@ const lanes = LANES.map((lane, k) => {
     <!-- ============================================================ -->
     <!-- Desktop: the conveyor. Blank cards on one diagonal, stepping   -->
     <!-- in lockstep; the name of whichever is on the centre slot is    -->
-    <!-- written big behind the train and small top-right. JS drives   -->
-    <!-- the positions (see the engine below); prefers-reduced-motion   -->
-    <!-- swaps the whole thing for a static grid of every item.        -->
+    <!-- written top-right. JS drives the positions (see the engine    -->
+    <!-- below); prefers-reduced-motion swaps the whole thing for a     -->
+    <!-- static grid of every item.                                     -->
     <!-- ============================================================ -->
     <div class="scene scene--desktop" id="sceneDesktop" aria-hidden="false">
       <div class="flow-stage" id="flowStage" aria-hidden="true">
-        <div class="flow-title" id="flowTitle">{first.name}</div>
         {lanes.map((lane, k) => (
           <a
             class="flow-card"
@@ -179,9 +185,10 @@ const lanes = LANES.map((lane, k) => {
 
     <!-- ============================================================ -->
     <!-- Mobile: the reel. A full-bleed backdrop (two layers so it can   -->
-    <!-- crossfade) behind a vertical stack of name pills that auto-    -->
-    <!-- advances. Every pill is a real link; JS adds the stepping,     -->
-    <!-- the dimming-by-distance and the wrap-around clones.            -->
+    <!-- crossfade) behind a vertical stack of names that auto-advances, -->
+    <!-- the centre one caught in a liquid drop (the canvas). Every name -->
+    <!-- is a real link; JS adds the stepping, the drop, the dimming-by- -->
+    <!-- distance and the wrap-around clones.                            -->
     <!-- ============================================================ -->
     <div class="scene scene--mobile" id="sceneMobile" aria-hidden="true">
       <div class="reel-bg reel-bg--a" id="reelBgA" style={`--bg-accent:${first.color}`}></div>
@@ -189,41 +196,41 @@ const lanes = LANES.map((lane, k) => {
       <div class="reel" id="reel">
         <ul class="reel-track" id="reelTrack">
           {items.map((it, i) => (
-            <li class="pill-slot" data-index={i} data-d={Math.min(4, i)}>
+            <li class={`pill-slot${i === 0 ? ' is-near' : ''}`} data-index={i}>
               <a
                 class="pill"
                 href={it.href}
                 target={it.external ? '_blank' : undefined}
                 rel={it.external ? 'noopener noreferrer' : undefined}
               >
-                <span class="pill__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                 <span class="pill__name">{it.name}</span>
+                <span class="pill__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
               </a>
             </li>
           ))}
         </ul>
+        <canvas class="reel-cell" id="reelCell" aria-hidden="true"></canvas>
       </div>
     </div>
 
-    <div class="home-foot">
-      <div class="home-brand">
+    <!-- Floating chrome, over the stage (nothing sits in its own band):
+         links as a list stacked over the wordmark bottom-left, the
+         copyright centre-bottom. -->
+    <footer class="home-foot">
+      <div class="home-foot__left">
+        <ul class="home-links">
+          <li><a href="/about">About</a></li>
+          <li><a href="/faq">FAQ</a></li>
+          <li><a href="/tools">Tools</a></li>
+          <li><a href="/hyle-fonts">Fonts</a></li>
+          <li><a href="/privacy">Privacy policy</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li><button class="home-search-btn" type="button" id="homeSearchBtn">Search</button></li>
+        </ul>
         <span class="home-brand-wordmark">asystemofcells</span>
       </div>
-      <div class="home-meta">
-        <div class="home-legal-links">
-          <a href="/about">About</a>
-          <a href="/faq">FAQ</a>
-          <a href="/tools">Tools</a>
-          <a href="/hyle-fonts">Fonts</a>
-          <a href="/privacy">Privacy policy</a>
-          <a href="/contact">Contact</a>
-          <span class="home-rights">&copy; 2026 ASYSTEMOFCELLS</span>
-          <button class="home-search-btn" type="button" id="homeSearchBtn" aria-label="Search">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          </button>
-        </div>
-      </div>
-    </div>
+      <span class="home-rights">&copy; 2026 ASYSTEMOFCELLS</span>
+    </footer>
   </div>
 </div>
 
@@ -288,30 +295,6 @@ const lanes = LANES.map((lane, k) => {
     position: absolute;
     inset: 0;
     overflow: hidden;
-  }
-
-  /* The big name behind the train, like the reference's "SHOWCASE 11":
-     static in place, white on the black, occluded by whatever passes over
-     it. JS shrinks long names to ~84% of the stage width. */
-  .flow-title {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    z-index: 1;
-    transform: translate(-50%, -50%);
-    font-family: var(--font-ui);
-    font-weight: 500;
-    font-size: clamp(56px, 11vh, 160px);
-    line-height: 1;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    color: #fff;
-    pointer-events: none;
-    transition: opacity 150ms linear;
-  }
-  .flow-title.is-swapping {
-    opacity: 0;
   }
 
   /* One blank card. Position/rotation come in as --kx/--ky (multiples of
@@ -501,10 +484,10 @@ const lanes = LANES.map((lane, k) => {
       user-select: none;
       -webkit-user-select: none;
     }
-    /* The stack: one pill per screen-sixth (measured: pill pitch = 1/6 of
-       the frame height, the focused one on the centre line). --cur is the
-       slot index to centre; --pitch is set in px by JS from the real reel
-       height (the 1/6-of-viewport default only covers the first paint). */
+    /* The stack: one name per screen-sixth (measured: pitch = 1/6 of the
+       frame height, the focused one on the centre line). JS positions the
+       track every frame from its spring; --pitch's 1/6-of-viewport default
+       only covers the first paint, before JS measures the real reel. */
     .reel-track {
       position: absolute;
       top: 50%;
@@ -514,13 +497,8 @@ const lanes = LANES.map((lane, k) => {
       padding: 0;
       list-style: none;
       --pitch: 16.6667vh;
-      --cur: 0;
-      transform: translateY(calc(var(--pitch) * (-0.5 - var(--cur))));
-      transition: transform 420ms cubic-bezier(0.5, 0, 0.15, 1);
+      transform: translateY(calc(var(--pitch) * -0.5));
       will-change: transform;
-    }
-    .reel-track.no-anim {
-      transition: none;
     }
     .pill-slot {
       height: var(--pitch);
@@ -528,50 +506,39 @@ const lanes = LANES.map((lane, k) => {
       align-items: center;
       justify-content: center;
       opacity: 0.12;
-      transition: opacity 420ms var(--home-ease);
     }
-    .pill-slot[data-d='0'] {
+    .pill-slot.is-near {
       opacity: 1;
     }
-    .pill-slot[data-d='1'] {
-      opacity: 0.52;
-    }
-    .pill-slot[data-d='2'] {
-      opacity: 0.34;
-    }
-    .pill-slot[data-d='3'] {
-      opacity: 0.22;
-    }
+    /* Plain names, no box: the drop (the canvas over the track) is what
+       holds the centre one. Generous padding keeps the tap target tall
+       without drawing anything. */
     .pill {
       position: relative;
-      display: inline-flex;
-      align-items: center;
-      padding: 0.5em 1.7em 0.54em 1.15em;
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.04);
+      display: inline-block;
+      padding: 0.35em 0.9em;
       color: #fff;
       text-decoration: none;
       font-family: var(--font-ui);
       font-weight: 400;
-      font-size: clamp(19px, 3.6vh, 32px);
+      font-size: clamp(20px, 3.8vh, 34px);
       line-height: 1.1;
       letter-spacing: -0.01em;
       white-space: nowrap;
       max-width: 88vw;
     }
-    .pill-slot[data-d='0'] .pill {
+    .pill-slot.is-near .pill {
       font-weight: 500;
-      border-color: rgba(255, 255, 255, 0.55);
     }
     .pill__num {
       position: absolute;
-      top: 0.32em;
-      right: 0.5em;
+      top: 0.1em;
+      right: -0.1em;
       font-family: var(--font-mono);
+      font-weight: 400;
       font-size: 0.3em;
       letter-spacing: 0.06em;
-      opacity: 0.8;
+      opacity: 0.55;
     }
     .pill__name {
       overflow: hidden;
@@ -581,10 +548,21 @@ const lanes = LANES.map((lane, k) => {
       outline: 2px solid #fff;
       outline-offset: 4px;
     }
+    /* The drop: a canvas the height of three pitches, centred on the
+       centre line, above the names (they read through it) and never in
+       the way of a tap. */
+    .reel-cell {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: calc(var(--pitch, 16.6667vh) * 3);
+      transform: translateY(-50%);
+      z-index: 3;
+      pointer-events: none;
+    }
 
     @media (prefers-reduced-motion: reduce) {
-      .reel-track,
-      .pill-slot,
       .reel-bg {
         transition: none;
       }
@@ -593,20 +571,60 @@ const lanes = LANES.map((lane, k) => {
 
   /* ------------------------------------------------------------ footer -- */
 
+  /* Floats over the stage (the stage is the whole viewport; nothing gets
+     its own band). Three columns: the link list + wordmark bottom-left,
+     the copyright centre-bottom, nothing right - the current product's
+     name already lives top-right. Only the words themselves take the
+     pointer, so the train underneath stays hoverable around them. */
   .home-foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 5;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    padding: 1.8% 3.4% 2.4%;
-    gap: 2%;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    padding: 0 3.4% 2.4%;
+    pointer-events: none;
   }
-  .home-brand {
+  .home-foot__left {
     display: flex;
-    align-items: center;
-    gap: 9px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .home-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+  }
+  .home-links a,
+  .home-search-btn {
+    pointer-events: auto;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.72vw, 11px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--home-muted);
+    text-decoration: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .home-links a:hover,
+  .home-search-btn:hover,
+  .home-search-btn:focus-visible {
+    color: var(--home-ink);
   }
   .home-brand-wordmark {
+    pointer-events: auto;
     font-family: var(--font-ui);
     font-weight: 700;
     font-size: clamp(15px, 2vw, 26px);
@@ -614,62 +632,33 @@ const lanes = LANES.map((lane, k) => {
     letter-spacing: 0.01em;
     white-space: nowrap;
   }
-  .home-meta {
-    display: flex;
-    align-items: center;
-  }
-  .home-legal-links {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 18px;
-    flex-wrap: wrap;
-  }
-  .home-legal-links a {
-    font-family: var(--font-mono);
-    font-size: clamp(5px, 0.7vw, 9px);
-    letter-spacing: 0.1em;
-    color: var(--home-muted);
-    text-decoration: none;
-  }
-  .home-legal-links a:hover {
-    color: var(--home-ink);
-  }
   .home-rights {
+    grid-column: 2;
+    justify-self: center;
+    pointer-events: auto;
     font-family: var(--font-mono);
-    font-size: clamp(5px, 0.7vw, 9px);
+    font-size: clamp(7px, 0.7vw, 9px);
     letter-spacing: 0.14em;
     color: var(--home-muted);
     white-space: nowrap;
   }
-  .home-search-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    color: var(--home-muted);
-    transition: color 0.15s;
-  }
-  .home-search-btn:hover,
-  .home-search-btn:focus-visible {
-    color: var(--home-ink);
-  }
-  .home-search-btn svg {
-    width: 13px;
-    height: 13px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-  }
 
-  @media (max-width: 720px) {
-    .home-legal-links {
+  @media (max-width: 880px) {
+    .home-foot {
+      grid-template-columns: 1fr;
+      padding-bottom: 14px;
+      row-gap: 10px;
+    }
+    .home-foot__left {
       gap: 10px;
+    }
+    .home-links {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+    }
+    .home-rights {
+      grid-column: 1;
     }
   }
 
@@ -832,7 +821,6 @@ const lanes = LANES.map((lane, k) => {
   // ======================================================================
   const stageEl = document.getElementById('flowStage')
   const cardEls = Array.from(stageEl.querySelectorAll('.flow-card'))
-  const titleEl = document.getElementById('flowTitle')
   const focusNameEl = document.getElementById('flowFocusName')
 
   // One step every 5/7s: the reference's 5s loop is seven steps.
@@ -884,29 +872,15 @@ const lanes = LANES.map((lane, k) => {
     cardEls.forEach((el, k) => {
       el.style.display = k < laneCount ? '' : 'none'
     })
-    fitTitle()
-  }
-
-  function fitTitle() {
-    titleEl.style.fontSize = ''
-    const max = stageEl.clientWidth * 0.84
-    const w = titleEl.scrollWidth
-    if (w > max) {
-      titleEl.style.fontSize = `${(parseFloat(getComputedStyle(titleEl).fontSize) * max) / w}px`
-    }
   }
 
   function setFocus(k) {
     focusedLane = k
     const name = laneItem[k].name
-    titleEl.classList.add('is-swapping')
     focusNameEl.classList.add('is-swapping')
     clearTimeout(swapTimer)
     swapTimer = setTimeout(() => {
-      titleEl.textContent = name
       focusNameEl.textContent = name
-      fitTitle()
-      titleEl.classList.remove('is-swapping')
       focusNameEl.classList.remove('is-swapping')
     }, 150)
   }
@@ -995,21 +969,24 @@ const lanes = LANES.map((lane, k) => {
   }).observe(stageEl)
 
   // ======================================================================
-  // Mobile: the reel
+  // Mobile: the reel, and the drop it runs through
   // ======================================================================
   const reelEl = document.getElementById('reel')
   const trackEl = document.getElementById('reelTrack')
+  const cellCanvas = document.getElementById('reelCell')
+  const cellCtx = cellCanvas.getContext('2d')
   const bgAEl = document.getElementById('reelBgA')
   const bgBEl = document.getElementById('reelBgB')
 
   // Three copies of the list so the stack wraps seamlessly: the middle copy
   // is the real one (real links, in the tab order); the copies either side
-  // are decorative clones the stepper slides through before snapping back
-  // a whole copy, invisibly, at a hold.
+  // are decorative clones the position slides through before being shifted
+  // back a whole copy - which is invisible, since the copies are identical.
   const baseSlots = Array.from(trackEl.children)
   function cloneSlot(el) {
     const c = el.cloneNode(true)
     c.setAttribute('aria-hidden', 'true')
+    c.classList.remove('is-near')
     c.querySelectorAll('a').forEach((a) => {
       a.tabIndex = -1
     })
@@ -1019,29 +996,175 @@ const lanes = LANES.map((lane, k) => {
   trackEl.append(...baseSlots.map(cloneSlot))
   const slotEls = Array.from(trackEl.children)
 
-  // Reference: one item every 1.25s, ~0.4s slide.
+  // Reference: one name every 1.25s.
   const REEL_PERIOD = 1250
-  const REEL_SLIDE = 440
-  let cur = total
-  let reelBusy = false
+  // The list's spring, in slot units: stiff enough to arrive in well under
+  // a second, damped past critical so it never overshoots - it pours into
+  // place rather than snapping. (zeta > 1 = overdamped.)
+  const LIST_K = 34
+  const LIST_ZETA = 1.12
+  // While a finger is down the list chases it through a low-pass, not
+  // 1:1 - that lag is the viscosity you feel.
+  const DRAG_FOLLOW = 9
+
+  let pitch = 140
+  let pos = total // continuous position, in slots; the centre line sits on slot `pos`
+  let target = total
+  let vel = 0
+  let near = -1
   let bgVisible = bgAEl
-  let bgItem = items[0]
+  let bgItem = null
   let interactUntil = 0
-  let autoTimer = null
+  let lastAuto = 0
+  let reelRaf = 0
+  let reelLast = null
+  let paintedLo = 0
+  let paintedHi = -1
+
+  // --- the drop: a soft-body membrane ----------------------------------
+  // A ring of points, each on a spring to its rest position on an ellipse
+  // wrapped around the centre name, sprung to its neighbours so the skin
+  // stays smooth, underdamped so it wobbles a couple of times before it
+  // settles, and dragged by the list's velocity - most at the top and
+  // bottom, where the passing names pull on it - so it stretches along
+  // with them and springs back. The ellipse's width chases each new
+  // centre name, so the drop re-wraps rather than jumps.
+  const CELL_N = 28
+  const CELL_K = 180
+  const CELL_KN = 120
+  const CELL_C = 2 * 0.3 * Math.sqrt(CELL_K)
+  const CELL_DRAG = 5.5
+  const cell = Array.from({ length: CELL_N }, () => ({ x: 0, y: 0, vx: 0, vy: 0 }))
+  let cellA = 90
+  let cellB = 32
+  let cellATarget = 90
+  let cellBTarget = 32
+  let cellAccent = items[0].color
+  let cellTime = 0
+  let cellDpr = 1
 
   function layoutReel() {
-    trackEl.style.setProperty('--pitch', `${reelEl.clientHeight / 6}px`)
+    pitch = reelEl.clientHeight / 6
+    trackEl.style.setProperty('--pitch', `${pitch}px`)
+    cellDpr = Math.min(2, window.devicePixelRatio || 1)
+    const w = reelEl.clientWidth
+    const h = pitch * 3
+    cellCanvas.width = Math.round(w * cellDpr)
+    cellCanvas.height = Math.round(h * cellDpr)
+    cellCanvas.style.height = `${h}px`
+    cellCtx.setTransform(cellDpr, 0, 0, cellDpr, 0, 0)
+    // Rest shape from the centre name's real box.
+    fitCell()
   }
 
-  function paintReel(idx) {
-    slotEls.forEach((el, i) => {
-      el.dataset.d = String(Math.min(4, Math.abs(i - idx)))
-    })
+  function fitCell() {
+    const slot = slotEls[near]
+    const name = slot && slot.querySelector('.pill__name')
+    if (!name) return
+    const r = name.getBoundingClientRect()
+    cellATarget = r.width / 2 + Math.max(22, pitch * 0.18)
+    cellBTarget = r.height / 2 + Math.max(14, pitch * 0.12)
   }
 
+  function hexToRgb(hex) {
+    const h = hex.replace('#', '')
+    const n = parseInt(h.length === 3 ? h.replace(/./g, (c) => c + c) : h, 16)
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+  }
+
+  function stepCell(dt, listVelPx, animate) {
+    cellTime += dt
+    cellA += (cellATarget - cellA) * (1 - Math.exp(-dt * 7))
+    cellB += (cellBTarget - cellB) * (1 - Math.exp(-dt * 7))
+    for (let i = 0; i < CELL_N; i++) {
+      const th = (i / CELL_N) * Math.PI * 2
+      const c = Math.cos(th)
+      const s = Math.sin(th)
+      const r = (cellA * cellB) / Math.sqrt(cellB * cellB * c * c + cellA * cellA * s * s)
+      const breathe = animate ? 1 + 0.022 * Math.sin(cellTime * 1.1 + th * 3) + 0.014 * Math.sin(cellTime * 1.9 - th * 2) : 1
+      const rx = r * c * breathe
+      const ry = r * s * breathe + (s > 0 ? 5 * s * s : 0) // a little sag at the bottom
+      const p = cell[i]
+      const prev = cell[(i + CELL_N - 1) % CELL_N]
+      const next = cell[(i + 1) % CELL_N]
+      let fx = CELL_K * (rx - p.x) + CELL_KN * ((prev.x + next.x) / 2 - p.x) - CELL_C * p.vx
+      let fy = CELL_K * (ry - p.y) + CELL_KN * ((prev.y + next.y) / 2 - p.y) - CELL_C * p.vy
+      if (animate) fy -= CELL_DRAG * listVelPx * (0.35 + 0.65 * Math.abs(s))
+      p.vx += fx * dt
+      p.vy += fy * dt
+      p.x += p.vx * dt
+      p.y += p.vy * dt
+    }
+  }
+
+  function drawCell() {
+    const w = cellCanvas.width / cellDpr
+    const h = cellCanvas.height / cellDpr
+    const cx = w / 2
+    const cy = h / 2
+    const ctx = cellCtx
+    ctx.clearRect(0, 0, w, h)
+    ctx.beginPath()
+    for (let i = 0; i < CELL_N; i++) {
+      const p0 = cell[(i + CELL_N - 1) % CELL_N]
+      const p1 = cell[i]
+      const p2 = cell[(i + 1) % CELL_N]
+      const p3 = cell[(i + 2) % CELL_N]
+      if (i === 0) ctx.moveTo(cx + p1.x, cy + p1.y)
+      ctx.bezierCurveTo(
+        cx + p1.x + (p2.x - p0.x) / 6,
+        cy + p1.y + (p2.y - p0.y) / 6,
+        cx + p2.x - (p3.x - p1.x) / 6,
+        cy + p2.y - (p3.y - p1.y) / 6,
+        cx + p2.x,
+        cy + p2.y,
+      )
+    }
+    ctx.closePath()
+    const [ar, ag, ab] = hexToRgb(cellAccent)
+    // Body: a translucent film with a key light from the upper-left and
+    // the accent gathering at the lower-right edge - the name reads through
+    // it. Drawn with a soft shadow so it sits on the backdrop.
+    ctx.save()
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)'
+    ctx.shadowBlur = 26
+    ctx.shadowOffsetY = 10
+    const body = ctx.createRadialGradient(cx - cellA * 0.4, cy - cellB * 0.7, 0, cx, cy, cellA * 1.25)
+    body.addColorStop(0, 'rgba(255, 255, 255, 0.22)')
+    body.addColorStop(0.42, 'rgba(255, 255, 255, 0.09)')
+    body.addColorStop(1, `rgba(${ar}, ${ag}, ${ab}, 0.3)`)
+    ctx.fillStyle = body
+    ctx.fill()
+    ctx.restore()
+    // Meniscus: a soft, diffuse rim - wet, not glass.
+    ctx.save()
+    ctx.clip()
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.35)'
+    ctx.shadowBlur = 14
+    ctx.lineWidth = 1.6
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.24)'
+    ctx.stroke()
+    // Depth: the underside darkens.
+    const under = ctx.createRadialGradient(cx, cy + cellB * 0.9, 0, cx, cy + cellB * 0.6, cellA * 0.95)
+    under.addColorStop(0, 'rgba(0, 0, 0, 0.18)')
+    under.addColorStop(1, 'rgba(0, 0, 0, 0)')
+    ctx.fillStyle = under
+    ctx.fillRect(0, 0, w, h)
+    // Specular: one soft, spread highlight, upper-left, off the letters.
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.5)'
+    ctx.shadowBlur = 16
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
+    ctx.beginPath()
+    ctx.ellipse(cx - cellA * 0.5, cy - cellB * 0.48, cellA * 0.22, cellB * 0.17, -0.35, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+  }
+
+  // --- the list ----------------------------------------------------------
   function setBackdrop(item) {
     if (item === bgItem) return
     bgItem = item
+    cellAccent = item.color
     const show = bgVisible === bgAEl ? bgBEl : bgAEl
     show.style.setProperty('--bg-accent', item.color)
     show.style.opacity = '1'
@@ -1049,68 +1172,144 @@ const lanes = LANES.map((lane, k) => {
     bgVisible = show
   }
 
-  function goReel(idx, animate) {
-    cur = idx
-    trackEl.classList.toggle('no-anim', !animate)
-    trackEl.style.setProperty('--cur', String(idx))
-    paintReel(idx)
-    setBackdrop(items[((idx % total) + total) % total])
-    if (!animate) {
-      void trackEl.offsetHeight
-      trackEl.classList.remove('no-anim')
+  function setNear(n) {
+    if (n === near) return
+    if (near >= 0) slotEls[near].classList.remove('is-near')
+    near = n
+    slotEls[n].classList.add('is-near')
+    setBackdrop(items[((n % total) + total) % total])
+    fitCell()
+  }
+
+  function opacityFor(d) {
+    if (d <= 1) return 1 - 0.5 * d
+    if (d <= 4) return 0.5 - 0.12 * (d - 1)
+    return 0.12
+  }
+
+  function paintList() {
+    const lo = Math.max(0, Math.floor(pos) - 6)
+    const hi = Math.min(slotEls.length - 1, Math.ceil(pos) + 6)
+    for (let i = paintedLo; i <= paintedHi; i++) if (i < lo || i > hi) slotEls[i].style.opacity = ''
+    for (let i = lo; i <= hi; i++) slotEls[i].style.opacity = opacityFor(Math.abs(i - pos)).toFixed(3)
+    paintedLo = lo
+    paintedHi = hi
+    trackEl.style.transform = `translateY(${(-(pos + 0.5) * pitch).toFixed(2)}px)`
+  }
+
+  // Keep pos inside the middle copy by shifting a whole copy at a time -
+  // the copies are identical, so this never shows.
+  function wrapPos() {
+    if (pos >= 2 * total) {
+      pos -= total
+      target -= total
+      dragStartPos -= total
+      if (near >= 0) setNear(near - total)
+    } else if (pos < total) {
+      pos += total
+      target += total
+      dragStartPos += total
+      if (near >= 0) setNear(near + total)
     }
   }
 
-  function stepReel(dir) {
-    if (reelBusy) return
-    reelBusy = true
-    goReel(cur + dir, !reducedQuery.matches)
-    setTimeout(() => {
-      reelBusy = false
-      if (cur >= 2 * total) goReel(cur - total, false)
-      else if (cur < total) goReel(cur + total, false)
-    }, REEL_SLIDE)
-  }
-
-  function scheduleReel() {
-    clearTimeout(autoTimer)
-    autoTimer = setTimeout(() => {
-      if (mobileQuery.matches && !reducedQuery.matches && !document.hidden && performance.now() > interactUntil) {
-        stepReel(1)
-      }
-      scheduleReel()
-    }, REEL_PERIOD)
-  }
-
-  function touched() {
-    interactUntil = performance.now() + 4000
-  }
-
-  // Swipes step the stack by hand (touch-action: none on .reel hands every
-  // vertical drag to these instead of the page); a tap still clicks the
-  // pill's link, but a drag that ends on it must not.
-  let dragY = null
-  let dragMoved = 0
+  let dragging = false
+  let dragStartY = 0
+  let dragStartPos = 0
+  let dragY = 0
+  let dragPrevY = 0
+  let dragPrevT = 0
+  let dragVel = 0 // px per ms, screen-down positive
   let suppressClick = false
+
+  function reelFrame(ts) {
+    reelRaf = requestAnimationFrame(reelFrame)
+    if (reelLast == null) reelLast = ts
+    const dt = Math.min(0.05, (ts - reelLast) / 1000)
+    reelLast = ts
+    const animate = !reducedQuery.matches
+    if (!document.hidden && animate && !dragging && ts > interactUntil && ts - lastAuto > REEL_PERIOD) {
+      target += 1
+      lastAuto = ts
+    }
+    if (dragging) {
+      const want = dragStartPos + (dragStartY - dragY) / pitch
+      vel = (want - pos) * DRAG_FOLLOW
+      pos += vel * dt
+    } else {
+      const c = 2 * LIST_ZETA * Math.sqrt(LIST_K)
+      vel += (LIST_K * (target - pos) - c * vel) * dt
+      pos += vel * dt
+      if (Math.abs(target - pos) < 0.0005 && Math.abs(vel) < 0.002) {
+        pos = target
+        vel = 0
+      }
+    }
+    wrapPos()
+    setNear(Math.round(pos))
+    paintList()
+    stepCell(dt, vel * pitch, animate)
+    drawCell()
+  }
+
+  function startReel() {
+    if (reelRaf) return
+    layoutReel()
+    reelLast = null
+    lastAuto = performance.now()
+    reelRaf = requestAnimationFrame(reelFrame)
+  }
+  function stopReel() {
+    if (!reelRaf) return
+    cancelAnimationFrame(reelRaf)
+    reelRaf = 0
+  }
+
+  function touched(ts) {
+    interactUntil = ts + 4000
+    lastAuto = interactUntil - REEL_PERIOD + 700
+  }
+
+  // Swipes drive the list by hand (touch-action: none on .reel hands every
+  // vertical drag to these instead of the page): while the finger is down
+  // the list follows it with lag; on release it settles onto the nearest
+  // slot, or one further along if the finger was still moving. A tap still
+  // clicks the name's link; a drag that ends on one must not.
+  // No pointer capture here: a captured pointer's click lands on the
+  // capturing element, which would swallow a tap on a name's link. The
+  // window-level listeners catch a finger that lifts off the reel instead.
   reelEl.addEventListener('pointerdown', (e) => {
+    dragging = true
+    dragStartY = dragY = dragPrevY = e.clientY
+    dragStartPos = pos
+    dragPrevT = e.timeStamp
+    dragVel = 0
+    touched(performance.now())
+  })
+  window.addEventListener('pointermove', (e) => {
+    if (!dragging) return
     dragY = e.clientY
-    dragMoved = 0
-    touched()
+    const dtms = e.timeStamp - dragPrevT
+    if (dtms > 0) dragVel = (dragY - dragPrevY) / dtms
+    dragPrevY = dragY
+    dragPrevT = e.timeStamp
   })
-  reelEl.addEventListener('pointermove', (e) => {
-    if (dragY == null) return
-    dragMoved = e.clientY - dragY
-  })
-  reelEl.addEventListener('pointerup', () => {
-    if (dragY == null) return
-    if (Math.abs(dragMoved) > 28) stepReel(dragMoved < 0 ? 1 : -1)
-    suppressClick = Math.abs(dragMoved) > 10
-    dragY = null
-    touched()
-  })
-  reelEl.addEventListener('pointercancel', () => {
-    dragY = null
-  })
+  function endDrag() {
+    if (!dragging) return
+    dragging = false
+    const moved = dragStartY - dragY
+    // Throw: a still-moving finger carries it one more slot at most - thick
+    // liquid doesn't fling - and a finger that paused before lifting
+    // carries nothing (its last measured velocity is stale).
+    if (performance.now() - dragPrevT > 80) dragVel = 0
+    const carry = Math.max(-1, Math.min(1, (-dragVel * 1000) / pitch / 6))
+    const base = Math.round(pos)
+    target = Math.max(base - 1, Math.min(base + 1, Math.round(pos + carry)))
+    suppressClick = Math.abs(moved) > 10
+    touched(performance.now())
+  }
+  window.addEventListener('pointerup', endDrag)
+  window.addEventListener('pointercancel', endDrag)
   reelEl.addEventListener(
     'click',
     (e) => {
@@ -1127,27 +1326,28 @@ const lanes = LANES.map((lane, k) => {
     'wheel',
     (e) => {
       e.preventDefault()
-      touched()
       const now = performance.now()
+      touched(now)
       if (now < wheelLock) return
       wheelAcc += e.deltaY
       if (Math.abs(wheelAcc) > 40) {
-        stepReel(wheelAcc > 0 ? 1 : -1)
+        target = Math.round(pos) + (wheelAcc > 0 ? 1 : -1)
         wheelAcc = 0
-        wheelLock = now + 500
+        wheelLock = now + 450
       }
     },
     { passive: false },
   )
-  // Keyboard: tabbing onto a pill centres it and holds the auto-advance.
+  // Keyboard: tabbing onto a name centres it and holds the auto-advance.
   trackEl.addEventListener('focusin', (e) => {
     const slot = e.target.closest('.pill-slot')
     if (!slot || slot.getAttribute('aria-hidden') === 'true') return
     interactUntil = performance.now() + 6000
-    goReel(total + Number(slot.dataset.index), !reducedQuery.matches)
+    lastAuto = interactUntil
+    target = total + Number(slot.dataset.index)
   })
   new ResizeObserver(() => {
-    if (mobileQuery.matches) layoutReel()
+    if (reelRaf) layoutReel()
   }).observe(reelEl)
 
   // ======================================================================
@@ -1158,18 +1358,18 @@ const lanes = LANES.map((lane, k) => {
     sceneDesktopEl.setAttribute('aria-hidden', String(isMobile))
     sceneMobileEl.setAttribute('aria-hidden', String(!isMobile))
     syncConveyor()
-    if (isMobile) {
-      layoutReel()
-      goReel(cur, false)
-    }
+    if (isMobile) startReel()
+    else stopReel()
   }
   mobileQuery.addEventListener('change', syncScenes)
   reducedQuery.addEventListener('change', syncScenes)
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) lastTs = null
+    if (!document.hidden) {
+      lastTs = null
+      reelLast = null
+    }
   })
   syncScenes()
-  scheduleReel()
 </script>
 
 <script>
