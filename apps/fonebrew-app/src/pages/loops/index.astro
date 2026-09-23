@@ -1,0 +1,133 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getLoops, PATTERNS, patternLabel, EDITOR_PATH } from '@asoc/loops'
+
+/*
+ * No `analytics` prop: see BaseLayout's boundary comment. This page only
+ * *describes* loops, so it would be the one page on the site that could take a
+ * count without breaking the rule — but nothing here is counted today, and the
+ * footer note says so.
+ */
+
+const loops = getLoops()
+const used = PATTERNS.filter((p) => loops.some((l) => l.pattern === p.key))
+---
+<BaseLayout
+  title="Loop gallery: Fonebrew"
+  description="Loops made in Fonebrew and shared: each one a standard BPMN 2.0 graph with its provenance intact, downloadable and openable in the web editor."
+  canonical="https://fonebrew.app/loops/"
+>
+  <section class="shell band band--lead">
+    <p class="eyebrow">Gallery</p>
+    <h1>Loops people have shared.</h1>
+    <p class="lead">
+      Each loop is a single <code>.bpmn</code> file &mdash; standard BPMN 2.0, so it
+      opens in any BPMN tool and not only in Fonebrew. Download one, open it in
+      the <a href={EDITOR_PATH} style="color:var(--accent)">editor</a>, or load it
+      on a phone. Every entry keeps the provenance the file itself carries: what
+      it was distilled from, by what, and when.
+    </p>
+    <div class="btn-row">
+      <a class="btn btn--primary" href={EDITOR_PATH}>Open the editor <span aria-hidden="true">&rarr;</span></a>
+      <a class="btn" href="#contribute">Add yours</a>
+    </div>
+  </section>
+
+  <section class="shell band">
+    {loops.length === 0 ? (
+      <div class="empty">
+        <p style="margin:0 0 0.6rem">No loops here yet.</p>
+        <p style="margin:0">
+          The gallery is seeded by pull request, so it stays empty until the
+          first one lands. <a href="#contribute" style="color:var(--accent)">How to add one</a>.
+        </p>
+      </div>
+    ) : (
+      <>
+        <nav class="tag-row" style="margin-bottom:1.6rem" aria-label="Filter by pattern">
+          <button class="tag pattern-filter" data-pattern="" type="button" style="background:none;cursor:pointer;font:inherit;font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:var(--track-label);text-transform:uppercase">
+            all <span style="opacity:0.6">{loops.length}</span>
+          </button>
+          {used.map((p) => (
+            <button class="tag pattern-filter" data-pattern={p.key} type="button" title={p.blurb} style="background:none;cursor:pointer;font:inherit;font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:var(--track-label);text-transform:uppercase">
+              {p.label} <span style="opacity:0.6">{loops.filter((l) => l.pattern === p.key).length}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div class="card-grid" id="loopGrid">
+          {loops.map((l) => (
+            <a class="card" href={`/loops/${l.slug}/`} data-pattern={l.pattern} style={`--loop-accent:${l.accent}`}>
+              <div class="card__hint" aria-hidden="true"></div>
+              <span class="card__title">{l.title}</span>
+              <p class="card__summary">{l.summary}</p>
+              <div class="tag-row">
+                <span class="tag tag--pattern" style={`color:${l.accent};border-color:${l.accent}`}>{patternLabel(l.pattern)}</span>
+                {(l.tags || []).map((t) => <span class="tag">{t}</span>)}
+              </div>
+              <span class="card__foot">
+                <span>by {l.author}</span>
+                <span>{l.nodes} nodes</span>
+              </span>
+            </a>
+          ))}
+        </div>
+        <p class="note is-hidden" id="gridEmpty" style="margin-top:1.2rem">No loop uses that pattern yet.</p>
+      </>
+    )}
+  </section>
+
+  <section class="shell band band--last" id="contribute">
+    <p class="eyebrow">Contributing</p>
+    <h2>Adding a loop is a pull request.</h2>
+    <p class="prose">
+      There is no backend here and no account to make &mdash; this whole site is
+      static files. So a loop joins the gallery the same way anything else in
+      this monorepo changes: you open a PR that adds two things.
+    </p>
+    <ol class="prose" style="margin-top:1rem;padding-left:1.2em">
+      <li style="margin-bottom:0.5rem">
+        Your loop file at
+        <code>apps/fonebrew-app/public/loops/gallery/&lt;slug&gt;.bpmn</code>, exported
+        from Fonebrew or the editor.
+      </li>
+      <li style="margin-bottom:0.5rem">
+        One entry in <code>packages/loops/loops.public.json</code>, with the
+        provenance copied from your file's own start event.
+      </li>
+    </ol>
+    <p class="prose" style="margin-top:1rem">
+      The full field list, and what is checked before a loop is merged, is in
+      <code>apps/fonebrew-app/CONTRIBUTING.md</code>.
+    </p>
+  </section>
+</BaseLayout>
+
+<script>
+  // Pattern filter over the server-rendered grid. Every card is in the DOM
+  // before this runs, so no-JS and curl both get the whole gallery.
+  const cards = Array.from(document.querySelectorAll('#loopGrid .card'))
+  const buttons = Array.from(document.querySelectorAll('.pattern-filter'))
+  const emptyEl = document.getElementById('gridEmpty')
+
+  function apply(pattern, push) {
+    let shown = 0
+    cards.forEach((c) => {
+      const hit = !pattern || c.dataset.pattern === pattern
+      c.classList.toggle('is-hidden', !hit)
+      if (hit) shown++
+    })
+    buttons.forEach((b) => {
+      const on = b.dataset.pattern === pattern
+      b.style.color = on ? 'var(--accent)' : ''
+      b.style.borderColor = on ? 'var(--accent)' : ''
+    })
+    emptyEl?.classList.toggle('is-hidden', shown > 0)
+    if (push) {
+      history.replaceState(null, '', pattern ? `?pattern=${pattern}` : location.pathname)
+    }
+  }
+
+  buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.pattern, true)))
+  if (cards.length) apply(new URLSearchParams(location.search).get('pattern') || '', false)
+</script>
