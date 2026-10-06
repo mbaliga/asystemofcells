@@ -82,33 +82,35 @@ const NRM = { x: 0.5639, y: -0.8258 }
 // One slot along the line = 0.85 card heights (measured 350px per step
 // against a 410px card).
 const STEP_H = 0.85
-// Lane k rides slot -k (plus `frac`, an along-track nudge so pairs overlap
-// the way the reference's do), offset `lat` card-heights off the line; each
-// lane is exactly orthogonal (0deg) on the centre slot and turns `rate`
-// degrees per slot either side - owner's rule: the centre card is never
-// tilted. `aspect`/`scale` size it against one card height. The first seven
-// are the reference's seven objects as measured (blue square, small 3D hand,
-// poster, photo, square letter card, yellow card, square portrait); the rest
-// continue the same rhythm for viewports wide enough to need more slots
-// (see the JS `layout()` for how many actually run).
+// Lane k rides slot -k (plus `frac`, a small along-track nudge so a few
+// pairs overlap the way the reference's do), offset `lat` card-heights off
+// the line; each lane is exactly orthogonal (0deg) on the centre slot and
+// turns `rate` degrees per slot either side - owner's rule: the centre card
+// is never tilted. `aspect`/`scale` size it against one card height. The
+// reference's own objects vary a lot in size and shape, but on a landscape
+// screen that variety reads as clutter, so the train here is deliberately
+// regular: near-identical 4:5 panes, almost no sideways drift, one even
+// fan of tilt. Poise comes from that regularity.
 const LANES = [
-  { frac: 0, lat: 0, rate: -12.8, aspect: 0.78, scale: 1.0, z: 3 },
-  { frac: 0, lat: 0.03, rate: -9, aspect: 0.78, scale: 0.64, z: 4 },
-  { frac: 0, lat: -0.1, rate: -8, aspect: 0.79, scale: 1.02, z: 2 },
-  { frac: 0, lat: -0.09, rate: -10, aspect: 0.77, scale: 1.07, z: 3 },
-  { frac: 0.34, lat: -0.04, rate: -9, aspect: 1.0, scale: 0.72, z: 5 },
-  { frac: 0, lat: 0, rate: -9.8, aspect: 0.83, scale: 0.97, z: 4 },
-  { frac: 0.35, lat: 0.39, rate: -10, aspect: 0.95, scale: 0.8, z: 5 },
-  { frac: 0, lat: -0.06, rate: -11, aspect: 0.78, scale: 1.0, z: 3 },
-  { frac: 0.3, lat: 0.22, rate: -9, aspect: 0.78, scale: 0.82, z: 5 },
-  { frac: 0, lat: -0.12, rate: -10, aspect: 0.8, scale: 1.04, z: 2 },
-  { frac: 0, lat: 0.05, rate: -8.5, aspect: 1.0, scale: 0.7, z: 4 },
-  { frac: 0.36, lat: -0.3, rate: -10, aspect: 0.78, scale: 0.9, z: 5 },
-  { frac: 0, lat: 0.02, rate: -12, aspect: 0.78, scale: 1.0, z: 3 },
+  { frac: 0, lat: 0, rate: -11, aspect: 0.78, scale: 1.0, z: 3 },
+  { frac: 0, lat: 0.02, rate: -10, aspect: 0.78, scale: 0.92, z: 4 },
+  { frac: 0, lat: -0.05, rate: -9.5, aspect: 0.79, scale: 1.02, z: 2 },
+  { frac: 0, lat: -0.04, rate: -10.5, aspect: 0.78, scale: 1.04, z: 3 },
+  { frac: 0.18, lat: -0.02, rate: -10, aspect: 0.8, scale: 0.94, z: 5 },
+  { frac: 0, lat: 0, rate: -10, aspect: 0.8, scale: 0.98, z: 4 },
+  { frac: 0.2, lat: 0.06, rate: -10.5, aspect: 0.8, scale: 0.96, z: 5 },
+  { frac: 0, lat: -0.03, rate: -10.5, aspect: 0.78, scale: 1.0, z: 3 },
+  { frac: 0.16, lat: 0.05, rate: -10, aspect: 0.78, scale: 0.94, z: 5 },
+  { frac: 0, lat: -0.05, rate: -10, aspect: 0.8, scale: 1.02, z: 2 },
+  { frac: 0, lat: 0.03, rate: -9.5, aspect: 0.8, scale: 0.95, z: 4 },
+  { frac: 0.18, lat: -0.04, rate: -10.5, aspect: 0.78, scale: 0.96, z: 5 },
+  { frac: 0, lat: 0.02, rate: -11, aspect: 0.78, scale: 1.0, z: 3 },
+  { frac: 0, lat: -0.03, rate: -10, aspect: 0.79, scale: 0.98, z: 4 },
+  { frac: 0, lat: 0.02, rate: -10.5, aspect: 0.78, scale: 1.0, z: 3 },
 ]
 // What a typical desktop needs; the JS re-derives this from the real
 // viewport before the first frame and only ever shows that many lanes.
-const SERVER_LANES = 9
+const SERVER_LANES = 11
 
 // Lane k's slot at t=0, wrapped into [-n/2, n/2), and the roster item it
 // starts on: slot 0 gets items[0], the slots behind it (bottom-right) count
@@ -286,10 +288,10 @@ const lanes = LANES.map((lane, k) => {
     position: relative;
     z-index: 3;
     display: block;
-    /* One card height: ~31% of the reference's 4:5 frame, which is ~39% of
-       its width - so on landscape screens the height wins and on narrow ones
-       the width does. Everything in the conveyor is sized off this. */
-    --card-h: clamp(200px, min(38vh, 42vw), 440px);
+    /* One card height: ~31% of the viewport height (the reference's own
+       ratio), or 36% of the width on narrow screens - so on landscape the
+       height wins. Everything in the conveyor is sized off this. */
+    --card-h: clamp(170px, min(31vh, 36vw), 360px);
   }
 
   .flow-stage {
@@ -298,12 +300,15 @@ const lanes = LANES.map((lane, k) => {
     overflow: hidden;
   }
 
-  /* One blank card. Position/rotation come in as --kx/--ky (multiples of
-     one card height along/off the line) and --r; the server sets the t=0
-     layout inline and the JS overwrites all three every frame. Glossy but
-     flat: the accent as one smooth surface, a soft key light from the
-     upper-left, a slight fall-off to the lower-right, a faint sheen
-     streak, crisp square corners and a soft shadow for the overlaps. */
+  /* One blank card: a pane of glass. Position/rotation come in as --kx/--ky
+     (multiples of one card height along/off the line) and --r; the server
+     sets the t=0 layout inline and the JS overwrites all three every frame.
+     No texture, no streaks, no dark fall-off: a lightly tinted body you can
+     see the neighbouring panes through, a bright hairline where light
+     catches the top and left edges, one soft pool of light in the upper-left
+     corner, and a colour-matched glow instead of a black drop shadow. The
+     base rule is the plain flat-colour fallback for browsers without
+     relative colour syntax. */
   .flow-card {
     position: absolute;
     left: 50%;
@@ -312,28 +317,34 @@ const lanes = LANES.map((lane, k) => {
     width: calc(var(--card-h) * var(--scale) * var(--aspect));
     transform: translate(calc(-50% + var(--card-h) * var(--kx)), calc(-50% + var(--card-h) * var(--ky)))
       rotate(var(--r));
-    background:
-      linear-gradient(155deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.06) 32%, rgba(255, 255, 255, 0) 55%),
-      linear-gradient(335deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 48%),
-      var(--accent);
-    box-shadow:
-      0 28px 56px -16px rgba(0, 0, 0, 0.75),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+    background: var(--accent);
     text-decoration: none;
     will-change: transform;
   }
-  .flow-card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      112deg,
-      rgba(255, 255, 255, 0) 40%,
-      rgba(255, 255, 255, 0.09) 47%,
-      rgba(255, 255, 255, 0.03) 53%,
-      rgba(255, 255, 255, 0) 60%
-    );
-    pointer-events: none;
+  @supports (color: oklch(from red l c h)) {
+    .flow-card {
+      /* Lift dark accents (slate, olive) to a minimum lightness so every
+         pane reads as lit glass rather than a dark hole in the black. */
+      --glass: oklch(from var(--accent) max(l, 0.74) c h);
+      background:
+        radial-gradient(140% 100% at 4% 0%, rgb(255 255 255 / 0.2) 0%, rgb(255 255 255 / 0.05) 44%, rgb(255 255 255 / 0) 72%),
+        linear-gradient(180deg, oklch(from var(--glass) l c h / 0.72) 0%, oklch(from var(--glass) l c h / 0.5) 100%);
+      -webkit-backdrop-filter: blur(6px) saturate(1.4);
+      backdrop-filter: blur(6px) saturate(1.4);
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.7),
+        inset 1px 0 0 rgb(255 255 255 / 0.34),
+        inset 0 -1px 0 rgb(255 255 255 / 0.1),
+        inset -1px 0 0 rgb(255 255 255 / 0.06),
+        inset 0 0 30px rgb(255 255 255 / 0.07),
+        0 40px 90px -40px oklch(from var(--glass) l c h / 0.6);
+    }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .flow-card {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
   }
   .flow-card:focus-visible {
     outline: 2px solid var(--home-ink);
@@ -360,7 +371,7 @@ const lanes = LANES.map((lane, k) => {
     text-transform: none;
     color: var(--home-ink);
     white-space: nowrap;
-    transition: opacity 150ms linear;
+    transition: opacity 110ms linear;
   }
   .flow-focus__name.is-swapping {
     opacity: 0;
@@ -912,7 +923,7 @@ const lanes = LANES.map((lane, k) => {
     swapTimer = setTimeout(() => {
       focusNameEl.textContent = name
       focusNameEl.classList.remove('is-swapping')
-    }, 150)
+    }, 110)
   }
 
   // s = the train's progress in slots (whole steps taken + the eased
