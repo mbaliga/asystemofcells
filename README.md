@@ -61,3 +61,5 @@ and the lockfile, and each one only builds its own app.
 
 See `packages/roster/README.md` for what's confirmed vs. still needs an owner
 confirm in the product roster.
+
+Multi-platform porting plan (a plan only, nothing in it is built): `docs/PORTING_PLAN.md`.
