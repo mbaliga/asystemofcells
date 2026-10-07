@@ -387,6 +387,51 @@ Paths are relative to the repo root unless noted.
   from it (file counts, `fuse.js`, the Nooz reader's lack of `color-mix()`, the privacy page's origin,
   `api/article.js` lacking CORS), the checkout was re-read and the checkout wins.
 
+## Owner rulings and the proposed line (added 2026-10-07)
+
+Status: PLAN. Nothing here is built, run on a device, signed or submitted. The program-level plan is Personal-Tracker `PORTING_PROGRAM.md` ([PR #10](https://github.com/mbaliga/Personal-Tracker/pull/10)), which holds the owner's rulings and section 5A, the proposed port / no-port line. The cells, estimates and open questions above are this repo's original plan and are unedited. Where the owner has since answered a question, the answer is below. Section 5A is a proposal; the owner has not yet confirmed it.
+
+### Where asystemofcells sits in the proposed line (program section 5A.3, a proposal)
+
+| Target       | Verdict | Weeks and flags |
+| ------------ | ------- | --------------- |
+| Ubuntu Touch | exists  | -               |
+| Linux        | exists  | 0.5w            |
+| iOS/iPadOS   | exists  | -               |
+| macOS        | exists  | -               |
+| Windows      | exists  | -               |
+
+Key: `follows` means it ports only as far as the products that depend on it; `exists` means the program reads it as already running there, unverified (finish, verify and sign); flags: `g` gated on a prerequisite, `r` re-estimate or floor, `o` its own program, `s` scope note. The program's P4, P8, P12 and P13 gate whole columns or repos and are not flagged per cell. A port verdict counts the deliverable in the line; where this repo's plan calls a deliverable a reframe (program rule R12) it keeps that label. Tests cited in the reason: (a) the owner said it is needed there; (b) its job is really done on that OS by real users; (c) that OS is where it is sold or its audience is; it has no reason to exist if (x) its surface is absent or untouchable, (y) the capability is forbidden or impossible, or (z) the only form is a thin wrapper or a different product nobody asked for. P-numbers and OQ-numbers refer to the program plan (Personal-Tracker `PORTING_PROGRAM.md`, sections 5A.5 and 8).
+
+Reason: A web property: the program reads it as already running everywhere (a site, a PWA, in Morph on UT), unverified (its evidence is PLAN), and a click or wrapper adds nothing.
+
+### Owner rulings that apply here
+
+- **Hardware and account facts (this plan's own convention, not an owner ruling):** this plan references them by master OQ id only; the related questions are program OQ-1, OQ-2, OQ-3, OQ-5 and OQ-33.
+- **OQ-20 CI (2026-10-06):** "Linux-only CI when private (Recommended)": this repo is public, so the ruling does not limit its macOS and Windows lanes; going private would stop them. Actions artifact storage is still exhausted (program rule R6).
+- **Directives (2026-10-06):** "Draft amendments for approval": program directives I-1 to I-12 and rules R1 to R12 are unchanged; PROPOSED-1 to PROPOSED-4 in Personal-Tracker `DECISIONS.md` are drafts awaiting the owner.
+
+### Prerequisites and open questions that touch this repo (program sections 5A.5 and 8)
+
+No program-level prerequisite is named for this repo.
+
+Owner questions in the program register that concern this repo (status as of 2026-10-07):
+
+- OQ-1 (ruled): Ubuntu Touch device (tracked here by id only)
+- OQ-2 (ruled): Apple Developer Program and the delivery route (tracked here by id only)
+- OQ-3 (open): Signing custody (tracked here by id only)
+- OQ-4 (open): Channels and store compatibility
+- OQ-5 (ruled): Hardware stance (tracked here by id only)
+- OQ-6 (open): Reframes to accept or reject
+- OQ-12 (open): Licences for repos without a LICENSE
+- OQ-18 (open): Third-party calls against I-1 (analytics, geolocation, weather)
+- OQ-20 (ruled): CI minutes, storage and repo visibility
+- OQ-24 (open): Sharing mechanism for non-Gradle artefacts and prebuilt binaries
+- OQ-25 (open): Identifier registry
+- OQ-33 (open): Hardware details still open
+
+When the owner confirms or changes the line, this repo's original cells above stay as the engineering detail; only the verdicts and re-costs in program section 5A change.
+
 ## Progress log
 
 (none yet; platform tracks append dated entries here with real command output, `BLOCKED(<reason>)` where
