@@ -28,11 +28,11 @@
       "slug": "odyssey",
       "tissue": "daily-cells",
       "type": "A",
-      "status": "soon",
-      "accent": "#2F855A",
+      "status": "beta",
+      "accent": "#D6B266",
       "oneLiner": "A live wallpaper of Odysseus's sea voyage, built book by book for accuracy, not just for looks.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "early scaffold stage, no main branch yet"]
+      "verify": ["Play listing not yet live, so the beta CTA has nowhere to send someone yet -- swap in a storeUrl once the closed-testing link exists"]
     },
     {
       "slug": "crocodyl",

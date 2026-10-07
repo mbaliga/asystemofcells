@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Odyssey Live Wallpapers — Privacy Policy</title>
+<meta name="description" content="How Odyssey Live Wallpapers handles your information: no accounts, no ads, no tracking. Location is opt-in, only ever used to fetch a weather forecast.">
+<meta name="theme-color" content="#10202A">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+  @font-face {
+    font-family: 'Caesar Dressing';
+    src: url('/odyssey/privacy/fonts/CaesarDressing.ttf') format('truetype');
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+
+  :root {
+    /* Odyssey's own app palette (OdysseyTheme.kt), not the house Hyle system --
+       this page is reached from Play/the app's own Settings, not site
+       navigation, so it speaks in the product's own voice, same as Nooz's
+       privacy page does in newsprint serif rather than the site's sans. */
+    --ink: #F2EDDE;       /* PARCHMENT */
+    --ink-soft: #AEB9C2;  /* AEGEAN, dimmed */
+    --rule: #22384A;
+    --paper: #0E1B24;     /* INK */
+    --card: #16283580;
+    --accent: #D6B266;    /* GOLD */
+    --accent-deep: #B8934E; /* GOLD_DEEP */
+    --serif: Georgia, 'Times New Roman', Times, serif;
+    --display: 'Caesar Dressing', Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    line-height: 1.65;
+    font-size: 17px;
+    background-image: radial-gradient(ellipse at top, #16283a 0%, #0E1B24 62%);
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; padding: 32px 22px 88px; }
+
+  header.mast {
+    border-bottom: 3px double var(--accent-deep);
+    padding-bottom: 18px;
+    margin-bottom: 30px;
+  }
+  .kicker {
+    font-family: var(--serif);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: .16em;
+    font-size: 11px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .kicker a { color: var(--ink-soft); text-decoration: none; }
+  .kicker a:hover { color: var(--accent); }
+  .wordmark {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(38px, 11vw, 58px);
+    letter-spacing: .01em;
+    line-height: 1.15;
+    color: var(--accent);
+    margin: 16px 0 8px;
+    text-shadow: 0 1px 0 rgba(0,0,0,.4);
+  }
+  .subhead {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 21px;
+    letter-spacing: .01em;
+    color: var(--accent);
+    margin: 40px 0 10px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+  }
+  h2:first-of-type { border-top: 0; padding-top: 0; }
+  p { margin: 0 0 14px; }
+  a { color: var(--accent); }
+  a:hover { color: var(--ink); }
+  ul { margin: 0 0 14px; padding-left: 22px; }
+  li { margin: 0 0 8px; }
+  strong { color: var(--ink); font-weight: 700; }
+
+  table { width: 100%; border-collapse: collapse; margin: 0 0 16px; font-size: 15px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-family: var(--serif); font-weight: 700; color: var(--accent); }
+  code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .92em; background: var(--card); padding: 1px 6px; border-radius: 4px; }
+
+  .tldr {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 3px;
+    padding: 16px 20px;
+    margin: 0 0 8px;
+  }
+  .tldr p { margin: 0; }
+  .tldr .lead {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  footer {
+    margin-top: 44px;
+    padding-top: 16px;
+    border-top: 3px double var(--accent-deep);
+    font-family: var(--serif);
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  footer a { color: var(--ink-soft); }
+  footer a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="mast">
+      <div class="kicker">
+        <span>Odyssey Live Wallpapers &middot; A System of Cells</span>
+        <a href="/odyssey">&larr; Back to Odyssey</a>
+      </div>
+      <div class="wordmark">Privacy Policy</div>
+      <p class="subhead">Last updated 22 August 2026</p>
+    </header>
+
+    <p>Odyssey Live Wallpapers is a live wallpaper for Android (package
+    <code>com.asoc.odyssey</code>), made by <strong>A System of Cells</strong>. This
+    page describes exactly what the app does with data. It is short because the
+    app does very little.</p>
+
+    <div class="tldr">
+      <p class="lead">The short version</p>
+      <p>No accounts, no ads, no analytics, no tracking, and no profile of you.
+      The only data that ever leaves your device is an approximate latitude and
+      longitude, and only if you turn on the optional live-weather feature — used
+      solely to fetch a weather forecast.</p>
+    </div>
+
+    <h2>What the app collects</h2>
+    <p><strong>Nothing at all, by default.</strong> On a fresh install the
+    wallpaper generates its own weather procedurally and makes no network
+    requests.</p>
+    <p><strong>Approximate location — optional, and off unless you turn it
+    on.</strong> If you enable &ldquo;Use my location's real weather&rdquo; in
+    Settings, the app requests the Android <code>ACCESS_COARSE_LOCATION</code>
+    permission. When granted, it reads your device's <em>last known</em>
+    approximate position — it does not switch on GPS or track you continuously —
+    and uses it to look up current conditions.</p>
+    <p>You can use the live-weather feature without granting any location
+    permission at all, by entering coordinates yourself under &ldquo;Set location
+    manually instead&rdquo;.</p>
+
+    <h2>What is sent off your device, and to whom</h2>
+    <p>When live weather is enabled, the app sends your approximate latitude and
+    longitude over HTTPS to the <strong>Open-Meteo</strong> weather API
+    (<code>api.open-meteo.com</code>) to retrieve the current cloud cover,
+    precipitation, wind speed and weather code for that position. This is a
+    transfer of location data to a third party, so it is worth stating plainly
+    rather than folding into a general "we may share data" clause.</p>
+    <p>Open-Meteo is an independent service and is not operated by us. Its own
+    terms apply to that request:
+    <a href="https://open-meteo.com/en/terms" target="_blank" rel="noopener noreferrer">open-meteo.com/en/terms</a>.</p>
+    <p>No other data is transmitted anywhere. There is no other network activity
+    in the app.</p>
+
+    <h2>What is stored, and where</h2>
+    <p>The most recent latitude and longitude are cached in the app's private
+    on-device storage (Android <code>SharedPreferences</code>) so the wallpaper
+    does not have to ask the system for a position on every refresh. Your
+    wallpaper settings are stored the same way.</p>
+    <p>All of this stays on your device. We operate no servers and receive no
+    data from the app. Uninstalling Odyssey deletes all of it.</p>
+
+    <h2>Permissions, and why each exists</h2>
+    <table>
+      <tr><th>Permission</th><th>Why</th></tr>
+      <tr><td><code>ACCESS_COARSE_LOCATION</code></td><td>Optional. Only to look up local weather when you enable that feature.</td></tr>
+      <tr><td><code>INTERNET</code></td><td>Optional in practice. Only used for the Open-Meteo forecast request.</td></tr>
+      <tr><td><code>ACCESS_NETWORK_STATE</code></td><td>Optional visual effect: if you enable the "signal" reactive setting, losing connectivity rolls a fog bank across the scene. Reads connectivity status only.</td></tr>
+    </table>
+
+    <h2>Children</h2>
+    <p>Odyssey is not directed at children and collects no personal information
+    from anyone, including children.</p>
+
+    <h2>Changes</h2>
+    <p>If this policy changes, the date at the top of this page changes with it,
+    and the revised policy is published at this same URL.</p>
+
+    <h2>Contact</h2>
+    <p>Odyssey Live Wallpapers is made by <strong>A System of Cells</strong>. If
+    you have a question about this policy or the app, you can reach us at
+    <!--email_off--><a href="mailto:odyssey@asystemofcells.com">odyssey@asystemofcells.com</a><!--/email_off-->.</p>
+
+    <footer>
+      Odyssey Live Wallpapers &middot; A System of Cells &middot;
+      <a href="/odyssey">Back to the product page</a> &middot;
+      <a href="/privacy">Site privacy policy</a>
+    </footer>
+  </main>
+</body>
+</html>
