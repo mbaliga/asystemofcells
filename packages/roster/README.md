@@ -2,19 +2,19 @@
 
 The single source of truth for the product roster shown on asystemofcells.com
 and .dev. `roster.public.json` is hand-authored from the constellation's own
-repos, not
-from the original placeholder brief. A few real corrections against that
-original brief, worth recording here rather than losing silently:
+repos, not from the original placeholder brief. A few real corrections
+against that original brief, worth recording here rather than losing
+silently:
 
 - **Crocodyl** is an archery form and fatigue coach (camera and pose
   estimation), not a habit tracker.
-- **Ebbflow** is an EEG personal-state app, not a tide and breath watchface. It
-  moved from Ambient cells to Maker cells.
+- **Ebbflow** is an EEG personal-state app, not a tide and breath watchface.
+  It moved from Ambient cells to Maker cells.
 - **Hyle Deco** is a Google Fonts submission (a hairline display typeface),
   not a generic decorative texture layer.
 - **Asom** (asystemofmodels) was not in the original roster at all. It is a
-  real, built, Apache-2.0 sovereign model-routing daemon and is very likely
-  elsewhere. Added under Connective tissue.
+  real, built, Apache-2.0 sovereign model-routing daemon. Added under
+  Connective tissue.
 
 Two products from the original brief are **omitted entirely** rather than
 guessed:
