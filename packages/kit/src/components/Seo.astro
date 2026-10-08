@@ -1,17 +1,26 @@
 ---
 // component: Seo
-// Complete per-page head. Every page passes its own title/description/canonical.
+// Complete per-page head. Every page passes its own title/description; the
+// canonical is derived from the page's own URL and the site's configured host
+// (Astro `site`), so it cannot drift from where the page is served. A page may
+// still pass `canonical` to override.
 const {
   title,
   description,
-  canonical,
+  canonical: canonicalProp,
   ogType = 'website',
   jsonLd = null,
   // No page currently passes a per-page image (no per-product screenshots
   // exist yet), so every page gets the one site-wide social card rather
   // than shipping og:image-less previews.
-  image = 'https://asystemofcells.com/og-image.png',
+  image = 'https://www.asystemofcells.com/og-image.png',
 } = Astro.props
+
+// Directory-style URLs end in a slash (the host redirects /x to /x/); files do not.
+const path = Astro.url.pathname
+const canonical =
+  canonicalProp ??
+  new URL(/\.[a-z0-9]+$/i.test(path) || path.endsWith('/') ? path : path + '/', Astro.site ?? Astro.url).href
 ---
 <title>{title}</title>
 <meta name="description" content={description} />

@@ -11,7 +11,9 @@
       "accent": "#E8A33D",
       "oneLiner": "A tactile notepad keyboard that clacks. Its own design language, not the house system, on purpose.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "SKU price undecided ($1 vs ~$4.99 both appear in the repo)"]
+      "verify": ["accent color unconfirmed"],
+      "model": "freemium",
+      "kind": "app"
     },
     {
       "slug": "nooz",
@@ -22,7 +24,13 @@
       "oneLiner": "A news reader that shows you what you did not read, not what it thinks you should.",
       "isHub": false,
       "readerUrl": "/nooz/read",
-      "verify": ["accent color unconfirmed"]
+      "privacyUrl": "/nooz/privacy",
+      "verify": ["accent color unconfirmed"],
+      "kind": "app",
+      "leaves": {
+        "heading": "The web reader asks our host to fetch for it.",
+        "body": "Feeds and articles you open in the web reader pass through a small proxy on our host so the browser can read them. Our code does not store them, though ordinary host logs may record the address. The Android app fetches directly. No analytics, cookies or trackers are built into the web reader."
+      }
     },
     {
       "slug": "odyssey",
@@ -32,7 +40,13 @@
       "accent": "#2F855A",
       "oneLiner": "A live wallpaper of Odysseus's sea voyage, built book by book for accuracy, not just for looks.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "early scaffold stage, no main branch yet"]
+      "verify": ["accent color unconfirmed"],
+      "model": "freemium",
+      "kind": "app",
+      "leaves": {
+        "heading": "Nothing leaves your phone unless you allow it.",
+        "body": "The one optional exception is a weather lookup that asks Open-Meteo for local conditions using a coarse location. It stays off until you turn it on. No analytics, cookies or trackers are built in."
+      }
     },
     {
       "slug": "crocodyl",
@@ -40,9 +54,12 @@
       "type": "A",
       "status": "beta",
       "accent": "#6B7A3A",
-      "oneLiner": "A free, open archery coach: camera and pose estimation build your baseline, then flag the shot that broke it.",
+      "oneLiner": "A free archery coach: camera and pose estimation build your baseline, then flag the shot that broke it.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "main branch is a stub, real app lives on a release branch"]
+      "verify": ["accent color unconfirmed", "main branch is a stub, real app lives on a release branch"],
+      "ctaLabel": "Get the test build",
+      "ctaUrl": "https://github.com/mbaliga/Form-analyser/releases",
+      "kind": "app"
     },
     {
       "slug": "animalcules",
@@ -52,7 +69,9 @@
       "accent": "#e6398c",
       "hubUrl": "https://animalcules.app",
       "oneLiner": "A living microscope slide for your lock screen. Every organism is drawn and animated in code, never looped from video.",
-      "isHub": true
+      "isHub": true,
+      "model": "freemium",
+      "kind": "app"
     },
     {
       "slug": "globe",
@@ -62,7 +81,8 @@
       "accent": "#2563A8",
       "oneLiner": "A real-time day and night Earth for your wrist, one HTML mock exported to three watch platforms.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "pre-release, private until the faces are finished"]
+      "verify": ["accent color unconfirmed", "pre-release, private until the faces are finished"],
+      "kind": "watchface"
     },
     {
       "slug": "timely",
@@ -72,7 +92,8 @@
       "accent": "#6D5AE0",
       "oneLiner": "A set of honest watchfaces, time told plainly, from the same one-design-many-platforms pipeline as Globe.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "pre-release, private until the faces are finished"]
+      "verify": ["accent color unconfirmed", "pre-release, private until the faces are finished"],
+      "kind": "watchface"
     },
     {
       "slug": "fonebrew",
@@ -82,7 +103,8 @@
       "accent": "#E4572E",
       "hubUrl": "https://fonebrew.app",
       "oneLiner": "A sovereign, on-device AI computing environment for the phone. The tool this whole house was built with.",
-      "isHub": true
+      "isHub": true,
+      "kind": "app"
     },
     {
       "slug": "haptics-workbench",
@@ -92,16 +114,20 @@
       "accent": "#B5179E",
       "oneLiner": "Design a haptic effect once, against one shape, and it renders on whatever actuator the platform actually has.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "product name pending, internally hnm_playground"]
+      "verify": ["accent color unconfirmed", "product name pending, internally hnm_playground"],
+      "ctaLabel": "Get the test build",
+      "ctaUrl": "https://github.com/mbaliga/hnm_playground/releases/tag/android-player-debug",
+      "kind": "app"
     },
     {
       "slug": "figma-suite",
       "tissue": "maker-cells",
       "type": "C",
-      "status": "live",
+      "status": "soon",
       "accent": "#F2545B",
       "oneLiner": "A small suite of Figma plugins: export watchfaces, publish a Trusted Web Activity, one just for fun.",
-      "isHub": false
+      "isHub": false,
+      "kind": "plugins"
     },
     {
       "slug": "ebbflow",
@@ -111,7 +137,8 @@
       "accent": "#3AA6B9",
       "oneLiner": "An EEG companion that captures signal from wearables like the MW75 and helps you understand deviations from your own baseline.",
       "isHub": false,
-      "verify": ["accent color unconfirmed"]
+      "verify": ["accent color unconfirmed"],
+      "kind": "app"
     },
     {
       "slug": "hyle",
@@ -120,28 +147,39 @@
       "status": "live",
       "accent": "#4A4A55",
       "oneLiner": "The house design system. State is shown by how a material behaves, never said in words.",
-      "isHub": false
+      "isHub": false,
+      "ctaLabel": "See the system",
+      "ctaUrl": "https://github.com/mbaliga/Hyle-Design-System",
+      "kind": "design-system"
     },
     {
       "slug": "hyle-deco",
       "tissue": "connective-tissue",
       "type": "D",
-      "status": "soon",
+      "status": "live",
       "accent": "#C77DFF",
       "parent": "hyle",
       "oneLiner": "A hairline display face for interfaces where one thin line of light has to carry the whole identity.",
       "isHub": false,
-      "verify": ["submission to Google Fonts prepared but not yet opened"]
+      "verify": ["submission to Google Fonts prepared but not yet opened"],
+      "ctaLabel": "Download the font",
+      "ctaUrl": "/hyle-fonts",
+      "kind": "typeface"
     },
     {
       "slug": "asom",
       "tissue": "connective-tissue",
       "type": "D",
-      "status": "beta",
+      "status": "soon",
       "accent": "#7C5CFC",
       "oneLiner": "A sovereign model-routing daemon. One app on the phone holds the keys and makes the routing call; everything else is a client.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "no local inference engine yet in v1, cloud routing only"]
+      "verify": ["accent color unconfirmed", "no local inference engine yet in v1, cloud routing only"],
+      "kind": "app",
+      "leaves": {
+        "heading": "Your keys and your ledger stay on your phone.",
+        "body": "In v1, requests go only to the cloud providers you add keys for, plus a model catalogue fetch and the model downloads you start. Every outbound call is written to a ledger you can read, and nothing about your use is reported to us. There is no local model engine yet."
+      }
     }
   ]
 }

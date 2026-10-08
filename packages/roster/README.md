@@ -30,7 +30,14 @@ guessed:
 
 `verify` arrays on individual cells flag fields (mostly accent colors) that
 have no confirmed source and are carried over as placeholders pending the
-owner.
+owner. They are internal: nothing renders them, and nothing in them may be
+a price, a private-repo detail or an internal codename.
+
+Optional fields written for publication: `ctaLabel` and `ctaUrl` (the one real
+destination for the page's button), `model` (`freemium`), `kind` (`app`,
+`design-system`, `typeface`, `plugins`, `watchface`), `leaves` (what leaves the
+device, as `{ heading, body }`) and `privacyUrl`. `cellCta(cell)` turns these
+into the button, and never returns a link to `#`.
 
 ## Usage
 

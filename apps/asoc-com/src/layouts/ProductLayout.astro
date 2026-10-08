@@ -8,7 +8,7 @@
 // reuse the old dark-violet Hyle kit components (SiteHeader/SiteFooter/CellCard) —
 // those were the invented system the owner already rejected once for this site.
 import BaseLayout from './BaseLayout.astro'
-import { ctaLabel } from '@asoc/roster'
+import { cellCta, STATUS_MEANING } from '@asoc/roster'
 
 const { cell, title: pageTitle, description } = Astro.props
 const TISSUE_LABEL = {
@@ -19,12 +19,41 @@ const TISSUE_LABEL = {
 }
 const displayName = cell.slug.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ')
 const eyebrow = TISSUE_LABEL[cell.tissue] || cell.tissue
-const cta = ctaLabel(cell.status)
-const href = cell.hubUrl || '#'
-const external = !!cell.hubUrl
+// The one honest call to action for this cell, or null (see cellCta in
+// @asoc/roster). There is no '#' fallback: a button that goes nowhere is worse
+// than no button.
+const cta = cellCta(cell)
 // Some products ship a same-origin web app (e.g. Nooz's reader at /nooz/read).
 // When present it becomes the primary call to action.
 const readerUrl = cell.readerUrl || null
+
+// What leaves the device, said per product instead of one blanket promise for
+// the whole house. A cell can override it with `leaves` in the roster; the
+// defaults below are the claims that hold for every cell of that kind.
+const KIND_LEAVES = {
+  app: {
+    heading: 'No analytics, cookies or trackers.',
+    body: "None are built into this app. What it sends over the network, if anything, is covered by the house privacy policy and the app's own store listing.",
+  },
+  'design-system': {
+    heading: 'Nothing to phone home.',
+    body: 'Hyle is a design system: tokens, components and fonts you build with. It runs nowhere on its own and sends nothing.',
+  },
+  typeface: {
+    heading: 'Nothing to phone home.',
+    body: 'Hyle Deco is a typeface: font files you download and use. It runs nowhere and sends nothing.',
+  },
+  plugins: {
+    heading: 'Plugins run inside Figma.',
+    body: 'They are not released yet. When they are, what they send, if anything, will be listed here.',
+  },
+  watchface: {
+    heading: 'A watchface runs on the watch.',
+    body: 'It is not released yet. When it is, what it sends, if anything, will be listed here.',
+  },
+}
+const leaves = cell.leaves || KIND_LEAVES[cell.kind] || KIND_LEAVES.app
+const modelLabel = cell.model === 'freemium' ? 'Freemium' : null
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -38,7 +67,6 @@ const jsonLd = {
 <BaseLayout
   title={pageTitle || `${displayName}: asystemofcells`}
   description={description || cell.oneLiner}
-  canonical={`https://asystemofcells.com/${cell.slug}`}
   jsonLd={jsonLd}
   analytics
   noChrome
@@ -59,9 +87,13 @@ const jsonLd = {
           {readerUrl && (
             <a class="btn-primary" href={readerUrl}>Open the web reader</a>
           )}
-          <a class={readerUrl ? 'btn-secondary' : 'btn-primary'} href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}>{cta}</a>
+          {cta && (
+            <a class={readerUrl ? 'btn-secondary' : 'btn-primary'} href={cta.url} target={cta.external ? '_blank' : undefined} rel={cta.external ? 'noopener noreferrer' : undefined}>{cta.label}</a>
+          )}
         </div>
         <span class={`status-pill status-pill--${cell.status}`}>{cell.status}</span>
+        {modelLabel && <span class="model-pill">{modelLabel}</span>}
+        {!cta && !readerUrl && <p class="status-line">{STATUS_MEANING[cell.status]}</p>}
       </div>
     </section>
 
@@ -70,9 +102,9 @@ const jsonLd = {
     <section class="feature">
       <div class="wrap feature-grid">
         <div>
-          <div class="f-eyebrow">On-device, always the default</div>
-          <h2>Nothing runs in a cloud you did not choose.</h2>
-          <p>Every app in this house computes on your phone first. Cloud is opt-in per use, never a hidden fallback, and every cloud provider is marked as what it is: a watched object.</p>
+          <div class="f-eyebrow">What leaves your device</div>
+          <h2>{leaves.heading}</h2>
+          <p>{leaves.body}</p>
         </div>
         <div class="feature-visual"><div class="screen-crop screen-crop--1"></div></div>
       </div>
@@ -80,26 +112,24 @@ const jsonLd = {
     <section class="feature reverse">
       <div class="wrap feature-grid">
         <div>
-          <div class="f-eyebrow">Zero telemetry</div>
-          <h2>The app has no analytics, no cookies, no trackers. Ever.</h2>
-          <p>Not a setting you have to find and turn off. It was never wired in, in this app or in any other app in the house. This website counts page views on pages like this one, and nothing at all in the reader or the tools. The <a class="inline-link" href="/privacy">privacy policy</a> says exactly what that means.</p>
+          <div class="f-eyebrow">This website</div>
+          <h2>Page counts here, nothing where you work.</h2>
+          <p>This site counts page views on pages like this one, without cookies, and counts nothing in the reader or the tools. The <a class="inline-link" href="/privacy">privacy policy</a> says exactly what that means.</p>
         </div>
         <div class="feature-visual"><div class="screen-crop screen-crop--2"></div></div>
       </div>
     </section>
 
-    {/* cell.verify (roster.public.json) is an internal authoring checklist -
-        accent-color TODOs, unresolved pricing, branch/build status, even an
-        internal codename in one entry. It was rendering verbatim on the
-        public page under a "Still filling this page in" label. Never render
-        it here; it's for the person maintaining the roster, not visitors. */}
+    {/* cell.verify (roster.public.json) is an internal authoring checklist.
+        It once rendered verbatim on the public page. Never render it here;
+        it is for the person maintaining the roster, not visitors. */}
 
     <section class="faq">
       <div class="wrap">
         <h2>Questions? Answers.</h2>
         <div class="faq-list">
-          <div class="qa"><button class="q" type="button"><span>Is any of this open source?</span><span class="plus"></span></button><div class="a"><p>Most of the plumbing is. A couple of products depend on a shared engine that isn't open — check each product's own page for specifics.</p></div></div>
-          <div class="qa"><button class="q" type="button"><span>Why no tracking, anywhere?</span><span class="plus"></span></button><div class="a"><p>Because every layer being legible, including what leaves the device, is the whole point of this house.</p></div></div>
+          <div class="qa"><button class="q" type="button"><span>Is the code open source?</span><span class="plus"></span></button><div class="a"><p>It is source-available rather than open source. The code is free to read and to use for personal and other non-commercial purposes under the PolyForm Noncommercial License, and using it commercially needs a licence from the maker. The Hyle typefaces are the exception: they are under the SIL Open Font License. Each repository carries its own licence file.</p></div></div>
+          <div class="qa"><button class="q" type="button"><span>Why no tracking in the apps?</span><span class="plus"></span></button><div class="a"><p>Because every layer being legible, including what leaves the device, is the whole point of this house.</p></div></div>
           <div class="qa"><button class="q" type="button"><span>Do you build for iOS?</span><span class="plus"></span></button><div class="a"><p>Android first. Some categories, like live wallpapers, are not available on iOS at all regardless of intent.</p></div></div>
         </div>
       </div>
@@ -112,6 +142,7 @@ const jsonLd = {
           <a href="/about">About</a>
           <a href="/faq">FAQ</a>
           <a href="/privacy">Privacy policy</a>
+          {cell.privacyUrl && <a href={cell.privacyUrl}>{displayName} privacy</a>}
           <a href="/contact">Contact</a>
         </nav>
         <span class="foot-rights">&copy; 2026 asystemofcells</span>
@@ -165,6 +196,8 @@ const jsonLd = {
   .hero .btn-secondary:hover{ border-color:#fff; }
   .status-pill{ display:inline-block; margin-top:18px; font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.3); color:var(--dark-muted); }
   .status-pill--live{ color:#3ddc84; border-color:#3ddc84; }
+  .model-pill{ display:inline-block; margin-top:18px; margin-left:8px; font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.3); color:var(--dark-muted); }
+  .hero .status-line{ margin:14px 0 0; font-size:14px; color:var(--dark-muted); }
   .status-pill--beta{ color:#08fed5; border-color:#08fed5; }
 
   .feature{ padding:10vh 0; overflow:hidden; }

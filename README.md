@@ -61,3 +61,7 @@ and the lockfile, and each one only builds its own app.
 
 See `packages/roster/README.md` for what's confirmed vs. still needs an owner
 confirm in the product roster.
+
+## Licence
+
+Source-available and free for noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE). Commercial use needs a licence: see [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md). The fonts in this repository are not covered by that licence and keep the SIL Open Font License: see [NOTICE.md](NOTICE.md).
