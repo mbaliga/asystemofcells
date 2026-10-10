@@ -797,7 +797,9 @@ const lanes = LANES.map((lane, k) => {
       position: static;
       width: auto;
       height: auto;
-      padding: 6vh 4vw;
+      /* Top clears the section names; bottom clears the footer (the links
+         and wordmark float over the bottom of the page). */
+      padding: calc(clamp(18px, 2.4vw, 32px) + 56px) 4vw 190px;
       margin: 0;
       overflow: visible;
       clip: auto;
