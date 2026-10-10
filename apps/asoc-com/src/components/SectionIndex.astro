@@ -1,0 +1,198 @@
+---
+// The index page of Architecture, Shop or Prints (props: `slug`). The three
+// pages in src/pages/<slug>/index.astro are one-line wrappers around this.
+//
+// The card list follows the Tools index's visual language. A production build
+// has no entries until the owner adds real ones (placeholders are dropped, see
+// placeholdersHidden in @asoc/roster/sections), and then this renders an honest
+// empty state rather than anything made up.
+import SimplePageLayout from '../layouts/SimplePageLayout.astro'
+import { SECTIONS, getSection, getSectionItems, tileOf } from '@asoc/roster/sections'
+
+const { slug } = Astro.props
+const section = getSection(slug)
+if (!section || slug === 'apps') {
+  throw new Error(`SectionIndex: "${slug}" is not a section with an index page`)
+}
+
+const tiles = getSectionItems(slug).map((item) => tileOf(slug, item))
+const others = SECTIONS.filter((s) => s.slug !== slug)
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href
+---
+<SimplePageLayout
+  title={`${section.label}: asystemofcells`}
+  description={`${section.blurb} A section of asystemofcells.`}
+  canonical={pageUrl}
+>
+  <p class="eyebrow">Section</p>
+  <h1>{section.label}.</h1>
+  <p>{section.blurb}</p>
+
+  {tiles.length > 0 ? (
+    <ul class="sec-list">
+      {tiles.map((t) => (
+        <li>
+          <a class="sec-card" href={t.href} style={`--sec-accent:${t.color}`}>
+            <span class="sec-swatch" aria-hidden="true"></span>
+            <span class="sec-body">
+              <span class="sec-head">
+                <span class="sec-name">{t.name}</span>
+                {t.placeholder ? (
+                  <span class="sec-tag">Placeholder</span>
+                ) : (
+                  <span class="sec-kicker">{t.kicker}</span>
+                )}
+                {t.status && <span class="sec-status">{t.status}</span>}
+              </span>
+              <span class="sec-blurb">{t.oneLiner}</span>
+              <span class="sec-open">View &rarr;</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <div class="sec-empty">
+      <p class="sec-empty-title">Nothing is published here yet.</p>
+      <p>If you want to be told when something is added, <a class="inline-link" href="/contact/">get in touch</a>.</p>
+    </div>
+  )}
+
+  <nav class="sec-others" aria-label="Other sections">
+    <span class="sec-others-label">Also in the house:</span>
+    {others.map((s) => <a href={s.href}>{s.label}</a>)}
+  </nav>
+</SimplePageLayout>
+
+<style>
+  .sec-list {
+    list-style: none;
+    margin: 32px 0 8px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .sec-list li {
+    margin: 0;
+  }
+  .sec-card {
+    display: flex;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .sec-card:hover {
+    border-color: color-mix(in srgb, var(--sec-accent) 55%, var(--line));
+    transform: translateY(-1px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  }
+  .sec-card:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+  .sec-swatch {
+    flex: none;
+    width: 54px;
+    height: 54px;
+    border-radius: 11px;
+    background:
+      radial-gradient(120% 120% at 25% 20%, color-mix(in srgb, var(--sec-accent) 75%, white), transparent 60%),
+      radial-gradient(120% 120% at 80% 90%, color-mix(in srgb, var(--sec-accent) 90%, black), var(--sec-accent));
+  }
+  .sec-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: 6px 10px;
+    flex-wrap: wrap;
+  }
+  .sec-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  .sec-kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  /* A placeholder is marked in words and with a dashed outline, not by colour. */
+  .sec-tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border: 1px dashed var(--ink);
+    border-radius: 6px;
+    background: #f4f4f5;
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  /* Availability is the word itself; the outline just sets it apart. */
+  .sec-status {
+    display: inline-block;
+    padding: 0 9px;
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .sec-blurb {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  .sec-open {
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .sec-empty {
+    margin: 32px 0 8px;
+    padding: 20px 18px 6px;
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+  }
+  .sec-empty-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .sec-others {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 20px;
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .sec-others-label {
+    color: var(--muted);
+  }
+  .sec-others a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--ink);
+    text-decoration: underline;
+  }
+</style>

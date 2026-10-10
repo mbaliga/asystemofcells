@@ -7,6 +7,9 @@ const {
   canonical,
   ogType = 'website',
   jsonLd = null,
+  // Keeps a page out of search results (placeholder entries). Default false =
+  // the robots tag every page has always had.
+  noindex = false,
   // No page currently passes a per-page image (no per-product screenshots
   // exist yet), so every page gets the one site-wide social card rather
   // than shipping og:image-less previews.
@@ -16,7 +19,7 @@ const {
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
-<meta name="robots" content="index,follow" />
+<meta name="robots" content={noindex ? 'noindex,follow' : 'index,follow'} />
 <meta property="og:type" content={ogType} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
