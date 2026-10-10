@@ -1,0 +1,45 @@
+{
+  "section": "prints",
+  "notes": "3D prints someone can ask to have made. `options` is a list of { label, values[] } choices the visitor picks before emailing (for example Size, Material, Colour). `leadTime` is free text. `availability` is one of available, sold-out, soon. Images go in apps/asoc-com/public/sections/prints/<key>.jpg and are referenced as { src, alt }.",
+  "items": [
+    {
+      "key": "placeholder-print-1",
+      "name": "Placeholder print entry 1",
+      "oneLiner": "A stand-in so this section can be built and checked. Replace it with a real printable object.",
+      "accent": "#C87EA8",
+      "options": [
+        { "label": "Size", "values": ["Small", "Medium", "Large"] },
+        { "label": "Material", "values": ["PLA", "PETG", "Resin"] }
+      ],
+      "leadTime": "Placeholder",
+      "availability": "soon",
+      "placeholder": true
+    },
+    {
+      "key": "placeholder-print-2",
+      "name": "Placeholder print entry 2",
+      "oneLiner": "A stand-in so this section can be built and checked. Replace it with a real printable object.",
+      "accent": "#B98AC9",
+      "options": [
+        { "label": "Size", "values": ["Small", "Medium", "Large"] },
+        { "label": "Material", "values": ["PLA", "PETG", "Resin"] }
+      ],
+      "leadTime": "Placeholder",
+      "availability": "soon",
+      "placeholder": true
+    },
+    {
+      "key": "placeholder-print-3",
+      "name": "Placeholder print entry 3",
+      "oneLiner": "A stand-in so this section can be built and checked. Replace it with a real printable object.",
+      "accent": "#D393B0",
+      "options": [
+        { "label": "Size", "values": ["Small", "Medium", "Large"] },
+        { "label": "Material", "values": ["PLA", "PETG", "Resin"] }
+      ],
+      "leadTime": "Placeholder",
+      "availability": "soon",
+      "placeholder": true
+    }
+  ]
+}
