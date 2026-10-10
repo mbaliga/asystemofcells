@@ -16,12 +16,19 @@
 // rotates ~-9..-13deg per slot as it travels, passing through exactly 0deg
 // on the centre slot. Cards are 4:5, square-cornered, flat glossy, on a
 // flat black. The stage is the whole viewport; the only chrome floats over
-// it in the two corners the train never crosses - the current centre-slot
-// product's name top-right, the link list and wordmark bottom-left - plus a
-// small copyright centre-bottom. The motion is driven from JS (one clock,
+// it in the corners the train never crosses - the four section names
+// top-right, the link list and wordmark bottom-left - plus a small copyright
+// centre-bottom, and the centre-slot item's name and details written beside
+// the centre card. The motion is driven from JS (one clock,
 // one rAF) rather than per-card CSS animations because the whole train has
 // to step in lockstep, pause together on hover, and "in focus" is then
 // plain arithmetic (the lane nearest slot 0).
+//
+// Sections. Apps (the roster), Architecture, Shop and Prints each have their
+// own tiles. Choosing one from the nav shifts the train: every lane runs one
+// lap along its own track (nearer lanes faster, for parallax), picking up the
+// new section's tiles as it wraps off-screen, and lands back on the same rigid
+// pattern. See startShift() for why the arithmetic works out.
 //
 // Mobile - the reel. A vertical list of names, one per screen-sixth, the
 // one on the centre line bright and the rest dimming by distance,
@@ -36,6 +43,7 @@
 //
 // No texture/grain anywhere any more: flat colour, soft light, crisp edges.
 import { getRoster, TISSUES } from '@asoc/roster'
+import { SECTIONS, getSectionItems, tileOf } from '@asoc/roster/sections'
 
 const tissueLabel = Object.fromEntries(TISSUES.map((t) => [t.slug, t.label]))
 const statusLabel = { live: 'Live', beta: 'Beta', soon: 'Soon' }
@@ -47,29 +55,83 @@ function titleCase(slug) {
     .join(' ')
 }
 
-const items = getRoster().map((cell) => ({
+// Every tile, whichever section it belongs to, has the same shape - the
+// engine, the search and the details beside the centre card all read it:
+// { key, name, section, sectionLabel, kicker, status, oneLiner, color, href,
+//   external, image, placeholder, empty }.
+const appTiles = getRoster().map((cell) => ({
   key: cell.slug,
   name: titleCase(cell.slug),
+  section: 'apps',
+  sectionLabel: 'Apps',
+  kicker: tissueLabel[cell.tissue] || cell.tissue,
   status: statusLabel[cell.status] || cell.status,
-  tissue: tissueLabel[cell.tissue] || cell.tissue,
   oneLiner: cell.oneLiner,
   color: cell.accent,
   href: cell.isHub ? cell.hubUrl : `/${cell.slug}`,
   external: !!cell.isHub,
+  image: null,
+  placeholder: false,
+  empty: false,
 }))
 
 // A non-product tile for the in-browser generators. It rides the same
 // conveyor/reel as any cell and points at the /tools hub, not a roster slug.
-items.push({
+appTiles.push({
   key: 'tools',
   name: 'Tools',
+  section: 'apps',
+  sectionLabel: 'Apps',
+  kicker: 'Maker cells',
   status: 'Open',
-  tissue: 'Maker cells',
   oneLiner: 'In-browser generators: grainy gradient backgrounds and the ASOC cells mark. On-device, nothing uploaded.',
   color: '#8e7bff',
   href: '/tools',
   external: false,
+  image: null,
+  placeholder: false,
+  empty: false,
 })
+
+// What a section with nothing published yet shows. The owner's rule is that
+// the four section names are always visible, and the honest-status rule is
+// that nothing pretends to exist: so an empty section rides the conveyor as
+// plain tinted glass with no link on the cards, and its details say so.
+function emptyTile(s) {
+  return {
+    key: `${s.slug}/empty`,
+    name: 'Nothing published yet',
+    section: s.slug,
+    sectionLabel: s.label,
+    kicker: s.label,
+    status: 'Soon',
+    oneLiner: 'Nothing is published in this section yet. Write to the maker to be told when it is.',
+    color: s.accent,
+    href: '/contact/',
+    external: false,
+    image: null,
+    placeholder: false,
+    empty: true,
+  }
+}
+
+const sectionData = Object.fromEntries(
+  SECTIONS.map((s) => {
+    const real = s.slug === 'apps' ? appTiles : getSectionItems(s.slug).map((it) => tileOf(s.slug, it))
+    const empty = real.length === 0
+    return [
+      s.slug,
+      { slug: s.slug, label: s.label, accent: s.accent, blurb: s.blurb, href: s.href, empty, items: empty ? [emptyTile(s)] : real },
+    ]
+  }),
+)
+const sectionOrder = SECTIONS.map((s) => s.slug)
+
+// The page starts on Apps; a #section in the URL is applied by the engine
+// before its first frame.
+const items = sectionData.apps.items
+// Every real tile of every section, for the search.
+const searchItems = sectionOrder.flatMap((slug) => (sectionData[slug].empty ? [] : sectionData[slug].items))
 
 const total = items.length
 const first = items[0]
@@ -136,11 +198,35 @@ const lanes = LANES.map((lane, k) => {
 <div class="home-outer" data-page="home">
   <div class="home-card">
     <!-- ============================================================ -->
+    <!-- The four sections, always visible, first in the tab order.     -->
+    <!-- Real links to real pages (Apps is this page), so they work     -->
+    <!-- with no JavaScript and under reduced motion; with JS and       -->
+    <!-- motion allowed the engine intercepts a click and shifts the    -->
+    <!-- tiles to that section instead. The current one is lit          -->
+    <!-- (aria-current), the rest dimmed; an empty section says "Soon"  -->
+    <!-- in words.                                                      -->
+    <!-- ============================================================ -->
+    <nav class="home-sections" id="homeSections" aria-label="Sections">
+      {SECTIONS.map((s) => (
+        <a
+          class="home-sections__link"
+          href={s.href}
+          data-section={s.slug}
+          style={`--sec:${s.accent}`}
+          aria-current={s.slug === 'apps' ? 'true' : undefined}
+        >
+          <span class="home-sections__label">{s.label}</span>
+          {sectionData[s.slug].empty && <span class="home-sections__soon">Soon</span>}
+        </a>
+      ))}
+    </nav>
+
+    <!-- ============================================================ -->
     <!-- Desktop: the conveyor. Blank cards on one diagonal, stepping   -->
-    <!-- in lockstep; the name of whichever is on the centre slot is    -->
-    <!-- written top-right. JS drives the positions (see the engine    -->
-    <!-- below); prefers-reduced-motion swaps the whole thing for a     -->
-    <!-- static grid of every item.                                     -->
+    <!-- in lockstep; the name and details of whichever is on the       -->
+    <!-- centre slot are written beside it. JS drives the positions     -->
+    <!-- (see the engine below); prefers-reduced-motion swaps the whole -->
+    <!-- thing for a static grid of every item.                         -->
     <!-- ============================================================ -->
     <div class="scene scene--desktop" id="sceneDesktop" aria-hidden="false">
       <div class="flow-stage" id="flowStage" aria-hidden="true">
@@ -148,40 +234,75 @@ const lanes = LANES.map((lane, k) => {
           <a
             class="flow-card"
             data-lane={k}
-            href={lane.item.href}
+            href={lane.item.empty ? undefined : lane.item.href}
             target={lane.item.external ? '_blank' : undefined}
             rel={lane.item.external ? 'noopener noreferrer' : undefined}
-            aria-label={`${lane.item.tissue}: ${lane.item.name}`}
+            aria-label={`${lane.item.kicker}: ${lane.item.name}`}
             tabindex="-1"
             style={lane.style}
           ></a>
         ))}
       </div>
 
-      <!-- The two fixed points: the brand wordmark bottom-left (in
-           .home-foot) and, here, the current centre-slot product top-right.
-           Visual-only duplicates of the card's accessible name, which stays
-           reachable via .flow-fallback/search regardless of motion. -->
-      <div class="flow-focus" aria-hidden="true">
-        <span class="flow-focus__name" id="flowFocusName">{first.name}</span>
+      <!-- The current centre-slot item: its name, vertically centred on
+           the centre card, with a few details stacked under it. It sits
+           1.55 card heights right of centre - the nearest the text can be
+           and still clear the tiles stepping in behind the centre card
+           (see .flow-focus). Text never sits on glass, so it needs no scrim.
+           The link is real (the one interactive bit), so this is not
+           aria-hidden; the name itself duplicates the card's accessible
+           name, which stays reachable via .flow-fallback/search. -->
+      <div class="flow-focus" id="flowFocus" style={`--focus-accent:${first.color}`}>
+        <p class="flow-focus__name" id="flowFocusName">{first.name}</p>
+        <p class="flow-focus__kicker">
+          <span id="flowFocusKicker">{first.kicker}</span>
+          <span class="flow-focus__status" id="flowFocusStatus">{first.status}</span>
+        </p>
+        <p class="flow-focus__line" id="flowFocusLine">{first.oneLiner}</p>
+        <div class="flow-focus__links">
+          <a
+            class="flow-focus__link"
+            id="flowFocusLink"
+            href={first.href}
+            target={first.external ? '_blank' : undefined}
+            rel={first.external ? 'noopener noreferrer' : undefined}>View <span aria-hidden="true">&rarr;</span></a
+          >
+          <a class="flow-focus__link" id="flowFocusMore" href="/" hidden></a>
+        </div>
       </div>
 
-      <!-- Every item, in plain roster order, as real tab-focusable links -
-           visually hidden (standard sr-only clip) while the conveyor is
-           what's shown, revealed as a panel the moment a keyboard user tabs
-           into it, and the visible page outright under reduced motion. -->
+      <!-- Every item of every section, in plain order, as real tab-focusable
+           links - visually hidden (standard sr-only clip) while the conveyor
+           is what's shown, revealed as a panel the moment a keyboard user
+           tabs into it, and the visible page outright under reduced motion. -->
       <div class="flow-fallback">
-        {items.map((it) => (
-          <a
-            class="flow-fallback__card"
-            href={it.href}
-            target={it.external ? '_blank' : undefined}
-            rel={it.external ? 'noopener noreferrer' : undefined}
-            style={`--fb-accent:${it.color}`}
-          >
-            <span class="flow-fallback__name">{it.name}</span>
-            <span class="flow-fallback__tissue">{it.tissue}</span>
-          </a>
+        {SECTIONS.map((s) => (
+          <section class="flow-fallback__group" id={`section-${s.slug}`} aria-labelledby={`fb-${s.slug}`}>
+            <h2 class="flow-fallback__heading" id={`fb-${s.slug}`}>{s.label}</h2>
+            {sectionData[s.slug].empty ? (
+              <p class="flow-fallback__empty">
+                Nothing is published here yet. <a href="/contact/">Write to be told when it is.</a>
+              </p>
+            ) : (
+              sectionData[s.slug].items.map((it) => (
+                <a
+                  class="flow-fallback__card"
+                  href={it.href}
+                  target={it.external ? '_blank' : undefined}
+                  rel={it.external ? 'noopener noreferrer' : undefined}
+                  style={`--fb-accent:${it.color}`}
+                >
+                  <span class="flow-fallback__name">{it.name}</span>
+                  <span class="flow-fallback__tissue">{it.kicker}</span>
+                </a>
+              ))
+            )}
+            {s.slug !== 'apps' && (
+              <a class="flow-fallback__more" href={s.href}>
+                All {s.label.toLowerCase()} &rarr;
+              </a>
+            )}
+          </section>
         ))}
       </div>
     </div>
@@ -238,10 +359,10 @@ const lanes = LANES.map((lane, k) => {
 </div>
 
 <div class="search-overlay" id="searchOverlay" data-page="home" aria-hidden="true">
-  <div class="search-panel" role="dialog" aria-modal="true" aria-label="Search apps">
+  <div class="search-panel" role="dialog" aria-modal="true" aria-label="Search">
     <div class="search-input-row">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <input type="text" id="searchInput" class="search-input" placeholder="Search apps" autocomplete="off" />
+      <input type="text" id="searchInput" class="search-input" placeholder="Search" autocomplete="off" />
       <button type="button" id="searchClose" class="search-close" aria-label="Close search">Esc</button>
     </div>
     <ul class="search-results" id="searchResults"></ul>
@@ -279,6 +400,86 @@ const lanes = LANES.map((lane, k) => {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+  }
+
+  /* ------------------------------------------------------ section names --- */
+
+  /* The four sections, top-right where the project name used to be. All four
+     are always on screen. The current one is lit (full ink, bold, a soft glow
+     in its own accent) and carries a hairline underline - the non-colour
+     signal, so the state never rests on glow or hue alone; the rest are
+     dimmed. An empty section says "Soon" in words. */
+  .home-sections {
+    position: absolute;
+    top: clamp(18px, 2.4vw, 32px);
+    right: 3.4%;
+    z-index: 7;
+    display: flex;
+    align-items: baseline;
+    gap: clamp(14px, 1.9vw, 28px);
+  }
+  .home-sections__link {
+    --sec: var(--home-ink);
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 6px 0 8px;
+    font-family: var(--font-ui);
+    font-weight: 500;
+    font-size: clamp(13px, 1.3vw, 18px);
+    line-height: 1;
+    letter-spacing: 0.01em;
+    color: var(--home-ink);
+    text-decoration: none;
+    opacity: 0.5;
+    transition:
+      opacity 0.3s var(--home-ease),
+      text-shadow 0.3s var(--home-ease);
+  }
+  .home-sections__link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--home-ink);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.35s var(--home-ease);
+  }
+  .home-sections__link:hover {
+    opacity: 0.85;
+  }
+  .home-sections__link:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--home-ink);
+    outline-offset: 4px;
+  }
+  .home-sections__link[aria-current] {
+    opacity: 1;
+    font-weight: 700;
+    text-shadow:
+      0 0 14px color-mix(in srgb, var(--sec) 85%, transparent),
+      0 0 36px color-mix(in srgb, var(--sec) 45%, transparent);
+  }
+  .home-sections__link[aria-current]::after {
+    transform: scaleX(1);
+  }
+  .home-sections__soon {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--home-muted);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .home-sections__link,
+    .home-sections__link::after {
+      transition: none;
+    }
   }
 
   /* ---------------------------------------------------------- desktop --- */
@@ -351,30 +552,140 @@ const lanes = LANES.map((lane, k) => {
     outline-offset: 3px;
   }
 
+  /* The centre item's name and details. Geometry (in card heights, origin at
+     the centre card's middle, from the train's own constants): the centre
+     card spans x +-0.39, y +-0.5; the next card down the train has its
+     top-right corner at x 1.18, y 0.06, and nothing else on the train ever
+     reaches further right than that within +-0.35 of the middle line. So a
+     block vertically centred on the card is clear of every card from
+     x = 1.3 on at rest, and mid-step the corner of the card two behind
+     sweeps out to about x 1.5 on its way in - which is why the name sits a
+     gap away from the card rather than touching it. Measured in headless
+     Chromium over nine seconds of stepping at five viewport sizes: nothing
+     comes within 14px of the block at 1.55, and cards do clip it at 1.3.
+     Its height is capped (name and line are clamped to two lines). */
   .flow-focus {
     position: absolute;
-    top: clamp(18px, 2.4vw, 32px);
+    left: calc(50% + 1.55 * var(--card-h));
     right: 3.4%;
+    top: 50%;
+    transform: translateY(-50%);
     z-index: 6;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
     pointer-events: none;
+    transition: opacity 110ms linear;
+    /* A rule in the centre card's own accent ties the block to that card
+       even though the next tile sits between them. The name is the signal;
+       this only helps the eye. */
+    --focus-accent: var(--home-ink);
+    border-left: 2px solid var(--focus-accent);
+    padding-left: 14px;
+  }
+  .flow-focus.is-swapping {
+    opacity: 0;
+  }
+  /* Too narrow beside the card for text (set by the engine from the real
+     viewport): fall back to the old corner, under the section names. */
+  .scene--desktop.is-compact .flow-focus {
+    left: auto;
+    right: 3.4%;
+    top: clamp(54px, 5.4vw, 74px);
+    transform: none;
+    width: min(46vw, 300px);
+    align-items: flex-end;
+    text-align: right;
+    border-left: 0;
+    padding-left: 0;
+    border-right: 2px solid var(--focus-accent);
+    padding-right: 14px;
   }
   /* Set at the wordmark's own size/weight, not a smaller mono label, so the
      two fixed points - this name and .home-brand-wordmark - carry equal
      weight on the page. */
   .flow-focus__name {
-    display: inline-block;
+    margin: 0;
     font-family: var(--font-ui);
     font-weight: 700;
     font-size: clamp(15px, 2vw, 26px);
-    line-height: 0.95;
+    line-height: 1.05;
     letter-spacing: 0.01em;
     text-transform: none;
     color: var(--home-ink);
-    white-space: nowrap;
-    transition: opacity 110ms linear;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
   }
-  .flow-focus__name.is-swapping {
-    opacity: 0;
+  .flow-focus__kicker {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.72vw, 11px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--home-muted);
+  }
+  /* The status is a word, never only a colour: an underline marks it as the
+     second part of the line. */
+  .flow-focus__status:not(:empty) {
+    color: var(--home-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .flow-focus__line {
+    margin: 0;
+    font-size: clamp(12px, 1vw, 14px);
+    line-height: 1.4;
+    color: var(--home-muted);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+  .flow-focus__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    pointer-events: none;
+  }
+  .scene--desktop.is-compact .flow-focus__links {
+    justify-content: flex-end;
+  }
+  .flow-focus__link {
+    pointer-events: auto;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.72vw, 11px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--home-ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--home-hairline);
+    padding-bottom: 2px;
+    transition: border-color 0.15s;
+  }
+  .flow-focus__link:hover,
+  .flow-focus__link:focus-visible {
+    border-bottom-color: var(--home-ink);
+  }
+  .flow-focus__link:focus-visible {
+    outline: 2px solid var(--home-ink);
+    outline-offset: 3px;
+  }
+
+  /* While the tiles are shifting between sections nothing on the stage is a
+     target (a moving card can't be clicked, and a hover would pause a clock
+     that is deliberately held). */
+  .flow-stage.is-shifting {
+    pointer-events: none;
   }
 
   .flow-fallback {
@@ -404,14 +715,53 @@ const lanes = LANES.map((lane, k) => {
       clip: auto;
       white-space: normal;
       z-index: 30;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
       padding: 16px;
       background: var(--home-panel);
       border: 1px solid var(--home-hairline);
       box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
     }
+  }
+  /* One group per section: a heading, then its cards (or the honest empty
+     line), then a link to the section's own page. */
+  .flow-fallback__group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    align-content: start;
+  }
+  .flow-fallback__heading {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--home-muted);
+  }
+  .flow-fallback__empty {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 14px;
+    color: var(--home-muted);
+  }
+  .flow-fallback__empty a,
+  .flow-fallback__more {
+    color: var(--home-ink);
+  }
+  .flow-fallback__more {
+    grid-column: 1 / -1;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 1px solid var(--home-hairline);
+    justify-self: start;
+    padding-bottom: 2px;
   }
   .flow-fallback__card {
     display: flex;
@@ -452,10 +802,10 @@ const lanes = LANES.map((lane, k) => {
       overflow: visible;
       clip: auto;
       white-space: normal;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 14px;
-      align-content: center;
+      display: flex;
+      flex-direction: column;
+      gap: 34px;
+      justify-content: center;
     }
   }
 
@@ -501,6 +851,16 @@ const lanes = LANES.map((lane, k) => {
       touch-action: none;
       user-select: none;
       -webkit-user-select: none;
+      transition:
+        opacity 190ms var(--home-ease),
+        transform 190ms var(--home-ease);
+    }
+    /* Changing section: the list slides off one way as it fades, the new
+       one arrives from the other (JS sets --swap-dir to +1 or -1 by nav
+       direction). */
+    .reel.is-swapping {
+      opacity: 0;
+      transform: translateY(calc(var(--swap-dir, 1) * -6vh));
     }
     /* The stack: one name per screen-sixth (measured: pitch = 1/6 of the
        frame height, the focused one on the centre line). JS positions the
@@ -542,15 +902,22 @@ const lanes = LANES.map((lane, k) => {
       font-size: clamp(20px, 3.8vh, 34px);
       line-height: 1.1;
       letter-spacing: -0.01em;
-      white-space: nowrap;
-      max-width: 88vw;
+      /* Section entries have longer names than apps: let a name wrap onto a
+         second line (balanced, centred) rather than run off the edge. */
+      white-space: normal;
+      text-align: center;
+      text-wrap: balance;
+      max-width: 84vw;
     }
     .pill-slot.is-near .pill {
       font-weight: 500;
     }
     .pill__name {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
       overflow: hidden;
-      text-overflow: ellipsis;
     }
     .pill:focus-visible {
       outline: 2px solid #fff;
@@ -571,7 +938,8 @@ const lanes = LANES.map((lane, k) => {
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .reel-bg {
+      .reel-bg,
+      .reel {
         transition: none;
       }
     }
@@ -686,17 +1054,21 @@ const lanes = LANES.map((lane, k) => {
     .home-foot__left {
       gap: 10px;
     }
-    /* On the phone the reel takes the whole screen, so the three words go to
-       the top-right corner - the one corner nothing else uses there - and
-       the bottom keeps just the wordmark, the search icon and the
-       copyright. */
+    /* On the phone the reel takes the whole screen and the four section
+       names take the top, so About / Privacy / Contact sit in a row above
+       the wordmark, bottom-left. */
     .home-links {
-      position: fixed;
-      top: max(16px, env(safe-area-inset-top));
-      right: 5vw;
-      z-index: 6;
       flex-direction: row;
       gap: 14px;
+    }
+    .home-sections {
+      position: fixed;
+      top: max(14px, env(safe-area-inset-top));
+      left: 0;
+      right: 0;
+      justify-content: center;
+      gap: 18px;
+      padding-inline: 4vw;
     }
     .home-rights {
       grid-column: 1;
@@ -826,15 +1198,21 @@ const lanes = LANES.map((lane, k) => {
   }
 </style>
 
-<script type="application/json" id="rosterData" set:html={JSON.stringify(items)} />
+<script type="application/json" id="rosterData" set:html={JSON.stringify(searchItems)} />
+<script type="application/json" id="sectionsData" set:html={JSON.stringify({ order: sectionOrder, sections: sectionData })} />
 <script type="application/json" id="flowLanes" set:html={JSON.stringify({ lanes: LANES, dir: DIR, nrm: NRM, stepH: STEP_H })} />
 
 <script>
   // The conveyor + reel engine. Roster and lane data come in via the JSON
   // islands above so the same numbers the server laid out with drive the
   // motion here.
-  const items = JSON.parse(document.getElementById('rosterData').textContent)
-  const total = items.length
+  const { order: SECTION_ORDER, sections: SECTIONS_DATA } = JSON.parse(document.getElementById('sectionsData').textContent)
+  // The mobile reel's list: starts as Apps (what the server rendered) and is
+  // swapped wholesale when the section changes. The desktop conveyor keeps
+  // its own (cItems, below) so the two scenes can be on different sections
+  // for the moment between a resize and the next frame.
+  let items = SECTIONS_DATA.apps.items
+  let total = items.length
   const { lanes: LANES, dir: DIR, nrm: NRM, stepH: STEP_H } = JSON.parse(
     document.getElementById('flowLanes').textContent,
   )
@@ -846,8 +1224,11 @@ const lanes = LANES.map((lane, k) => {
   const sceneMobileEl = document.getElementById('sceneMobile')
 
   function applyLink(el, item) {
-    el.href = item.href
-    el.setAttribute('aria-label', `${item.tissue}: ${item.name}`)
+    // An empty section's tiles are plain glass: no destination, so no href
+    // (never '#').
+    if (item.empty) el.removeAttribute('href')
+    else el.href = item.href
+    el.setAttribute('aria-label', `${item.kicker}: ${item.name}`)
     if (item.external) {
       el.setAttribute('target', '_blank')
       el.setAttribute('rel', 'noopener noreferrer')
@@ -862,7 +1243,13 @@ const lanes = LANES.map((lane, k) => {
   // ======================================================================
   const stageEl = document.getElementById('flowStage')
   const cardEls = Array.from(stageEl.querySelectorAll('.flow-card'))
+  const focusEl = document.getElementById('flowFocus')
   const focusNameEl = document.getElementById('flowFocusName')
+  const focusKickerEl = document.getElementById('flowFocusKicker')
+  const focusStatusEl = document.getElementById('flowFocusStatus')
+  const focusLineEl = document.getElementById('flowFocusLine')
+  const focusLinkEl = document.getElementById('flowFocusLink')
+  const focusMoreEl = document.getElementById('flowFocusMore')
 
   // One step every 5/7s: the reference's 5s loop is seven steps.
   const PERIOD = 5000 / 7
@@ -894,6 +1281,38 @@ const lanes = LANES.map((lane, k) => {
   let focusedLane = -1
   let swapTimer = null
 
+  // What the lanes show, and how a lane's lap maps to an item. Lane k on lap
+  // L shows cItems[(k + L*n - cBase) mod cTotal]; at rest the lane nearest the
+  // centre has k + L*n equal to the train's integer position, so cBase is
+  // simply "the position at which this section's item 0 sits at the centre".
+  // Changing section changes cItems and cBase and nothing else - a lane
+  // re-reads its item only when its lap changes (it wraps, off-screen), so
+  // the cards on screen keep their old tint until they have left.
+  let cItems = items
+  let cTotal = cItems.length
+  let cBase = 0
+  let conveyorSection = 'apps'
+  // Integer slots the whole train has been advanced by completed shifts
+  // (always a multiple of n, so adding it changes nothing about the layout),
+  // and each lane's extra advance while a shift is in flight.
+  let shiftOffset = 0
+  const extra = new Array(LANES.length).fill(0)
+  let shift = null
+  let queuedSection = null
+  let curS = 0 // the clock's position in slots, as of the latest frame
+
+  // The shift: the whole train runs one lap along its own track - old tiles
+  // leave up-left, the new section's arrive from the bottom-right - and lands
+  // exactly where it started (a lap is a whole number of slots), with every
+  // lane carrying a tile of the new section. Lanes with a higher z are nearer
+  // the viewer and finish sooner: that spread of speeds is the parallax. The
+  // measured per-step whip is no use at this scale (a lap is ~10 steps in one
+  // second), so this is a plain symmetric ease.
+  const SHIFT_MS = 1100
+  function easeInOutCubic(p) {
+    return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2
+  }
+
   // How many lanes this viewport needs: enough that the point where a lane
   // wraps from the far top-left back to the far bottom-right (slot +n/2 ->
   // -n/2) is always past the stage edge plus a card, so the wrap is never
@@ -905,24 +1324,71 @@ const lanes = LANES.map((lane, k) => {
     cardH = cardEls[0].offsetHeight / LANES[0].scale || cardH
     const halfExtent = (w / 2) * Math.abs(DIR.x) + (h / 2) * Math.abs(DIR.y)
     const need = 2 * Math.ceil((halfExtent + 0.7 * cardH) / (STEP_H * cardH)) + 1
-    const n = Math.max(7, Math.min(LANES.length, need, total - (total % 2 === 0 ? 1 : 0)))
+    // Never fewer than the reference's seven, never more than there are
+    // lanes - and, now that the item list changes with the section, never
+    // dependent on how many items a section has (a short section simply
+    // repeats its tiles; the lane count must not move mid-shift).
+    const n = Math.max(7, Math.min(LANES.length, need))
     if (n !== laneCount) {
       laneCount = n
       laneLap.fill(null)
+      // A lap is n slots; if n changed, a shift in flight no longer lands
+      // on the rigid pattern, so drop it (the section is already set).
+      if (shift) abortShift()
     }
     cardEls.forEach((el, k) => {
       el.style.display = k < laneCount ? '' : 'none'
     })
+    // The name and details sit 1.55 card heights right of centre. If what is
+    // left of the viewport to their right is too narrow to read, they move
+    // up to the corner under the section names instead.
+    const room = w * (0.5 - 0.034) - 1.55 * cardH
+    sceneDesktopEl.classList.toggle('is-compact', room < 200)
+  }
+
+  function setLinkTarget(a, href, external) {
+    a.href = href
+    if (external) {
+      a.setAttribute('target', '_blank')
+      a.setAttribute('rel', 'noopener noreferrer')
+    } else {
+      a.removeAttribute('target')
+      a.removeAttribute('rel')
+    }
+  }
+  function setArrowLabel(a, label) {
+    const arrow = document.createElement('span')
+    arrow.setAttribute('aria-hidden', 'true')
+    arrow.textContent = '\u2192'
+    a.replaceChildren(document.createTextNode(`${label} `), arrow)
+  }
+
+  // Write an item into the name-and-details block.
+  function writeFocus(item) {
+    focusEl.style.setProperty('--focus-accent', item.color)
+    focusNameEl.textContent = item.name
+    focusKickerEl.textContent = item.kicker
+    focusStatusEl.textContent = item.status || ''
+    focusLineEl.textContent = item.oneLiner
+    setLinkTarget(focusLinkEl, item.href, item.external)
+    setArrowLabel(focusLinkEl, item.empty ? 'Contact' : 'View')
+    const sec = SECTIONS_DATA[item.section]
+    focusMoreEl.hidden = item.section === 'apps'
+    if (item.section !== 'apps') {
+      setLinkTarget(focusMoreEl, sec.href, false)
+      setArrowLabel(focusMoreEl, `All ${sec.label.toLowerCase()}`)
+    }
   }
 
   function setFocus(k) {
     focusedLane = k
-    const name = laneItem[k].name
-    focusNameEl.classList.add('is-swapping')
+    const item = laneItem[k]
+    focusEl.classList.add('is-swapping')
     clearTimeout(swapTimer)
     swapTimer = setTimeout(() => {
-      focusNameEl.textContent = name
-      focusNameEl.classList.remove('is-swapping')
+      writeFocus(item)
+      // While tiles are shifting the label stays hidden; landing re-reads it.
+      if (!shift) focusEl.classList.remove('is-swapping')
     }, 110)
   }
 
@@ -938,12 +1404,12 @@ const lanes = LANES.map((lane, k) => {
     for (let k = 0; k < n; k++) {
       const L = LANES[k]
       const el = cardEls[k]
-      const raw = -k + L.frac + s
+      const raw = -k + L.frac + s + shiftOffset + extra[k]
       const lap = Math.floor((raw + n / 2) / n)
       const along = raw - lap * n
       if (lap !== laneLap[k]) {
         laneLap[k] = lap
-        const item = items[(((k + lap * n) % total) + total) % total]
+        const item = cItems[(((k + lap * n - cBase) % cTotal) + cTotal) % cTotal]
         laneItem[k] = item
         applyLink(el, item)
         el.style.setProperty('--accent', item.color)
@@ -957,7 +1423,71 @@ const lanes = LANES.map((lane, k) => {
         bestK = k
       }
     }
-    if (bestK !== focusedLane) setFocus(bestK)
+    if (bestK !== focusedLane && !shift) setFocus(bestK)
+  }
+
+  // --- changing section ---------------------------------------------------
+  function abortShift() {
+    extra.fill(0)
+    shift = null
+    stageEl.classList.remove('is-shifting')
+    queuedSection = null
+    focusedLane = -1
+  }
+
+  // Start flying to a section: swap the lists now (lanes pick the new one up
+  // as they wrap) and let every lane run one lap, forward when the target is
+  // to the right in the nav, backward when it is to the left.
+  function startShift(slug) {
+    const dir = SECTION_ORDER.indexOf(slug) > SECTION_ORDER.indexOf(conveyorSection) ? 1 : -1
+    const n = laneCount
+    cItems = SECTIONS_DATA[slug].items
+    cTotal = cItems.length
+    // Position (in whole slots) at which the lap lands; item 0 sits at the
+    // centre there. The clock is held for the flight, so this is exact.
+    cBase = Math.round(curS + shiftOffset) + dir * n
+    hoverPaused = false
+    stageEl.classList.add('is-shifting')
+    focusEl.classList.add('is-swapping')
+    shift = { dir, n, slug, start: null, dur: LANES.map((L) => SHIFT_MS * (1.15 - 0.1 * L.z)) }
+  }
+
+  function advanceShift(ts) {
+    if (shift.start == null) shift.start = ts
+    const t = ts - shift.start
+    let done = true
+    for (let k = 0; k < LANES.length; k++) {
+      const p = Math.min(1, t / shift.dur[k])
+      if (p < 1) done = false
+      extra[k] = shift.dir * shift.n * easeInOutCubic(p)
+    }
+    if (done) landShift()
+  }
+
+  function landShift() {
+    // A whole lap changes nothing about where lanes sit, so fold it into the
+    // offset and zero the extras without a visible jump.
+    shiftOffset += shift.dir * shift.n
+    extra.fill(0)
+    conveyorSection = shift.slug
+    shift = null
+    stageEl.classList.remove('is-shifting')
+    focusedLane = -1 // the next render re-reads and reveals the label
+    const queued = queuedSection
+    queuedSection = null
+    if (queued && queued !== conveyorSection) startShift(queued)
+  }
+
+  // No flight: used for the first paint of a #section URL, for reduced
+  // motion, and to catch the conveyor up after the phone layout was live.
+  function applySectionInstant(slug) {
+    if (shift) abortShift()
+    cItems = SECTIONS_DATA[slug].items
+    cTotal = cItems.length
+    cBase = Math.round(curS + shiftOffset)
+    conveyorSection = slug
+    laneLap.fill(null)
+    focusedLane = -1
   }
 
   // One clock for the whole train. It only advances while the conveyor is
@@ -973,11 +1503,15 @@ const lanes = LANES.map((lane, k) => {
   function frame(ts) {
     if (lastTs != null) {
       const dt = ts - lastTs
-      if (!hoverPaused && !document.hidden && dt < 500) elapsed += dt
+      // The step clock is held while a shift flies, so the train lands in
+      // exactly the phase it left and resumes from there.
+      if (!hoverPaused && !document.hidden && !shift && dt < 500) elapsed += dt
     }
     lastTs = ts
     const steps = Math.floor(elapsed / PERIOD)
-    render(steps + easeStep((elapsed - steps * PERIOD) / PERIOD))
+    curS = steps + easeStep((elapsed - steps * PERIOD) / PERIOD)
+    if (shift) advanceShift(ts)
+    render(curS)
     rafId = requestAnimationFrame(frame)
   }
   function conveyorShouldRun() {
@@ -995,8 +1529,10 @@ const lanes = LANES.map((lane, k) => {
     rafId = 0
   }
   function syncConveyor() {
-    if (conveyorShouldRun()) startConveyor()
-    else stopConveyor()
+    if (conveyorShouldRun()) {
+      if (conveyorSection !== currentSection) applySectionInstant(currentSection)
+      startConveyor()
+    } else stopConveyor()
   }
 
   stageEl.addEventListener('pointerover', (e) => {
@@ -1005,6 +1541,11 @@ const lanes = LANES.map((lane, k) => {
   stageEl.addEventListener('pointerleave', () => {
     hoverPaused = false
   })
+  // The details link is the one interactive bit beside the train: hold the
+  // clock while it is hovered or focused so the label can't change under a
+  // click.
+  for (const ev of ['pointerenter', 'focusin']) focusEl.addEventListener(ev, () => (hoverPaused = true))
+  for (const ev of ['pointerleave', 'focusout']) focusEl.addEventListener(ev, () => (hoverPaused = false))
   new ResizeObserver(() => {
     if (rafId) layout()
   }).observe(stageEl)
@@ -1035,7 +1576,8 @@ const lanes = LANES.map((lane, k) => {
   }
   trackEl.prepend(...baseSlots.map(cloneSlot))
   trackEl.append(...baseSlots.map(cloneSlot))
-  const slotEls = Array.from(trackEl.children)
+  let slotEls = Array.from(trackEl.children)
+  let reelSection = 'apps'
 
   // Reference: one name every 1.25s.
   const REEL_PERIOD = 1250
@@ -1201,6 +1743,71 @@ const lanes = LANES.map((lane, k) => {
     ctx.restore()
   }
 
+  // --- changing section ---------------------------------------------------
+  function buildSlot(it, i) {
+    const li = document.createElement('li')
+    li.className = 'pill-slot'
+    li.dataset.index = String(i)
+    const a = document.createElement('a')
+    a.className = 'pill'
+    a.href = it.href
+    if (it.external) {
+      a.target = '_blank'
+      a.rel = 'noopener noreferrer'
+    }
+    const name = document.createElement('span')
+    name.className = 'pill__name'
+    name.textContent = it.name
+    a.append(name)
+    li.append(a)
+    return li
+  }
+
+  // Replace the whole stack with a section's names, keeping the three-copy
+  // layout, and put the centre line on its first one.
+  function rebuildReel(slug) {
+    items = SECTIONS_DATA[slug].items
+    total = items.length
+    reelSection = slug
+    const real = items.map(buildSlot)
+    trackEl.replaceChildren(...real.map(cloneSlot), ...real, ...real.map(cloneSlot))
+    slotEls = Array.from(trackEl.children)
+    pos = target = dragStartPos = total
+    vel = 0
+    near = -1
+    paintedLo = 0
+    paintedHi = -1
+    lastAuto = performance.now()
+    setNear(total)
+    paintList()
+  }
+
+  let reelSwapTimer = 0
+  // The live way to change section on the phone: the list slides off in the
+  // direction of travel as it fades, then the new section's list arrives
+  // from the other side. Latest request wins.
+  function swapReel(slug, animate) {
+    if (!reelRaf) return // the reel isn't what's showing; startReel catches up
+    if (!animate) {
+      rebuildReel(slug)
+      return
+    }
+    const dir = SECTION_ORDER.indexOf(slug) >= SECTION_ORDER.indexOf(reelSection) ? 1 : -1
+    reelEl.style.setProperty('--swap-dir', String(dir))
+    reelEl.classList.add('is-swapping')
+    clearTimeout(reelSwapTimer)
+    reelSwapTimer = setTimeout(() => {
+      rebuildReel(currentSection)
+      // Come in from the opposite side: move there with no transition, then
+      // release.
+      reelEl.style.transition = 'none'
+      reelEl.style.setProperty('--swap-dir', String(-dir))
+      void reelEl.offsetWidth
+      reelEl.style.transition = ''
+      reelEl.classList.remove('is-swapping')
+    }, 200)
+  }
+
   // --- the list ----------------------------------------------------------
   function setBackdrop(item) {
     if (item === bgItem) return
@@ -1295,6 +1902,8 @@ const lanes = LANES.map((lane, k) => {
 
   function startReel() {
     if (reelRaf) return
+    // The section may have changed while the reel was off screen.
+    if (reelSection !== currentSection) rebuildReel(currentSection)
     layoutReel()
     reelLast = null
     lastAuto = performance.now()
@@ -1392,6 +2001,58 @@ const lanes = LANES.map((lane, k) => {
   }).observe(reelEl)
 
   // ======================================================================
+  // Which section is showing
+  // ======================================================================
+  // The nav links are real pages, so everything here is an enhancement:
+  // without JS, or under reduced motion, a click simply navigates.
+  let currentSection = 'apps'
+  const navEl = document.getElementById('homeSections')
+  const navLinks = Array.from(navEl.querySelectorAll('[data-section]'))
+
+  function markNav(slug) {
+    for (const a of navLinks) {
+      if (a.dataset.section === slug) a.setAttribute('aria-current', 'true')
+      else a.removeAttribute('aria-current')
+    }
+  }
+
+  function goSection(slug, { animate = true, updateUrl = true } = {}) {
+    if (!SECTIONS_DATA[slug] || slug === currentSection) return
+    currentSection = slug
+    markNav(slug)
+    if (updateUrl) history.replaceState(null, '', slug === 'apps' ? location.pathname + location.search : `#${slug}`)
+    if (mobileQuery.matches) return swapReel(slug, animate)
+    // The conveyor isn't running (first paint, or it is stopped): syncConveyor
+    // sets it straight when it starts.
+    if (!rafId) return
+    if (!animate || reducedQuery.matches) return applySectionInstant(slug)
+    // Latest request wins; it starts the frame the current flight lands.
+    if (shift) {
+      queuedSection = slug
+      return
+    }
+    if (slug !== conveyorSection) startShift(slug)
+  }
+
+  navEl.addEventListener('click', (e) => {
+    const a = e.target.closest('[data-section]')
+    if (!a) return
+    // Reduced motion, or a modified click (new tab etc.): plain navigation.
+    if (reducedQuery.matches || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+    e.preventDefault()
+    goSection(a.dataset.section)
+  })
+  window.addEventListener('hashchange', () => {
+    const slug = location.hash.slice(1)
+    goSection(SECTIONS_DATA[slug] ? slug : 'apps', { updateUrl: false })
+  })
+  // A shared #section link lands on that section with no flight.
+  {
+    const slug = location.hash.slice(1)
+    if (SECTIONS_DATA[slug] && slug !== 'apps') goSection(slug, { animate: false, updateUrl: false })
+  }
+
+  // ======================================================================
   // Which scene is live
   // ======================================================================
   function syncScenes() {
@@ -1430,7 +2091,8 @@ const lanes = LANES.map((lane, k) => {
   const fuse = new Fuse(items, {
     keys: [
       { name: 'name', weight: 2 },
-      { name: 'tissue', weight: 1 },
+      { name: 'sectionLabel', weight: 1 },
+      { name: 'kicker', weight: 1 },
       { name: 'oneLiner', weight: 1 },
     ],
     threshold: 0.35,
@@ -1439,22 +2101,26 @@ const lanes = LANES.map((lane, k) => {
 
   let activeIndex = -1
 
+  // Text from the page's own data or the visitor's own typing goes into
+  // innerHTML below, so it is escaped first.
+  const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+
   function renderResults(query) {
     const results = query.trim() ? fuse.search(query, { limit: 8 }).map((r) => r.item) : items.slice(0, 8)
     activeIndex = -1
     if (results.length === 0) {
-      searchResultsEl.innerHTML = `<li class="search-empty">No apps match "${query}"</li>`
+      searchResultsEl.innerHTML = `<li class="search-empty">No results for \u201c${esc(query)}\u201d</li>`
       return
     }
     searchResultsEl.innerHTML = results
       .map(
         (it, i) => `
       <li>
-        <a class="search-result" data-index="${i}" href="${it.href}"${it.external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
-          <span class="search-result-swatch" style="background:${it.color}"></span>
+        <a class="search-result" data-index="${i}" href="${esc(it.href)}"${it.external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+          <span class="search-result-swatch" style="background:${esc(it.color)}"></span>
           <span class="search-result-text">
-            <span class="search-result-name">${it.name}</span>
-            <span class="search-result-meta">${it.tissue} &middot; ${it.status}</span>
+            <span class="search-result-name">${esc(it.name)}</span>
+            <span class="search-result-meta">${esc(it.sectionLabel)} &middot; ${esc(it.status || it.kicker)}</span>
           </span>
         </a>
       </li>`,
