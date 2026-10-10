@@ -6,6 +6,7 @@
   "main": "./index.js",
   "exports": {
     ".": "./index.js",
-    "./roster.public.json": "./roster.public.json"
+    "./roster.public.json": "./roster.public.json",
+    "./sections": "./sections.js"
   }
 }

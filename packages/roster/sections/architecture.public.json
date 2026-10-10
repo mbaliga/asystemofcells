@@ -1,0 +1,30 @@
+{
+  "section": "architecture",
+  "notes": "Past architecture projects. Add real entries to `items`; delete the placeholders. Every field except key, name, oneLiner and accent is optional. Images go in apps/asoc-com/public/sections/architecture/<key>.jpg and are referenced as { src, alt }. Do not add an entry you do not have the right to show.",
+  "items": [
+    {
+      "key": "placeholder-architecture-1",
+      "name": "Placeholder architecture entry 1",
+      "oneLiner": "A stand-in so this section can be built and checked. Replace it with a real past project.",
+      "accent": "#7EB5C8",
+      "type": "Placeholder",
+      "placeholder": true
+    },
+    {
+      "key": "placeholder-architecture-2",
+      "name": "Placeholder architecture entry 2",
+      "oneLiner": "A stand-in so this section can be built and checked. Replace it with a real past project.",
+      "accent": "#9AA8D6",
+      "type": "Placeholder",
+      "placeholder": true
+    },
+    {
+      "key": "placeholder-architecture-3",
+      "name": "Placeholder architecture entry 3",
+      "oneLiner": "A stand-in so this section can be built and checked. Replace it with a real past project.",
+      "accent": "#6FA3A3",
+      "type": "Placeholder",
+      "placeholder": true
+    }
+  ]
+}
