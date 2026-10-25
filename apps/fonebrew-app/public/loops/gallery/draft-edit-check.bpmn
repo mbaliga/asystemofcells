@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aarso="https://aarso.dev/bpmn" id="defs_draft-edit-check" targetNamespace="https://aarso.dev/loops">
+  <bpmn:process id="draft-edit-check" name="Draft, edit, check" isExecutable="false">
+    <bpmn:startEvent id="start" name="Objective">
+      <bpmn:extensionElements><aarso:meta source="Hand-authored example, docs/design/bpmn-dialect.md" pattern="pipeline" distilledBy="hand-authored" distilledOn="2026-07-27" summary="A plain three-step pipeline: draft it, cut it, then check what it claims."/></bpmn:extensionElements>
+      <bpmn:outgoing>e0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="step0" name="Drafter">
+      <bpmn:extensionElements><aarso:meta role="Drafter" systemPrompt="Write the first full draft. Do not hedge; the next steps will cut."/></bpmn:extensionElements>
+      <bpmn:incoming>e0</bpmn:incoming>
+      <bpmn:outgoing>e1</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="step1" name="Editor">
+      <bpmn:extensionElements><aarso:meta role="Editor" systemPrompt="Cut everything that is not doing work. Keep the voice."/></bpmn:extensionElements>
+      <bpmn:incoming>e1</bpmn:incoming>
+      <bpmn:outgoing>e2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="step2" name="Fact-checker">
+      <bpmn:extensionElements><aarso:meta role="Fact-checker" systemPrompt="List every checkable claim and mark it supported, unsupported, or unverifiable."/></bpmn:extensionElements>
+      <bpmn:incoming>e2</bpmn:incoming>
+      <bpmn:outgoing>e_end</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="end" name="Done">
+      <bpmn:incoming>e_end</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="e0" sourceRef="start" targetRef="step0"/>
+    <bpmn:sequenceFlow id="e1" sourceRef="step0" targetRef="step1"/>
+    <bpmn:sequenceFlow id="e2" sourceRef="step1" targetRef="step2"/>
+    <bpmn:sequenceFlow id="e_end" sourceRef="step2" targetRef="end"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="diagram_draft-edit-check">
+    <bpmndi:BPMNPlane id="plane_draft-edit-check" bpmnElement="draft-edit-check">
+      <bpmndi:BPMNShape id="shape_start" bpmnElement="start">
+        <dc:Bounds x="40.0" y="140.0" width="36.0" height="36.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_step0" bpmnElement="step0">
+        <dc:Bounds x="160.0" y="110.0" width="130.0" height="64.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_step1" bpmnElement="step1">
+        <dc:Bounds x="320.0" y="110.0" width="130.0" height="64.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_step2" bpmnElement="step2">
+        <dc:Bounds x="480.0" y="110.0" width="130.0" height="64.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_end" bpmnElement="end">
+        <dc:Bounds x="640.0" y="140.0" width="36.0" height="36.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge_e0" bpmnElement="e0"/>
+      <bpmndi:BPMNEdge id="edge_e1" bpmnElement="e1"/>
+      <bpmndi:BPMNEdge id="edge_e2" bpmnElement="e2"/>
+      <bpmndi:BPMNEdge id="edge_e_end" bpmnElement="e_end"/>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

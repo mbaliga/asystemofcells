@@ -6,7 +6,9 @@
     "dev": "pnpm --filter @asoc/com dev",
     "build": "pnpm --filter @asoc/com build",
     "dev:dev": "pnpm --filter @asoc/dev dev",
-    "build:dev": "pnpm --filter @asoc/dev build"
+    "build:dev": "pnpm --filter @asoc/dev build",
+    "dev:fonebrew": "pnpm --filter @asoc/fonebrew dev",
+    "build:fonebrew": "pnpm --filter @asoc/fonebrew build"
   },
   "dependencies": {
     "@mozilla/readability": "^0.5.0",
