@@ -1,6 +1,6 @@
 ---
 import DevLayout from '../../layouts/DevLayout.astro'
-import { getRoster, TISSUES, STATUS_MEANING } from '@asoc/roster'
+import { getRoster, displayName, TISSUES, STATUS_MEANING } from '@asoc/roster'
 
 export function getStaticPaths() {
   return getRoster().map((cell) => ({ params: { slug: cell.slug }, props: { cell } }))
@@ -25,7 +25,7 @@ const tissue = TISSUES.find((t) => t.slug === cell.tissue)
  */
 ---
 <DevLayout
-  title={`${cell.slug}: asystemofcells.dev`}
+  title={`${displayName(cell)}: asystemofcells.dev`}
   description={cell.oneLiner}
   canonical={`https://asystemofcells.dev/roster/${cell.slug}/`}
 >
@@ -35,7 +35,7 @@ const tissue = TISSUES.find((t) => t.slug === cell.tissue)
     <p class="eyebrow">{tissue?.label} &middot; type {cell.type}</p>
     <h1 style="font-size:var(--fs-h1);font-weight:500;letter-spacing:var(--track-tight);margin:0 0 0.9rem;display:flex;align-items:center;gap:0.7rem">
       <span class="stream-swatch" style={`background:${cell.accent};width:12px;height:12px`} aria-hidden="true"></span>
-      {cell.slug}
+      {displayName(cell)}
     </h1>
     <p class="dev-tagline" style="margin-bottom:0">{cell.oneLiner}</p>
 

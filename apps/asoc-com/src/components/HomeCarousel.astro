@@ -42,26 +42,19 @@
 // Swipe/wheel step it by hand; touching it pauses the auto-advance.
 //
 // No texture/grain anywhere any more: flat colour, soft light, crisp edges.
-import { getRoster, TISSUES } from '@asoc/roster'
+import { getVisibleRoster, displayName, TISSUES } from '@asoc/roster'
 import { SECTIONS, getSectionItems, tileOf } from '@asoc/roster/sections'
 
 const tissueLabel = Object.fromEntries(TISSUES.map((t) => [t.slug, t.label]))
-const statusLabel = { live: 'Live', beta: 'Beta', soon: 'Soon' }
-
-function titleCase(slug) {
-  return slug
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ')
-}
+const statusLabel = { live: 'Live', beta: 'Beta', soon: 'Soon', building: 'Building' }
 
 // Every tile, whichever section it belongs to, has the same shape - the
 // engine, the search and the details beside the centre card all read it:
 // { key, name, section, sectionLabel, kicker, status, oneLiner, color, href,
 //   external, image, placeholder, empty }.
-const appTiles = getRoster().map((cell) => ({
+const appTiles = getVisibleRoster().map((cell) => ({
   key: cell.slug,
-  name: titleCase(cell.slug),
+  name: displayName(cell),
   section: 'apps',
   sectionLabel: 'Apps',
   kicker: tissueLabel[cell.tissue] || cell.tissue,

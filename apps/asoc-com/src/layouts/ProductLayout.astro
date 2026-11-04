@@ -8,7 +8,7 @@
 // reuse the old dark-violet Hyle kit components (SiteHeader/SiteFooter/CellCard) —
 // those were the invented system the owner already rejected once for this site.
 import BaseLayout from './BaseLayout.astro'
-import { cellCta, STATUS_MEANING } from '@asoc/roster'
+import { cellCta, displayName as nameOf, installLinks, STATUS_MEANING } from '@asoc/roster'
 
 const { cell, title: pageTitle, description } = Astro.props
 const TISSUE_LABEL = {
@@ -17,15 +17,21 @@ const TISSUE_LABEL = {
   'maker-cells': 'Maker cells',
   'connective-tissue': 'Connective tissue',
 }
-const displayName = cell.slug.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ')
+const displayName = nameOf(cell)
 const eyebrow = TISSUE_LABEL[cell.tissue] || cell.tissue
 // The one honest call to action for this cell, or null (see cellCta in
 // @asoc/roster). There is no '#' fallback: a button that goes nowhere is worse
 // than no button.
-const cta = cellCta(cell)
+const cta0 = cellCta(cell)
 // Some products ship a same-origin web app (e.g. Nooz's reader at /nooz/read).
 // When present it becomes the primary call to action.
-const readerUrl = cell.readerUrl || null
+const readerUrl = (cell.web && cell.web.href) || cell.readerUrl || null
+const readerLabel = (cell.web && cell.web.label) || 'Open the web reader'
+// Where the app can be installed from. A building cell has nothing to install,
+// so it gets no chooser, only the repository link from cellCta.
+// A cell whose web link is also its call to action gets one button, not two.
+const cta = cta0 && cta0.url === readerUrl ? null : cta0
+const stores = cell.status === 'building' ? [] : installLinks(cell)
 
 // What leaves the device, said per product instead of one blanket promise for
 // the whole house. A cell can override it with `leaves` in the roster; the
@@ -85,12 +91,19 @@ const jsonLd = {
         <p class="tagline">{cell.oneLiner}</p>
         <div class="btn-row">
           {readerUrl && (
-            <a class="btn-primary" href={readerUrl}>Open the web reader</a>
+            <a class="btn-primary" href={readerUrl}>{readerLabel}</a>
           )}
           {cta && (
             <a class={readerUrl ? 'btn-secondary' : 'btn-primary'} href={cta.url} target={cta.external ? '_blank' : undefined} rel={cta.external ? 'noopener noreferrer' : undefined}>{cta.label}</a>
           )}
         </div>
+        {stores.length > 0 && (
+          <p class="install-links">
+            {stores.map((s) => (
+              <a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a>
+            ))}
+          </p>
+        )}
         <span class={`status-pill status-pill--${cell.status}`}>{cell.status}</span>
         {modelLabel && <span class="model-pill">{modelLabel}</span>}
         {!cta && !readerUrl && <p class="status-line">{STATUS_MEANING[cell.status]}</p>}
@@ -197,6 +210,9 @@ const jsonLd = {
   .status-pill{ display:inline-block; margin-top:18px; font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.3); color:var(--dark-muted); }
   .status-pill--live{ color:#3ddc84; border-color:#3ddc84; }
   .model-pill{ display:inline-block; margin-top:18px; margin-left:8px; font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.3); color:var(--dark-muted); }
+  .hero .install-links{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap; margin:16px 0 0; font-size:13px; }
+  .hero .install-links a{ color:var(--dark-ink); opacity:.8; text-underline-offset:3px; }
+  .hero .install-links a:hover{ opacity:1; }
   .hero .status-line{ margin:14px 0 0; font-size:14px; color:var(--dark-muted); }
   .status-pill--beta{ color:#08fed5; border-color:#08fed5; }
 

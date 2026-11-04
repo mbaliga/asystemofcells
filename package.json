@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter @asoc/com dev",
-    "build": "pnpm --filter @asoc/com build",
+    "build": "bash docs/handoff/tools/check-analytics-boundary.sh && node packages/roster/validate.mjs && pnpm --filter @asoc/com build",
     "dev:dev": "pnpm --filter @asoc/dev dev",
-    "build:dev": "pnpm --filter @asoc/dev build"
+    "build:dev": "pnpm --filter @asoc/dev build",
+    "roster:check": "node packages/roster/validate.mjs"
   },
   "dependencies": {
     "@mozilla/readability": "^0.5.0",

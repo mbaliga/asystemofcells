@@ -1,8 +1,8 @@
 ---
 import DevLayout from '../layouts/DevLayout.astro'
-import { getRoster, TISSUES } from '@asoc/roster'
+import { getVisibleRoster, TISSUES } from '@asoc/roster'
 
-const cells = getRoster()
+const cells = getVisibleRoster()
 const tissueLabel = Object.fromEntries(TISSUES.map((t) => [t.slug, t.label]))
 
 const counts = cells.reduce((acc, c) => ({ ...acc, [c.status]: (acc[c.status] || 0) + 1 }), {})
@@ -10,7 +10,7 @@ const hubs = cells.filter((c) => c.isHub)
 
 // Ordered so the shipped things lead. Within a status the roster's own order
 // stands: it is grouped by tissue, which is the house's own taxonomy.
-const RANK = { live: 0, beta: 1, soon: 2 }
+const RANK = { live: 0, beta: 1, building: 2, soon: 3 }
 const stream = [...cells].sort((a, b) => RANK[a.status] - RANK[b.status])
 
 const grouped = TISSUES.map((t) => ({
@@ -43,8 +43,9 @@ const SECTIONS = [
       <span><b>{grouped.length}</b> tissues</span>
       <span><b>{counts.live || 0}</b> live</span>
       <span><b>{counts.beta || 0}</b> beta</span>
+      <span><b>{counts.building || 0}</b> building</span>
       <span><b>{counts.soon || 0}</b> soon</span>
-      <span>roster hand-authored <b>2026-07-20</b></span>
+      <span>roster hand-authored <b>2026-11-04</b></span>
     </div>
 
     <a class="dev-wordmark" href="/">asystemofcells<span class="tld">.dev</span></a>
