@@ -7,6 +7,8 @@
   "exports": {
     ".": "./index.js",
     "./roster.public.json": "./roster.public.json",
-    "./sections": "./sections.js"
+    "./sections": "./sections.js",
+    "./wings.json": "./wings.json",
+    "./screens": "./screens.js"
   }
 }

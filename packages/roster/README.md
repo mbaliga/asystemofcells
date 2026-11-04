@@ -39,6 +39,57 @@ destination for the page's button), `model` (`freemium`), `kind` (`app`,
 device, as `{ heading, body }`) and `privacyUrl`. `cellCta(cell)` turns these
 into the button, and never returns a link to `#`.
 
+## Roster v2
+
+Every cell carries `slug`, `name` (the display name; the slug is the URL),
+`tissue`, `type`, `status`, `accent`, `oneLiner`, `isHub`. Optional:
+
+- `repo` (`owner/name`), `packageId`, `imagery` (key into
+  `screenshots/manifest.json`; written out, equal to the slug by default).
+- `install`: `{ play, fdroid, github }`, only the stores that really exist.
+  `installLinks(cell)` returns them in that order.
+- `web`: `{ label, href }`, a same-origin web app. `readerUrl` stays as an
+  older alias on Nooz.
+- `hidden: true`: kept out of the home conveyor, the search and the developer
+  roster, but the product page is still built. `getRoster()` returns every cell;
+  `getVisibleRoster()` skips hidden ones.
+- `verify`: internal notes. Never rendered.
+
+`displayName(cell)` is `name`, or a title-cased slug as a fallback.
+
+Status is one of `live`, `beta`, `soon`, `building`. `building` means the source
+is public and nothing is installable yet. Its button is "Watch the repo" and
+points at the repository.
+
+`roster.schema.json` describes the file. `node packages/roster/validate.mjs`
+(or `pnpm roster:check`) checks it by hand, with no dependencies: required
+fields, enums, patterns, unique slugs, and the screenshot manifest. It also runs
+at the start of `pnpm build`.
+
+The old slug `haptics-workbench` is now `hafx`; `vercel.json` redirects the old
+path.
+
+## Wings
+
+`wings.json` lists the four wings of the house (slug, name, accent, href,
+oneLiner). `getWings()` returns them. The home page does not use them yet.
+
+## Screenshots
+
+`screenshots/manifest.json` at the repo root lists every product image and
+where it came from (`screenshots/manifest.schema.json` is the shape). `screens.js`
+reads it:
+
+```js
+import { getScreens, getHero, laneLabel } from '@asoc/roster/screens'
+getScreens('nooz', { role: 'feature', scheme: 'dark' }) // file order
+getHero('nooz') // first role: hero entry, or null
+laneLabel('device') // 'Captured on device'
+```
+
+Lanes are `device`, `preview`, `web`, `render`, `art`. An entry with lane
+`device` must carry a `device` block. No entry means no image is shown.
+
 ## Sections: architecture, shop, prints
 
 Beyond the apps above, the homepage has three more sections whose content is
@@ -79,5 +130,5 @@ plain `mailto:` link (there is no checkout or payment); the address is in
 ## Usage
 
 ```js
-import { getRoster, groupedByTissue, getCell, ctaLabel } from '@asoc/roster'
+import { getRoster, getVisibleRoster, groupedByTissue, getCell, ctaLabel } from '@asoc/roster'
 ```

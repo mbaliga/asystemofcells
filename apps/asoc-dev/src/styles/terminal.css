@@ -316,6 +316,10 @@ a {
   color: var(--sect-notes);
   border-color: color-mix(in srgb, var(--sect-notes) 40%, transparent);
 }
+.tag--building {
+  color: var(--ink-dim);
+  border-style: dashed;
+}
 .tag--soon {
   color: var(--ink-faint);
 }

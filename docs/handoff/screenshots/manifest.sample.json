@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "generated": "2026-11-04T02:30:24.647Z",
+  "entries": [
+    {
+      "id": "tools.texture-generator.desktop.light",
+      "imagery": "tools",
+      "role": "gallery",
+      "lane": "web",
+      "label": "Texture generator",
+      "src": "screenshots/web/tools/texture-generator.desktop.light.png",
+      "w": 2880,
+      "h": 1800,
+      "scheme": "light",
+      "viewport": "desktop",
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": null,
+        "ref": null,
+        "path": "/tools/texture-background.html",
+        "tool": "playwright"
+      },
+      "device": null
+    },
+    {
+      "id": "tools.cells-generator.desktop.light",
+      "imagery": "tools",
+      "role": "gallery",
+      "lane": "web",
+      "label": "Cells generator",
+      "src": "screenshots/web/tools/cells-generator.desktop.light.png",
+      "w": 2880,
+      "h": 1800,
+      "scheme": "light",
+      "viewport": "desktop",
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": null,
+        "ref": null,
+        "path": "/tools/cells-logo.html",
+        "tool": "playwright"
+      },
+      "device": null
+    },
+    {
+      "id": "tools.cells-generator.phone.light",
+      "imagery": "tools",
+      "role": "gallery",
+      "lane": "web",
+      "label": "Cells generator",
+      "src": "screenshots/web/tools/cells-generator.phone.light.png",
+      "w": 1236,
+      "h": 2745,
+      "scheme": "light",
+      "viewport": "phone",
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": null,
+        "ref": null,
+        "path": "/tools/cells-logo.html",
+        "tool": "playwright"
+      },
+      "device": null
+    },
+    {
+      "id": "nooz.newsstand.phone.light",
+      "imagery": "nooz",
+      "role": "hero",
+      "lane": "web",
+      "label": "Newsstand",
+      "src": "screenshots/web/nooz/newsstand.phone.light.png",
+      "w": 1236,
+      "h": 2745,
+      "scheme": "light",
+      "viewport": "phone",
+      "mask": null,
+      "sample_data": true,
+      "source": {
+        "repo": null,
+        "ref": null,
+        "path": "/nooz/read/",
+        "tool": "playwright"
+      },
+      "device": null
+    },
+    {
+      "id": "nooz.newsstand.phone.dark",
+      "imagery": "nooz",
+      "role": "hero",
+      "lane": "web",
+      "label": "Newsstand",
+      "src": "screenshots/web/nooz/newsstand.phone.dark.png",
+      "w": 1236,
+      "h": 2745,
+      "scheme": "dark",
+      "viewport": "phone",
+      "mask": null,
+      "sample_data": true,
+      "source": {
+        "repo": null,
+        "ref": null,
+        "path": "/nooz/read/",
+        "tool": "playwright"
+      },
+      "device": null
+    }
+  ]
+}

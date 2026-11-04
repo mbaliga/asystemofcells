@@ -1,159 +1,223 @@
 {
   "$schema": "./roster.schema.json",
-  "generated": "hand-authored from the mbaliga constellation ethos/tech report, 2026-07-20",
-  "notes": "Every field here traces to a real repo. Two roster slots from the original brief (Stem, Orrery) are omitted, not guessed: no repo evidence supports either as a shipped or even scaffolded product yet. See README.md in this package for what still needs an owner confirm.",
+  "generated": "hand-authored from the mbaliga constellation ethos/tech report, 2026-07-20; roster v2 fields added 2026-11-04",
+  "notes": "Every field here traces to a real repo. Stem is omitted, not guessed: no repo evidence supports it as a product. Orrery was omitted in July 2026 and added in November 2026 once the repo had real content. See README.md in this package.",
   "cells": [
     {
       "slug": "clackpad",
+      "name": "Clackpad",
       "tissue": "daily-cells",
       "type": "A",
       "status": "beta",
       "accent": "#E8A33D",
       "oneLiner": "A tactile notepad keyboard that clacks. Its own design language, not the house system, on purpose.",
       "isHub": false,
-      "verify": ["accent color unconfirmed"],
+      "packageId": "xyz.mdhv.clackpad",
+      "imagery": "clackpad",
       "model": "freemium",
-      "kind": "app"
+      "kind": "app",
+      "verify": [
+        "accent color unconfirmed",
+        "Play URL to be supplied by the owner"
+      ]
     },
     {
       "slug": "nooz",
+      "name": "Nooz",
       "tissue": "daily-cells",
       "type": "A",
       "status": "beta",
       "accent": "#3A4A5A",
       "oneLiner": "A news reader that shows you what you did not read, not what it thinks you should.",
       "isHub": false,
+      "repo": "mbaliga/nooz",
+      "packageId": "dev.asystemofcells.nooz",
+      "web": {
+        "label": "Open the web reader",
+        "href": "/nooz/read"
+      },
+      "imagery": "nooz",
       "readerUrl": "/nooz/read",
       "privacyUrl": "/nooz/privacy",
-      "verify": ["accent color unconfirmed"],
       "kind": "app",
       "leaves": {
         "heading": "The web reader asks our host to fetch for it.",
         "body": "Feeds and articles you open in the web reader pass through a small proxy on our host so the browser can read them. Our code does not store them, though ordinary host logs may record the address. The Android app fetches directly. No analytics, cookies or trackers are built into the web reader."
-      }
+      },
+      "verify": [
+        "accent color unconfirmed",
+        "install.github dropped: repo has no releases yet; add it when the first release is published"
+      ]
     },
     {
       "slug": "odyssey",
+      "name": "Odyssey",
       "tissue": "daily-cells",
       "type": "A",
       "status": "soon",
       "accent": "#2F855A",
       "oneLiner": "A live wallpaper of Odysseus's sea voyage, built book by book for accuracy, not just for looks.",
       "isHub": false,
-      "verify": ["accent color unconfirmed"],
+      "imagery": "odyssey",
       "model": "freemium",
       "kind": "app",
       "leaves": {
         "heading": "Nothing leaves your phone unless you allow it.",
         "body": "The one optional exception is a weather lookup that asks Open-Meteo for local conditions using a coarse location. It stays off until you turn it on. No analytics, cookies or trackers are built in."
-      }
+      },
+      "verify": [
+        "accent color unconfirmed"
+      ]
     },
     {
       "slug": "crocodyl",
+      "name": "Crocodyl",
       "tissue": "daily-cells",
       "type": "A",
       "status": "beta",
       "accent": "#6B7A3A",
       "oneLiner": "A free archery coach: camera and pose estimation build your baseline, then flag the shot that broke it.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "main branch is a stub, real app lives on a release branch"],
+      "repo": "mbaliga/Form-analyser",
+      "install": {
+        "github": "https://github.com/mbaliga/Form-analyser/releases"
+      },
+      "imagery": "crocodyl",
       "ctaLabel": "Get the test build",
       "ctaUrl": "https://github.com/mbaliga/Form-analyser/releases",
-      "kind": "app"
+      "kind": "app",
+      "verify": [
+        "accent color unconfirmed",
+        "main branch is a stub, real app lives on a release branch"
+      ]
     },
     {
       "slug": "animalcules",
+      "name": "Animalcules",
       "tissue": "ambient-cells",
       "type": "B",
       "status": "live",
       "accent": "#e6398c",
-      "hubUrl": "https://animalcules.app",
       "oneLiner": "A living microscope slide for your lock screen. Every organism is drawn and animated in code, never looped from video.",
       "isHub": true,
+      "hubUrl": "https://animalcules.app",
+      "imagery": "animalcules",
       "model": "freemium",
       "kind": "app"
     },
     {
       "slug": "globe",
+      "name": "Globe watch face",
       "tissue": "ambient-cells",
       "type": "B",
       "status": "soon",
       "accent": "#2563A8",
       "oneLiner": "A real-time day and night Earth for your wrist, one HTML mock exported to three watch platforms.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "pre-release, private until the faces are finished"],
-      "kind": "watchface"
+      "imagery": "globe",
+      "kind": "watchface",
+      "verify": [
+        "accent color unconfirmed",
+        "pre-release, private until the faces are finished"
+      ]
     },
     {
       "slug": "timely",
+      "name": "Timely",
       "tissue": "ambient-cells",
       "type": "B",
       "status": "soon",
       "accent": "#6D5AE0",
       "oneLiner": "A set of honest watchfaces, time told plainly, from the same one-design-many-platforms pipeline as Globe.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "pre-release, private until the faces are finished"],
-      "kind": "watchface"
+      "imagery": "timely",
+      "kind": "watchface",
+      "verify": [
+        "accent color unconfirmed",
+        "pre-release, private until the faces are finished"
+      ]
     },
     {
       "slug": "fonebrew",
+      "name": "Fonebrew",
       "tissue": "maker-cells",
       "type": "C",
       "status": "beta",
       "accent": "#E4572E",
-      "hubUrl": "https://fonebrew.app",
       "oneLiner": "A sovereign, on-device AI computing environment for the phone. The tool this whole house was built with.",
       "isHub": true,
+      "hubUrl": "https://fonebrew.app",
+      "repo": "mbaliga/android-ide-core",
+      "imagery": "fonebrew",
       "kind": "app"
     },
     {
-      "slug": "haptics-workbench",
+      "slug": "hafx",
+      "name": "HAfx",
       "tissue": "maker-cells",
       "type": "C",
       "status": "beta",
       "accent": "#B5179E",
       "oneLiner": "Design a haptic effect once, against one shape, and it renders on whatever actuator the platform actually has.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "product name pending, internally hnm_playground"],
+      "repo": "mbaliga/hnm_playground",
+      "imagery": "hafx",
       "ctaLabel": "Get the test build",
       "ctaUrl": "https://github.com/mbaliga/hnm_playground/releases/tag/android-player-debug",
-      "kind": "app"
+      "kind": "app",
+      "verify": [
+        "accent color unconfirmed",
+        "product name pending, internally hnm_playground",
+        "editor path not present on this site yet",
+        "redirect /haptics-workbench to /hafx lives in vercel.json"
+      ]
     },
     {
       "slug": "figma-suite",
+      "name": "Figma suite",
       "tissue": "maker-cells",
       "type": "C",
       "status": "soon",
       "accent": "#F2545B",
       "oneLiner": "A small suite of Figma plugins: export watchfaces, publish a Trusted Web Activity, one just for fun.",
       "isHub": false,
+      "imagery": "figma-suite",
       "kind": "plugins"
     },
     {
       "slug": "ebbflow",
+      "name": "Ebbflow",
       "tissue": "maker-cells",
       "type": "C",
       "status": "beta",
       "accent": "#3AA6B9",
       "oneLiner": "An EEG companion that captures signal from wearables like the MW75 and helps you understand deviations from your own baseline.",
       "isHub": false,
-      "verify": ["accent color unconfirmed"],
-      "kind": "app"
+      "repo": "mbaliga/Ebbflow",
+      "imagery": "ebbflow",
+      "kind": "app",
+      "verify": [
+        "accent color unconfirmed"
+      ]
     },
     {
       "slug": "hyle",
+      "name": "Hyle",
       "tissue": "connective-tissue",
       "type": "D",
       "status": "live",
       "accent": "#4A4A55",
       "oneLiner": "The house design system. State is shown by how a material behaves, never said in words.",
       "isHub": false,
+      "repo": "mbaliga/Hyle-Design-System",
+      "imagery": "hyle",
       "ctaLabel": "See the system",
       "ctaUrl": "https://github.com/mbaliga/Hyle-Design-System",
       "kind": "design-system"
     },
     {
       "slug": "hyle-deco",
+      "name": "Hyle Deco",
       "tissue": "connective-tissue",
       "type": "D",
       "status": "live",
@@ -161,25 +225,208 @@
       "parent": "hyle",
       "oneLiner": "A hairline display face for interfaces where one thin line of light has to carry the whole identity.",
       "isHub": false,
-      "verify": ["submission to Google Fonts prepared but not yet opened"],
+      "web": {
+        "label": "Download Hyle Deco",
+        "href": "/hyle-fonts"
+      },
+      "imagery": "hyle-deco",
       "ctaLabel": "Download the font",
       "ctaUrl": "/hyle-fonts",
-      "kind": "typeface"
+      "kind": "typeface",
+      "verify": [
+        "submission to Google Fonts prepared but not yet opened"
+      ]
     },
     {
       "slug": "asom",
+      "name": "ASOM",
       "tissue": "connective-tissue",
       "type": "D",
       "status": "soon",
       "accent": "#7C5CFC",
       "oneLiner": "A sovereign model-routing daemon. One app on the phone holds the keys and makes the routing call; everything else is a client.",
       "isHub": false,
-      "verify": ["accent color unconfirmed", "no local inference engine yet in v1, cloud routing only"],
+      "repo": "mbaliga/asystemofmodels",
+      "imagery": "asom",
       "kind": "app",
       "leaves": {
         "heading": "Your keys and your ledger stay on your phone.",
         "body": "In v1, requests go only to the cloud providers you add keys for, plus a model catalogue fetch and the model downloads you start. Every outbound call is written to a ledger you can read, and nothing about your use is reported to us. There is no local model engine yet."
-      }
+      },
+      "verify": [
+        "accent color unconfirmed",
+        "no local inference engine yet in v1, cloud routing only"
+      ]
+    },
+    {
+      "slug": "fylz",
+      "name": "Fylz",
+      "tissue": "daily-cells",
+      "type": "A",
+      "status": "building",
+      "accent": "#3C7A89",
+      "oneLiner": "A file manager where every file is inspectable, and every write you make can be undone.",
+      "isHub": false,
+      "repo": "mbaliga/Fyl-Manager",
+      "packageId": "io.github.mbaliga.fylz",
+      "imagery": "fylz",
+      "kind": "app",
+      "verify": [
+        "accent placeholder",
+        "which features are shipped vs planned — read the repo plan"
+      ]
+    },
+    {
+      "slug": "fotoz",
+      "name": "Foto Xplorr",
+      "tissue": "daily-cells",
+      "type": "A",
+      "status": "building",
+      "accent": "#C9A227",
+      "oneLiner": "A local-first gallery with a real catalogue: one row per photo, eleven smart albums, no cloud.",
+      "isHub": false,
+      "repo": "mbaliga/Foto-Xplorr",
+      "packageId": "com.fotoxplorr.app",
+      "imagery": "fotoz",
+      "kind": "app",
+      "verify": [
+        "accent placeholder"
+      ]
+    },
+    {
+      "slug": "bocal",
+      "name": "Bocal",
+      "tissue": "daily-cells",
+      "type": "A",
+      "status": "soon",
+      "accent": "#8C5A2B",
+      "oneLiner": "A practice companion for woodwind players. No account, no internet permission, just the reed and the clock.",
+      "isHub": false,
+      "repo": "mbaliga/Bocal",
+      "imagery": "bocal",
+      "kind": "app",
+      "verify": [
+        "accent placeholder",
+        "shipped scope"
+      ]
+    },
+    {
+      "slug": "runout",
+      "name": "Runout",
+      "tissue": "ambient-cells",
+      "type": "B",
+      "status": "soon",
+      "accent": "#1F1F1F",
+      "oneLiner": "A turntable, not a music player with a skin. Records, mixtapes, a tonearm that tracks, a disc you can drag backwards.",
+      "isHub": false,
+      "imagery": "runout",
+      "kind": "app",
+      "verify": [
+        "private repo",
+        "accent placeholder"
+      ]
+    },
+    {
+      "slug": "sphere",
+      "name": "Sphere Launcher",
+      "tissue": "ambient-cells",
+      "type": "B",
+      "status": "soon",
+      "accent": "#1E5AA8",
+      "oneLiner": "A launcher whose home is a globe or a ring, your choice, with apps that morph along its bands.",
+      "isHub": false,
+      "imagery": "sphere",
+      "kind": "app",
+      "verify": [
+        "private repo",
+        "owner calls it stalled — keep the page short",
+        "accent placeholder"
+      ]
+    },
+    {
+      "slug": "typewright",
+      "name": "Typewright",
+      "tissue": "maker-cells",
+      "type": "C",
+      "status": "building",
+      "accent": "#2E2E2E",
+      "oneLiner": "Scanned, photographed or drawn letterforms to a Google Fonts-quality font, for the scripts the big tools ignore.",
+      "isHub": false,
+      "repo": "mbaliga/typewright",
+      "packageId": "com.asoc.typewright",
+      "imagery": "typewright",
+      "kind": "app",
+      "verify": [
+        "working name pending clearance",
+        "accent placeholder",
+        "repo confirmed public 2026-11-04 (ui/typewright-explorer.html exists)"
+      ]
+    },
+    {
+      "slug": "alloy",
+      "name": "Alloy",
+      "tissue": "maker-cells",
+      "type": "C",
+      "status": "building",
+      "accent": "#6F7D86",
+      "oneLiner": "A phone-first slicer for the Bambu A1 mini, on the Orca/Prusa engine lineage. Slice in the browser now at /prints.",
+      "isHub": false,
+      "repo": "mbaliga/Alloy",
+      "imagery": "alloy",
+      "kind": "app",
+      "verify": [
+        "work is on branches, main is a README"
+      ]
+    },
+    {
+      "slug": "assay",
+      "name": "Assay",
+      "tissue": "maker-cells",
+      "type": "C",
+      "status": "building",
+      "accent": "#5A5A66",
+      "oneLiner": "On-device security auditing for AI-written Android apps. Deterministic scanners only; no model invents a finding.",
+      "isHub": false,
+      "repo": "mbaliga/assay",
+      "imagery": "assay",
+      "kind": "app",
+      "verify": [
+        "owner judged not production-ready Nov 2026 — no install CTA, say so plainly"
+      ]
+    },
+    {
+      "slug": "orrery",
+      "name": "Orrery",
+      "tissue": "connective-tissue",
+      "type": "D",
+      "status": "building",
+      "accent": "#4B3F72",
+      "oneLiner": "A read-only view of a whole pipeline, with a git repo as the truth. The owner's cockpit, free for anyone to read.",
+      "isHub": false,
+      "repo": "mbaliga/Orrery",
+      "imagery": "orrery",
+      "kind": "app",
+      "verify": [
+        "never 'monitor'/'overseer' in copy",
+        "web/ builds a page — capture it"
+      ]
+    },
+    {
+      "slug": "counter",
+      "name": "Counter",
+      "tissue": "connective-tissue",
+      "type": "D",
+      "status": "building",
+      "accent": "#B08D57",
+      "oneLiner": "The shop counter behind the Cabinet and Alloy prints: one ledger, one owner app, disclosed in full.",
+      "isHub": false,
+      "imagery": "counter",
+      "hidden": true,
+      "kind": "app",
+      "verify": [
+        "hidden from the conveyor; page exists for the privacy link",
+        "repo mbaliga/asoc-counter-app does not exist yet; add `repo` when A8 creates it"
+      ]
     }
   ]
 }

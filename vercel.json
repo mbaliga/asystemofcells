@@ -4,11 +4,26 @@
   "outputDirectory": "apps/asoc-com/dist",
   "cleanUrls": true,
   "trailingSlash": true,
+  "redirects": [
+    {
+      "source": "/haptics-workbench",
+      "destination": "/hafx",
+      "permanent": true
+    },
+    {
+      "source": "/haptics-workbench/",
+      "destination": "/hafx/",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/nooz/read/(fonts|icons)/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     }
   ]

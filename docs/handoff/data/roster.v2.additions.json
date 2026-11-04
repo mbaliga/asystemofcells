@@ -1,0 +1,42 @@
+{
+  "$comment": "Cells to ADD to packages/roster/roster.public.json (A1), plus field additions for existing cells. Statuses are honest as of 2026-11-04. `verify` is internal and never rendered. Accent colours are placeholders unless noted; the owner confirms them.",
+  "fieldAdditionsForExisting": {
+    "clackpad":  { "name": "Clackpad",  "repo": null, "packageId": "xyz.mdhv.clackpad", "install": { "play": "OWNER: Play URL" } },
+    "nooz":      { "name": "Nooz",      "repo": "mbaliga/nooz", "packageId": "dev.asystemofcells.nooz", "web": { "label": "Open the web reader", "href": "/nooz/read" }, "install": { "github": "https://github.com/mbaliga/nooz/releases" } },
+    "odyssey":   { "name": "Odyssey",   "repo": null },
+    "crocodyl":  { "name": "Crocodyl",  "repo": "mbaliga/form-analyser", "install": { "github": "https://github.com/mbaliga/form-analyser/releases" } },
+    "animalcules": { "name": "Animalcules" },
+    "globe":     { "name": "Globe watch face" },
+    "timely":    { "name": "Timely" },
+    "fonebrew":  { "name": "Fonebrew", "repo": "mbaliga/android-ide-core" },
+    "haptics-workbench": { "slug": "hafx", "name": "HAfx", "repo": "mbaliga/hnm_playground", "web": { "label": "Open the editor", "href": "/haeworkbench/editor/" }, "verify": ["confirm the editor path exists under public/; redirect /haptics-workbench → /hafx"] },
+    "figma-suite": { "name": "Figma suite" },
+    "ebbflow":   { "name": "Ebbflow", "repo": "mbaliga/ebbflow" },
+    "hyle":      { "name": "Hyle", "repo": "mbaliga/hyle-design-system" },
+    "hyle-deco": { "name": "Hyle Deco", "web": { "label": "Download Hyle Deco", "href": "/hyle-fonts" } },
+    "asom":      { "name": "ASOM", "repo": "mbaliga/asystemofmodels" }
+  },
+  "newCells": [
+    { "slug": "fylz", "name": "Fylz", "tissue": "daily-cells", "type": "A", "status": "building", "accent": "#3C7A89", "repo": "mbaliga/Fyl-Manager", "packageId": "io.github.mbaliga.fylz", "isHub": false,
+      "oneLiner": "A file manager where every file is inspectable, and every write you make can be undone.", "verify": ["accent placeholder", "which features are shipped vs planned — read the repo plan"] },
+    { "slug": "fotoz", "name": "Foto Xplorr", "tissue": "daily-cells", "type": "A", "status": "building", "accent": "#C9A227", "repo": "mbaliga/Foto-Xplorr", "packageId": "com.fotoxplorr.app", "isHub": false,
+      "oneLiner": "A local-first gallery with a real catalogue: one row per photo, eleven smart albums, no cloud.", "verify": ["accent placeholder"] },
+    { "slug": "bocal", "name": "Bocal", "tissue": "daily-cells", "type": "A", "status": "soon", "accent": "#8C5A2B", "repo": "mbaliga/Bocal", "isHub": false,
+      "oneLiner": "A practice companion for woodwind players. No account, no internet permission, just the reed and the clock.", "verify": ["accent placeholder", "shipped scope"] },
+    { "slug": "runout", "name": "Runout", "tissue": "ambient-cells", "type": "B", "status": "soon", "accent": "#1F1F1F", "repo": null, "isHub": false,
+      "oneLiner": "A turntable, not a music player with a skin. Records, mixtapes, a tonearm that tracks, a disc you can drag backwards.", "verify": ["private repo", "accent placeholder"] },
+    { "slug": "sphere", "name": "Sphere Launcher", "tissue": "ambient-cells", "type": "B", "status": "soon", "accent": "#1E5AA8", "repo": null, "isHub": false,
+      "oneLiner": "A launcher whose home is a globe or a ring, your choice, with apps that morph along its bands.", "verify": ["private repo", "owner calls it stalled — keep the page short", "accent placeholder"] },
+    { "slug": "typewright", "name": "Typewright", "tissue": "maker-cells", "type": "C", "status": "building", "accent": "#2E2E2E", "repo": "mbaliga/typewright", "packageId": "com.asoc.typewright", "isHub": false,
+      "oneLiner": "Scanned, photographed or drawn letterforms to a Google Fonts-quality font, for the scripts the big tools ignore.", "verify": ["working name pending clearance", "accent placeholder"] },
+    { "slug": "alloy", "name": "Alloy", "tissue": "maker-cells", "type": "C", "status": "building", "accent": "#6F7D86", "repo": "mbaliga/alloy", "isHub": false,
+      "oneLiner": "A phone-first slicer for the Bambu A1 mini, on the Orca/Prusa engine lineage. Slice in the browser now at /prints.", "verify": ["work is on branches, main is a README"] },
+    { "slug": "assay", "name": "Assay", "tissue": "maker-cells", "type": "C", "status": "building", "accent": "#5A5A66", "repo": "mbaliga/Assay", "isHub": false,
+      "oneLiner": "On-device security auditing for AI-written Android apps. Deterministic scanners only; no model invents a finding.", "verify": ["owner judged not production-ready Nov 2026 — no install CTA, say so plainly"] },
+    { "slug": "orrery", "name": "Orrery", "tissue": "connective-tissue", "type": "D", "status": "building", "accent": "#4B3F72", "repo": "mbaliga/orrery", "isHub": false,
+      "oneLiner": "A read-only view of a whole pipeline, with a git repo as the truth. The owner's cockpit, free for anyone to read.", "verify": ["never 'monitor'/'overseer' in copy", "web/ builds a page — capture it"] },
+    { "slug": "counter", "name": "Counter", "tissue": "connective-tissue", "type": "D", "status": "building", "accent": "#B08D57", "repo": "mbaliga/asoc-counter-app", "isHub": false, "hidden": true,
+      "oneLiner": "The shop counter behind the Cabinet and Alloy prints: one ledger, one owner app, disclosed in full.", "verify": ["hidden from the conveyor; page exists for the privacy link"] }
+  ],
+  "statusValues": { "live": "Get it", "beta": "Join the beta", "soon": "Notify me", "building": "Watch the repo" }
+}
