@@ -350,7 +350,7 @@
       "type": "C",
       "status": "building",
       "accent": "#2E2E2E",
-      "oneLiner": "Scanned, photographed or drawn letterforms to a Google Fonts-quality font, for the scripts the big tools ignore.",
+      "oneLiner": "Scanned, photographed or drawn letterforms to an installable font, for the scripts the big tools ignore.",
       "isHub": false,
       "repo": "mbaliga/typewright",
       "packageId": "com.asoc.typewright",
