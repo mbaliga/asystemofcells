@@ -1,0 +1,13 @@
+{
+  "$comment": "The four wings of the house. Slugs are stable; names/accents are the owner's to change. tileOrder places the three non-app wing tiles on the home conveyor after the roster cells and before the Tools tile.",
+  "wings": [
+    { "slug": "apps",         "name": "Cells",        "eyebrow": "Sovereignty apps",             "href": "/apps",         "accent": "#8E7BFF", "tile": false,
+      "oneLiner": "Small, quiet, on-device apps. No telemetry, cloud only when you say so." },
+    { "slug": "cabinet",      "name": "The Cabinet",  "eyebrow": "Collectibles & curiosities",    "href": "/cabinet",      "accent": "#B08D57", "tile": true, "tileOrder": 1,
+      "oneLiner": "Things made here, and things kept for a while and now let go. One of each, mostly." },
+    { "slug": "architecture", "name": "Practice",     "eyebrow": "Architecture",                 "href": "/architecture", "accent": "#2B3A4A", "tile": true, "tileOrder": 2,
+      "oneLiner": "Built work as explorables, free tools for architects, and a way to commission the practice." },
+    { "slug": "prints",       "name": "Alloy prints", "eyebrow": "3D prints",                    "href": "/prints",       "accent": "#6F7D86", "tile": true, "tileOrder": 3,
+      "oneLiner": "Slice in your browser, print at home from your phone, or have it printed here and sent to you." }
+  ]
+}

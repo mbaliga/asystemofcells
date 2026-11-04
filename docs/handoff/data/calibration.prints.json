@@ -1,0 +1,12 @@
+{
+  "$comment": "OWNER fills from one desktop OrcaSlicer session on the A1 mini default profile (0.2 mm, 15 % gyroid, 2 walls, PLA Basic). The estimator tests assert ±20 % against these once filled. Until then the fields are null and the tests run on synthetic geometry only.",
+  "profile": { "printer": "Bambu Lab A1 mini 0.4 nozzle", "process": "0.20mm Standard @BBL A1M", "filament": "Bambu PLA Basic", "orcaVersion": null },
+  "fixtures": [
+    { "id": "cube20",    "file": "alloy/parity fixture: 20 mm calibration cube", "massG": null, "printMin": null, "supports": false },
+    { "id": "overhang",  "file": "alloy/parity fixture: overhang/support fixture", "massG": null, "printMin": null, "supports": true },
+    { "id": "thinwall",  "file": "alloy/parity fixture: thin-wall keyboard-case-like", "massG": null, "printMin": null, "supports": false }
+  ],
+  "gramsPerHour": { "0.08": null, "0.12": null, "0.16": null, "0.2": null, "0.24": null, "0.28": null },
+  "layerOverheadSec": null,
+  "supportFill": null
+}
