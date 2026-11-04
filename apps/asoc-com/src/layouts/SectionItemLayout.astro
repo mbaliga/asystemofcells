@@ -1,0 +1,390 @@
+---
+// The page for one entry of Architecture, Shop or Prints, in the white "simple
+// page" shell. Props: `section` (the slug) and `item` (an entry from
+// @asoc/roster/sections).
+//
+// "Ordering" is a mailto: link and nothing else. There is no checkout, no
+// backend, no payment and no third-party script: the link opens the visitor's
+// own mail app with the message filled in, and the site sends nothing. Prints
+// add one <select> per option; a tiny inline script rewrites the link's href
+// when one changes. Without JavaScript the href already lists the option names
+// with blank values, so the page still works (the selects stay hidden then,
+// because controls that do nothing would mislead).
+//
+// Availability is always a text word (Available / Sold out / Soon), never
+// colour alone. Only fields that exist in the data are shown, and no price,
+// stock or shipping claim is made that the data does not make.
+import SimplePageLayout from './SimplePageLayout.astro'
+import { getSection, AVAILABILITY_LABEL, priceLine } from '@asoc/roster/sections'
+import { CONTACT_EMAIL, enquiryMailto } from '../lib/contact.js'
+
+const { section: slug, item } = Astro.props
+const section = getSection(slug)
+if (!section || !['architecture', 'shop', 'prints'].includes(slug)) {
+  throw new Error(`SectionItemLayout: "${slug}" is not a section with item pages`)
+}
+
+// Derived from the configured site host and this page's own path, so it can
+// not drift from where the page is actually served.
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href
+const availability = item.availability ? AVAILABILITY_LABEL[item.availability] : ''
+const soldOut = item.availability === 'sold-out'
+
+// The facts list: only the fields that exist for this section.
+const facts = []
+const add = (label, value, extra = {}) => {
+  if (value === undefined || value === null || value === '') return
+  facts.push({ label, value: String(value), ...extra })
+}
+if (slug === 'architecture') {
+  add('Type', item.type)
+  add('Year', item.year)
+  add('Place', item.place)
+  add('Role', item.role)
+} else if (slug === 'shop') {
+  add('Edition', item.edition)
+  add('Availability', availability, { status: true })
+  add('Price', priceLine(item))
+} else {
+  for (const o of item.options || []) add(o.label, `Choose one of: ${o.values.join(', ')}`)
+  add('Lead time', item.leadTime)
+  add('Availability', availability, { status: true })
+  add('Price', priceLine(item))
+}
+
+// The enquiry. `before` / `options` / `after` are the body lines in order; the
+// same three lists feed the no-JS href here and the inline script below.
+const itemLine = `Item: ${item.name}`
+const tail = ['Quantity: ', 'Country to ship to: ', 'Notes: ']
+const optionLabels = slug === 'prints' ? (item.options || []).map((o) => o.label) : []
+let enquiry = null
+if (slug === 'shop' && soldOut) {
+  enquiry = {
+    intro: 'This one is sold out. There is no checkout. You can ask by email to be told if it returns.',
+    linkText: 'Ask to be told if it returns by email',
+    subject: `Please tell me if this returns: ${item.name}`,
+    before: [itemLine],
+    after: ['Notes: '],
+  }
+} else if (slug === 'shop') {
+  enquiry = {
+    intro: 'There is no checkout. Email the details and the maker replies with a price and lead time.',
+    linkText: 'Ask to buy by email',
+    subject: `Shop enquiry: ${item.name}`,
+    before: [itemLine],
+    after: tail,
+  }
+} else if (slug === 'prints') {
+  enquiry = {
+    intro: `${soldOut ? 'This one is sold out. ' : ''}There is no checkout. Email the details and the maker replies with a price and lead time.`,
+    linkText: 'Ask for this print by email',
+    subject: `Print request: ${item.name}`,
+    before: [itemLine],
+    after: tail,
+  }
+}
+if (enquiry) {
+  enquiry.href = enquiryMailto({
+    subject: enquiry.subject,
+    lines: [...enquiry.before, ...optionLabels.map((l) => `${l}: `), ...enquiry.after],
+  })
+}
+// Handed to the inline script. Holds no address: the script reads the
+// recipient from the link it rewrites.
+const scriptConfig =
+  enquiry && optionLabels.length
+    ? JSON.stringify({ subject: enquiry.subject, before: enquiry.before, after: enquiry.after })
+    : null
+
+// Structured data. Shop and prints are a Product WITHOUT `offers`: prices are
+// free text here, and an offer would claim a price and availability to search
+// engines that this site does not stand behind.
+const imageUrl = item.image ? new URL(item.image.src, Astro.site).href : undefined
+const jsonLd =
+  slug === 'architecture'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'CreativeWork',
+        name: item.name,
+        description: item.oneLiner,
+        url: pageUrl,
+        image: imageUrl,
+        dateCreated: item.year ? String(item.year) : undefined,
+        locationCreated: item.place ? { '@type': 'Place', name: item.place } : undefined,
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: item.name,
+        description: item.oneLiner,
+        url: pageUrl,
+        image: imageUrl,
+      }
+---
+<SimplePageLayout
+  title={`${item.name}: asystemofcells`}
+  description={item.oneLiner}
+  canonical={pageUrl}
+  jsonLd={jsonLd}
+  noindex={item.placeholder === true}
+>
+  <p class="eyebrow sec-eyebrow">
+    <span>{section.label}</span>
+    {item.placeholder && <span class="sec-tag">Placeholder</span>}
+  </p>
+  <h1 class="sec-title">{item.name}</h1>
+
+  {facts.length > 0 && (
+    <dl class="sec-facts">
+      {facts.map((f) => (
+        <div class="sec-fact">
+          <dt>{f.label}</dt>
+          <dd>{f.status ? <span class="sec-status">{f.value}</span> : f.value}</dd>
+        </div>
+      ))}
+    </dl>
+  )}
+
+  {item.image && (
+    <figure class="sec-fig">
+      <img
+        src={item.image.src}
+        alt={item.image.alt}
+        width={item.image.width}
+        height={item.image.height}
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
+  )}
+
+  <p class="sec-liner">{item.oneLiner}</p>
+
+  {enquiry ? (
+    <section class="enq" aria-labelledby="enq-h" data-enquiry={scriptConfig}>
+      <h2 id="enq-h">How to order</h2>
+      <p>{enquiry.intro}</p>
+
+      {optionLabels.length > 0 && (
+        <fieldset class="enq-opts" data-enquiry-opts hidden>
+          <legend>Choose your options (optional)</legend>
+          <div class="enq-fields">
+            {item.options.map((o, i) => (
+              <div class="enq-field">
+                <label for={`enq-opt-${i}`}>{o.label}</label>
+                <select id={`enq-opt-${i}`} data-label={o.label}>
+                  <option value="">Choose one</option>
+                  {o.values.map((v) => <option value={v}>{v}</option>)}
+                </select>
+              </div>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
+      {/* The address and the mailto: href live between these two comments, and
+          only there. Cloudflare's Email Address Obfuscation rewrites any address
+          outside such a region into a JS-decoded placeholder. Plain HTML
+          comments, exactly as contact.astro has them. */}
+      <!--email_off-->
+      <p class="enq-action"><a class="enq-btn" href={enquiry.href} data-enquiry-link>{enquiry.linkText}</a></p>
+      <p class="enq-note">The button opens your own mail app with the message filled in, and this site sends nothing. If you have no mail app, write to {CONTACT_EMAIL}.</p>
+      <!--/email_off-->
+
+      {scriptConfig && (
+        <script is:inline>
+          (function () {
+            var box = document.querySelector('[data-enquiry]');
+            var link = box && box.querySelector('[data-enquiry-link]');
+            var opts = box && box.querySelector('[data-enquiry-opts]');
+            var selects = box ? box.querySelectorAll('select[data-label]') : [];
+            if (!box || !link || !opts || !selects.length) return;
+            var cfg;
+            try { cfg = JSON.parse(box.getAttribute('data-enquiry')); } catch (e) { return; }
+            // Recipient comes from the link itself, so no address lives in this script.
+            var to = (link.getAttribute('href') || '').split('?')[0];
+            if (to.indexOf('mailto:') !== 0) return;
+            function build() {
+              var lines = cfg.before.slice();
+              for (var i = 0; i < selects.length; i++) {
+                lines.push(selects[i].getAttribute('data-label') + ': ' + selects[i].value);
+              }
+              lines = lines.concat(cfg.after);
+              link.setAttribute('href', to + '?subject=' + encodeURIComponent(cfg.subject) + '&body=' + lines.map(encodeURIComponent).join('%0D%0A'));
+            }
+            for (var i = 0; i < selects.length; i++) selects[i].addEventListener('change', build);
+            build();
+            opts.hidden = false;
+          })();
+        </script>
+      )}
+    </section>
+  ) : (
+    <section class="enq" aria-labelledby="enq-h">
+      <h2 id="enq-h">Enquiries</h2>
+      <p>This is a past project, shown for reference.</p>
+      <p class="enq-action"><a class="enq-btn" href="/contact/">Get in touch about this project</a></p>
+    </section>
+  )}
+
+  <p class="sec-back"><a class="inline-link" href={section.href}>&larr; Back to {section.label}</a></p>
+</SimplePageLayout>
+
+<style>
+  .sec-eyebrow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+  }
+  .sec-title {
+    margin-bottom: 20px;
+    overflow-wrap: anywhere;
+  }
+
+  /* A placeholder is marked in words and with a dashed outline, not by colour. */
+  .sec-tag {
+    display: inline-block;
+    padding: 2px 9px;
+    border: 1px dashed var(--ink);
+    border-radius: 6px;
+    background: #f4f4f5;
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .sec-facts {
+    margin: 0 0 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sec-fact {
+    display: grid;
+    grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr);
+    gap: 4px 16px;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+  }
+  .sec-fact dt {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .sec-fact dd {
+    margin: 0;
+    font-size: 15px;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 420px) {
+    .sec-fact {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  /* Availability is the word itself; the outline just sets it apart. */
+  .sec-status {
+    display: inline-block;
+    padding: 1px 10px;
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .sec-fig {
+    margin: 0 0 20px;
+  }
+  .sec-fig img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .sec-liner {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .enq {
+    margin-top: 32px;
+    padding-top: 4px;
+    border-top: 1px solid var(--line);
+  }
+  .enq-opts {
+    margin: 0 0 18px;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  .enq-opts[hidden] {
+    display: none;
+  }
+  .enq-opts legend {
+    padding: 0;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .enq-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+  .enq-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .enq-field label {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .enq-field select {
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-size: 16px;
+  }
+  .enq-field select:focus-visible,
+  .enq-btn:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  .enq-action {
+    margin: 4px 0 12px;
+  }
+  .enq-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 22px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.18s ease;
+  }
+  .enq-btn:hover {
+    opacity: 0.85;
+  }
+  .enq-note {
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+  .sec-back {
+    margin-top: 36px;
+    font-size: 14px;
+  }
+</style>

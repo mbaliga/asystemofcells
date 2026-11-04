@@ -1,0 +1,33 @@
+{
+  "section": "shop",
+  "notes": "Collectibles. Add real entries to `items`; delete the placeholders. `availability` is one of available, sold-out, soon. `price` is optional free text with its currency (for example \"INR 2,500\"); leave it out to show \"Price on request\". Images go in apps/asoc-com/public/sections/shop/<key>.jpg and are referenced as { src, alt }.",
+  "items": [
+    {
+      "key": "placeholder-shop-1",
+      "name": "Placeholder shop entry 1",
+      "oneLiner": "A stand-in so this section can be built and checked. Replace it with a real collectible.",
+      "accent": "#E8A33D",
+      "edition": "Placeholder",
+      "availability": "soon",
+      "placeholder": true
+    },
+    {
+      "key": "placeholder-shop-2",
+      "name": "Placeholder shop entry 2",
+      "oneLiner": "A stand-in so this section can be built and checked. Replace it with a real collectible.",
+      "accent": "#D9B26A",
+      "edition": "Placeholder",
+      "availability": "soon",
+      "placeholder": true
+    },
+    {
+      "key": "placeholder-shop-3",
+      "name": "Placeholder shop entry 3",
+      "oneLiner": "A stand-in so this section can be built and checked. Replace it with a real collectible.",
+      "accent": "#C79A4B",
+      "edition": "Placeholder",
+      "availability": "soon",
+      "placeholder": true
+    }
+  ]
+}

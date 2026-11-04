@@ -1,6 +1,6 @@
 ---
 import DevLayout from '../../layouts/DevLayout.astro'
-import { getRoster, TISSUES } from '@asoc/roster'
+import { getRoster, TISSUES, STATUS_MEANING } from '@asoc/roster'
 
 export function getStaticPaths() {
   return getRoster().map((cell) => ({ params: { slug: cell.slug }, props: { cell } }))
@@ -13,8 +13,8 @@ const tissue = TISSUES.find((t) => t.slug === cell.tissue)
  * What is deliberately NOT rendered here: the roster's `verify[]` array.
  *
  * It is an internal data-quality field, not a public caveat list. Its contents
- * include an undecided SKU price, an internal working codename, and notes that
- * certain repos are private and why. The product site used to leak this same
+ * are working notes for the person maintaining the roster, and some of them
+ * describe the state of repos that are not public. The product site used to leak this same
  * field onto product pages and that was removed for exactly this reason; the
  * fix should not be quietly undone here at greater scale.
  *
@@ -23,11 +23,6 @@ const tissue = TISSUES.find((t) => t.slug === cell.tissue)
  * curated, written-for-publication field in the roster. Until that exists,
  * this page states what is known and says nothing about what is not.
  */
-const STATUS_MEANING = {
-  live: 'Shipped and available.',
-  beta: 'Usable, still moving.',
-  soon: 'Not released yet.',
-}
 ---
 <DevLayout
   title={`${cell.slug}: asystemofcells.dev`}
@@ -72,7 +67,7 @@ const STATUS_MEANING = {
             </a>
             <span style="color:var(--ink-faint)"> leaves this site</span>
           ) : cell.readerUrl ? (
-            <a href={`https://asystemofcells.com${cell.readerUrl}`} style="color:var(--sect-roster);text-decoration:none">
+            <a href={`https://www.asystemofcells.com${cell.readerUrl}`} style="color:var(--sect-roster);text-decoration:none">
               asystemofcells.com{cell.readerUrl}
             </a>
           ) : (
@@ -83,7 +78,7 @@ const STATUS_MEANING = {
       <div class="record__row">
         <span class="record__key">product page</span>
         <span class="record__val">
-          <a href={`https://asystemofcells.com/${cell.slug}`} style="color:var(--sect-roster);text-decoration:none">
+          <a href={`https://www.asystemofcells.com/${cell.slug}`} style="color:var(--sect-roster);text-decoration:none">
             asystemofcells.com/{cell.slug}
           </a>
         </span>
