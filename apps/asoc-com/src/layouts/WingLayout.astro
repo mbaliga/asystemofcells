@@ -1,0 +1,75 @@
+---
+// One house, four wings, one rhythm (docs/handoff/02_SITE_ARCHITECTURE.md 2).
+// Renders: back-link, the optional wing eyebrow, slot "hero", the default slot,
+// slot "faq", and the fixed simple footer with the wing switcher. White
+// surface; the wing's accent arrives as the CSS variable --wing-accent.
+//
+// ANALYTICS: `analytics` defaults to false and a wing page opts in. A page
+// where someone makes, reads, runs, slices, shops or submits must not pass it
+// (see BaseLayout's boundary comment).
+//
+// The wing eyebrow is the one place Hyle Deco is used as site type: a short
+// hairline display line, never body or UI text.
+import BaseLayout from './BaseLayout.astro'
+import HouseFooter from '../components/HouseFooter.astro'
+import '../styles/house-shell.css'
+
+const {
+  wing,
+  title,
+  description,
+  accent,
+  eyebrow,
+  analytics = false,
+  jsonLd,
+  noindex = false,
+  canonical,
+} = Astro.props
+if (!['apps', 'cabinet', 'architecture', 'prints'].includes(wing)) {
+  throw new Error(`WingLayout: unknown wing "${wing}"`)
+}
+const hasFaq = Astro.slots.has('faq')
+---
+<BaseLayout title={title} description={description} canonical={canonical} jsonLd={jsonLd} noindex={noindex} analytics={analytics} noChrome>
+  <div class={`wing-page wing-page--${wing}`} style={`--wing-accent:${accent}`}>
+    <a class="back-link" href="/">&larr; asystemofcells</a>
+    <main class="wing-main">
+      <header class="wing-head">
+        {eyebrow && <p class="wing-eyebrow">{eyebrow}</p>}
+        <slot name="hero" />
+      </header>
+      <slot />
+      {hasFaq && <slot name="faq" />}
+    </main>
+    <HouseFooter wing={wing}>
+      <slot name="footer-links" slot="links" />
+    </HouseFooter>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  @font-face {
+    font-family: 'Hyle Deco';
+    src: url('/fonts/hyle/HyleDeco-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  .wing-page {
+    padding-top: 0;
+  }
+  .wing-eyebrow {
+    font-family: 'Hyle Deco', var(--font-display, Georgia, serif);
+    font-size: clamp(1.15rem, 2vw, 1.5rem);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    margin: 0 0 14px;
+    text-align: center;
+  }
+  .wing-head {
+    padding: 14vh 6vw 4vh;
+    text-align: center;
+  }
+</style>
