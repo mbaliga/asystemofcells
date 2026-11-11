@@ -61,7 +61,7 @@
   "rewrites": [
     {
       "source": "/api/counter/:path+",
-      "destination": "/api/counter?__p=:path+"
+      "destination": "/api/counter/?__p=:path+"
     }
   ]
 }
