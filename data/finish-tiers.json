@@ -1,0 +1,15 @@
+{
+  "$comment": "The three finish tiers in the owner's words. multiplier applies to base (material + machine); adderInrPerPart applies per printed part. PLACEHOLDER numbers.",
+  "tiers": [
+    { "id": "as-is", "name": "As-is", "multiplier": 1.0, "adderInrPerPart": 0,
+      "what": "Peeled off the plate and sent as it came out. Supports, if any, are left on for you to remove.",
+      "for": "You want it fast and cheap, or you like finishing things yourself." },
+    { "id": "supports-removed", "name": "Supports removed", "multiplier": 1.15, "adderInrPerPart": 60,
+      "what": "Supports removed and the contact points clipped neatly. No sanding.",
+      "for": "A clean part you can use straight away." },
+    { "id": "processed", "name": "Processed", "multiplier": 1.6, "adderInrPerPart": 200,
+      "what": "Supports removed, then sanded and prepared as well as the geometry allows. Layer lines softened; not painted.",
+      "for": "Display pieces, gifts, anything you will hold up to the light." }
+  ],
+  "surfaceCopy": { "band": "Prices are estimates until the piece is sliced here; the final figure can move by up to {band} and you approve it before paying." }
+}
