@@ -16,7 +16,7 @@ Later, on the homelab: `LEDGER_PROVIDER=gitea`, `LEDGER_URL`, `LEDGER_REPO`, `LE
 
 1. Finish KYC and activate the account. Payment Links must be enabled. Turn on international cards if you want them.
 2. Create API keys: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`.
-3. Add a webhook to `https://www.asystemofcells.com/api/counter/webhooks/razorpay/` (**with the trailing slash and the `www`**: the site redirects without them, and a webhook sender may not follow a redirect), event **payment_link.paid** only. Choose a secret and set it as `RAZORPAY_WEBHOOK_SECRET`.
+3. Add a webhook to `https://www.asystemofcells.com/api/counter/?__p=webhooks/razorpay` (**exactly this, with the `www`**: the site redirects the bare domain, and a webhook sender may not follow a redirect), event **payment_link.paid** only. Choose a secret and set it as `RAZORPAY_WEBHOOK_SECRET`.
 4. Check against Razorpay's live API whether a payment link's `reference_id` must be unique. The code appends a suffix either way, so this only confirms.
 
 ## 3. Notifications and mail
@@ -70,8 +70,8 @@ It places the order, checks that the same key replays rather than making a secon
 
 1. Pay the link (UPI is fine). You should get a **Paid** push from ntfy within seconds.
 2. Open the status link: the order shows **Paid**.
-3. Mark it dispatched (the Counter app, or `POST /api/counter/owner/orders/<id>/status` with `{"status":"dispatched","carrier":"test","tracking":"T1"}`): the status page shows the tracking.
-4. Run the rebuild (`POST /api/counter/owner/rebuild`): `catalog-state.json` and `counters.json` appear in the ledger.
+3. Mark it dispatched (the Counter app, or `POST https://www.asystemofcells.com/api/counter/?__p=owner/orders/<id>/status` with `{"status":"dispatched","carrier":"test","tracking":"T1"}`): the status page shows the tracking.
+4. Run the rebuild (`POST https://www.asystemofcells.com/api/counter/?__p=owner/rebuild`): `catalog-state.json` and `counters.json` appear in the ledger.
 5. Refund the ₹1 from the Razorpay dashboard. Delete `smoke-test.md`.
 
 Go live once that has worked end to end on the live ledger.

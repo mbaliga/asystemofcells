@@ -1,4 +1,5 @@
 // The order status page: reached only through the link in the customer's email.
+import { cfetch } from '../counter-api.js'
 const p = new URLSearchParams(location.search)
 const id = p.get('id'), t = p.get('t')
 const root = document.getElementById('orderRoot')
@@ -7,7 +8,7 @@ const LABEL = { placed: 'Placed', reviewing: 'Being reviewed', accepted: 'Accept
 
 async function load() {
   if (!id || !t) return say('This page needs the link from your order email.')
-  const res = await fetch(`/api/counter/orders/${encodeURIComponent(id)}?t=${encodeURIComponent(t)}${p.get('v') === '1' ? '&v=1' : ''}`)
+  const res = await cfetch(`/api/counter/orders/${encodeURIComponent(id)}?t=${encodeURIComponent(t)}${p.get('v') === '1' ? '&v=1' : ''}`)
   if (!res.ok) return say('We could not find that order. Check the link in your email.')
   const o = await res.json()
   root.replaceChildren()
@@ -23,7 +24,7 @@ async function load() {
   root.append(ul)
   if (['placed', 'reviewing', 'accepted'].includes(o.status)) {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'cab-link'; b.textContent = 'Cancel this order'
-    b.addEventListener('click', async () => { if (!confirm('Cancel this order?')) return; await fetch(`/api/counter/orders/${encodeURIComponent(id)}/cancel?t=${encodeURIComponent(t)}`, { method: 'POST' }); load() })
+    b.addEventListener('click', async () => { if (!confirm('Cancel this order?')) return; await cfetch(`/api/counter/orders/${encodeURIComponent(id)}/cancel?t=${encodeURIComponent(t)}`, { method: 'POST' }); load() })
     root.append(b)
   }
 }

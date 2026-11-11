@@ -12,8 +12,10 @@ const ITEM = process.env.SMOKE_ITEM || 'smoke-test'
 const EMAIL = process.env.SMOKE_EMAIL
 if (!BASE || !TOKEN || !EMAIL) { console.error('Set COUNTER_BASE, COUNTER_OWNER_TOKEN and SMOKE_EMAIL.'); process.exit(2) }
 
+// The API is one function; the route travels as ?__p= (see apps/asoc-com/src/scripts/counter-api.js).
+const api = (u) => { const m = /^\/api\/counter\/?([^?]*)(?:\?(.*))?$/.exec(u); return `/api/counter/?__p=${m[1].replace(/\/$/, '')}${m[2] ? '&' + m[2] : ''}` }
 const call = async (path, init = {}) => {
-  const res = await fetch(BASE + path, { ...init, headers: { 'Content-Type': 'application/json', ...(init.headers || {}) } })
+  const res = await fetch(BASE + api(path), { ...init, headers: { 'Content-Type': 'application/json', ...(init.headers || {}) } })
   const body = await res.json().catch(() => ({}))
   if (!res.ok) { console.error(`${init.method || 'GET'} ${path} -> ${res.status}`, body.error || body); process.exit(1) }
   return body

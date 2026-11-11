@@ -1,6 +1,7 @@
 // The slicer page's application code. Imported lazily by slicer-boot.js after the first file is chosen,
 // so the page itself stays light and three.js + the Worker load only now.
 import { createPlate, hasWebGL } from './plate.js'
+import { cfetch } from '../counter-api.js'
 import { quotePrint, TABLES } from '../../../../../api/counter/_quote.js'
 import handoff from '../../../../../data/handoff.json'
 
@@ -121,14 +122,14 @@ $('orderForm').addEventListener('submit', async (ev) => {
       items: [{ model: { name: state.name, ext: state.name.split('.').pop().toLowerCase(), bytes: state.bytes.byteLength, sha256: hash }, settings: settings(), estimate: { massG: e.massG, printMin: e.printMin, supports: e.supportsNeeded, manifold: state.stats ? state.stats.manifold : true }, tier, qty, colour: $('colour').value, filament: $('filament').value }],
       clientQuote: { total: quotePrint({ est: e, tier, qty, filament: $('filament').value, zone }).total }, note: f.get('note') || '',
     }
-    const res = await fetch('/api/counter/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    const res = await cfetch('/api/counter/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     const j = await res.json().catch(() => ({}))
     if (!res.ok) throw new Error((j.error && j.error.message) || 'The order did not go through.')
     if (j.upload) {
       msg.textContent = 'Sending the model…'
       const up = await fetch(j.upload.url, { method: 'PUT', headers: j.upload.headers, body: state.bytes })
       if (!up.ok) throw new Error('The model could not be uploaded. Nothing was charged. Try again.')
-      const at = await fetch(`/api/counter/orders/${j.id}/model?t=${encodeURIComponent(j.token)}`, { method: 'PUT' })
+      const at = await cfetch(`/api/counter/orders/${j.id}/model?t=${encodeURIComponent(j.token)}`, { method: 'PUT' })
       if (!at.ok) throw new Error('The model arrived but could not be confirmed. Try again; your order is safe.')
     }
     sessionStorage.removeItem('asoc-print-key')
