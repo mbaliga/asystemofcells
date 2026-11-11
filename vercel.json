@@ -54,7 +54,7 @@
     }
   ],
   "functions": {
-    "api/counter/**/*.js": {
+    "api/counter/[...path].js": {
       "maxDuration": 30
     }
   }
