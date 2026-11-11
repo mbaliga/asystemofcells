@@ -100,4 +100,28 @@ const cabinet = defineCollection({
     }),
 })
 
-export const collections = { products, cabinet }
+// Practice: previous work as explorables (06_WING_ARCHITECTURE.md section 2). `pending: true`
+// entries are excluded from the index, the sitemap and the build until the owner supplies the images.
+const work = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string().min(1),
+    year: z.number().int().optional(),
+    role: z.array(z.string()).default([]),
+    location: z.string().optional(),
+    format: z.enum(['scroll', 'compare', 'plan']), // not 'layout': Astro reads that frontmatter key as a layout import
+    cover: z.string().optional(),
+    pending: z.boolean().default(true),
+    scenes: z
+      .array(
+        z.discriminatedUnion('kind', [
+          z.object({ kind: z.literal('pin'), image: z.string(), steps: z.array(z.string()).min(1) }),
+          z.object({ kind: z.literal('compare'), before: z.string(), after: z.string(), labels: z.tuple([z.string(), z.string()]) }),
+          z.object({ kind: z.literal('plan'), image: z.string(), hotspots: z.array(z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1), title: z.string(), body: z.string() })) }),
+        ]),
+      )
+      .default([]),
+  }),
+})
+
+export const collections = { products, cabinet, work }

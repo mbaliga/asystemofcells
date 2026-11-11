@@ -1,0 +1,17 @@
+---
+// One explorable. Only entries with pending: false exist as pages. Scenes are plain, accessible
+// markup: the three layouts (scroll, compare, plan) read the same data.
+import SimplePageLayout from '../../../layouts/SimplePageLayout.astro'
+import { getWork } from '../../../lib/work.js'
+export async function getStaticPaths() { return (await getWork()).map((e) => ({ params: { slug: e.slug }, props: { entry: e } })) }
+const { entry } = Astro.props
+const d = entry.data
+const { Content } = await entry.render()
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href
+---
+<SimplePageLayout title={`${d.title}: Practice`} description={d.title} canonical={pageUrl}>
+  <p class="eyebrow"><a href="/architecture/">Practice</a> · {[d.location, d.year].filter(Boolean).join(' · ')}</p>
+  <h1>{d.title}</h1>
+  <Content />
+  {d.scenes.map((s) => s.kind === 'pin' ? (<section><p>{s.steps.join(' ')}</p></section>) : s.kind === 'compare' ? (<section><p>{s.labels[0]} and {s.labels[1]}.</p></section>) : (<section><ul>{s.hotspots.map((h) => <li><b>{h.title}.</b> {h.body}</li>)}</ul></section>))}
+</SimplePageLayout>

@@ -1,0 +1,29 @@
+---
+import SimplePageLayout from '../../../layouts/SimplePageLayout.astro'
+import ArchSite from '../../../components/ArchSite.astro'
+import '../../../styles/arch.css'
+---
+<SimplePageLayout title="Tropical design tables: Practice" description="The Mahoney tables and a shadow-angle protractor, after Koenigsberger's Manual of Tropical Housing and Building." quiet>
+  <div class="arch-tool">
+    <p class="eyebrow"><a href="/architecture/tools/">Tools</a></p>
+    <h1>Tropical design tables.</h1>
+    <p class="arch-note">After Koenigsberger, Ingersoll, Mayhew and Szokolay, <i>Manual of Tropical Housing and Building, Part 1: Climatic Design</i> (1974). The method is the book's; this page runs it on the climate you choose. These are the book's design aids, not a simulation.</p>
+    <ArchSite north={false} />
+    <p id="noclimate" class="arch-note" hidden>Climate normals are baked for the twenty places in the list. Choose one, or edit the table below by hand.</p>
+    <h2>Climate</h2>
+    <p class="arch-note">Monthly means. Edit any number; everything below follows.</p>
+    <table><thead><tr><th></th><th>Max °C</th><th>Min °C</th><th>RH %</th><th>Rain mm</th></tr></thead><tbody id="inputs"></tbody></table>
+    <h2>Mahoney indicators</h2>
+    <p id="amt" role="status"></p>
+    <svg id="grid" viewBox="0 0 640 220" role="img" aria-label="Months against the six Mahoney indicators; a filled mark means the indicator applies" style="max-width:100%;height:auto"></svg>
+    <p id="totals" class="arch-note"></p>
+    <p class="arch-note">The book turns these totals into recommendations for layout, spacing, openings, walls, roofs and outdoor sleeping (its Tables 4 and 5). Those tables are being transcribed from the book by the owner and are not shown until they are.</p>
+    <h2>Shading</h2>
+    <p class="arch-note">For each month that is hot by day, the lowest vertical shadow angle of the sun on the wall between 09:00 and 15:00 on the 21st, and the overhang that would shade a window of that height at that angle.</p>
+    <div class="arch-controls"><label>Wall faces (° from north) <input id="wall" type="number" value="180" /></label><label>Window height (m) <input id="winh" type="number" step="0.1" value="1.2" /></label></div>
+    <p id="shadeNote" class="arch-note"></p>
+    <table><thead><tr><th>Month</th><th>Sun on the wall</th><th>Lowest angle</th><th>Overhang needed</th></tr></thead><tbody id="shade"></tbody></table>
+    <details><summary>ⓘ About this</summary><p class="arch-note">Humidity groups, comfort limits by annual mean temperature, day and night thermal stress, and the indicators H1 to A3 follow the book's Tables 1 to 3. The climate is NASA POWER climatology for the chosen city. Where the page says a figure is yours to set or in the plan, it is not guessed.</p></details>
+  </div>
+</SimplePageLayout>
+<script>import '../../../scripts/arch/tropical-ui.js'</script>

@@ -5,7 +5,7 @@ The owner is a licensed architect (B.Arch MANIT; co-founded Ourean 2024–26) an
 ## 1. Pages
 
 - `/architecture` — index. Hero in Hyle Deco hairlines on the ink accent; three strands: *Work · Tools · Commission*. A short paragraph on practice (what kind of work: residential/interiors/branding-for-built-things — owner supplies; until then one honest sentence). Analytics: yes.
-- `/architecture/work/{slug}` — explorable; one of three layouts (§2). Analytics: yes (a reading page; nothing is submitted).
+- `/architecture/work/{slug}` — explorable; one of three formats (§2; the field is `format`, since Astro reads a frontmatter `layout` as a layout import). Analytics: yes (a reading page; nothing is submitted).
 - `/architecture/tools` — hub (same component as `/tools` with the architecture set). Analytics: yes.
 - `/architecture/tools/sun`, `/wind`, `/vaastu` — tools. **Analytics: never.** Each is an Astro page using `WingLayout` without `analytics`, with its logic in a plain ES module under `src/scripts/arch/`; they share `arch/site.js` (location, north, plot) via `localStorage` key `asoc.arch.site.v1` so a visitor sets the site once.
 - `/architecture/commission` — inquiry form → `POST /api/counter/inquiries` `{kind:"commission"}`. Analytics: never.

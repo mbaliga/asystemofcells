@@ -1,0 +1,20 @@
+---
+import SimplePageLayout from '../../../layouts/SimplePageLayout.astro'
+import '../../../styles/arch.css'
+const tools = [
+  ['sun', 'Sun path and shadows', 'Where the sun is, any day and hour, and the shadow a block casts.'],
+  ['wind', 'Wind rose and ventilation', 'Ten years of wind for twenty cities, by season, and a read of which faces take it.'],
+  ['tropical', 'Tropical design tables', 'The Mahoney tables and a shadow-angle protractor, after Koenigsberger.'],
+  ['vaastu', 'The Vastu grid', 'A traditional mandala over your plan, and what the tradition places where.'],
+]
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href
+---
+<SimplePageLayout title="Tools for architects: Practice" description="Free tools for architects that run in your browser: sun path, wind, tropical design tables and the Vastu grid." canonical={pageUrl}>
+  <p class="eyebrow"><a href="/architecture/">Practice</a></p>
+  <h1>Tools for architects.</h1>
+  <p>They run in your browser. Nothing you enter is sent anywhere.</p>
+  <ul class="arch-hubs">
+    {tools.map(([slug, name, line]) => <li><a href={`/architecture/tools/${slug}/`}><b>{name}</b><span>{line}</span></a></li>)}
+    <li><a href="/hyle-fonts/"><b>Hyle Deco</b><span>A hairline face drawn for drawings, free to download. Its licence is on its page.</span></a></li>
+  </ul>
+</SimplePageLayout>

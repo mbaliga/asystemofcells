@@ -8,10 +8,11 @@
     "dev:dev": "pnpm --filter @asoc/dev dev",
     "build:dev": "pnpm --filter @asoc/dev build",
     "roster:check": "node packages/roster/validate.mjs",
-    "test": "node --test api/counter/__tests__/*.test.js docs/handoff/tools/*.test.mjs apps/asoc-com/src/scripts/prints/*.test.mjs",
+    "test": "node --test api/counter/__tests__/*.test.js docs/handoff/tools/*.test.mjs apps/asoc-com/src/scripts/prints/*.test.mjs apps/asoc-com/src/scripts/arch/*.test.mjs",
     "dev:counter": "pnpm build && node scripts/counter-dev.mjs",
     "e2e:cabinet": "node scripts/e2e-cabinet.mjs",
-    "e2e:prints": "node scripts/e2e-prints.mjs"
+    "e2e:prints": "node scripts/e2e-prints.mjs",
+    "e2e:practice": "node scripts/e2e-practice.mjs"
   },
   "dependencies": {
     "@mozilla/readability": "^0.5.0",
