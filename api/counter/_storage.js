@@ -61,12 +61,12 @@ export function createR2Storage({ accountId, bucket, accessKeyId, secretAccessKe
   }
 }
 
-export function createMemoryStorage() {
+export function createMemoryStorage({ uploadBase = '' } = {}) {
   const objects = new Map()
   return {
     _objects: objects,
     async presignUpload({ key, maxBytes = MAX_MODEL_BYTES, contentType, sha256Hex }) {
-      return { url: `memory://${key}`, headers: { 'content-type': contentType, ...(sha256Hex ? { 'x-amz-checksum-sha256': sha256Hex } : {}) }, expiresAt: new Date(Date.now() + 900000).toISOString(), maxBytes }
+      return { url: uploadBase ? `${uploadBase}/dev-upload/${key}` : `memory://${key}`, headers: { 'content-type': contentType, ...(sha256Hex ? { 'x-amz-checksum-sha256': sha256Hex } : {}) }, expiresAt: new Date(Date.now() + 900000).toISOString(), maxBytes }
     },
     async put(key, bytes) { objects.set(key, { bytes }) }, // tests play the browser
     async head(key) { const o = objects.get(key); return o ? { bytes: o.bytes } : null },
@@ -81,5 +81,5 @@ export function getStorage() {
     return createR2Storage({ accountId: account, bucket: env('STORAGE_BUCKET', { required: true }), accessKeyId: env('STORAGE_ACCESS_KEY_ID', { required: true }), secretAccessKey: env('STORAGE_SECRET_ACCESS_KEY', { required: true }) })
   }
   if (isProd()) throw new Error('Counter: STORAGE_* is not configured')
-  return createMemoryStorage()
+  return createMemoryStorage({ uploadBase: env('DEV_UPLOAD_BASE') })
 }

@@ -13,6 +13,7 @@ const DIST = join(ROOT, 'apps/asoc-com/dist')
 const API = join(ROOT, 'api/counter')
 const PORT = Number(process.env.PORT || 8788)
 process.env.SITE_URL = process.env.SITE_URL || `http://localhost:${PORT}`
+process.env.DEV_UPLOAD_BASE = `http://localhost:${PORT}`
 process.env.CATALOG_URL = process.env.CATALOG_URL || `http://localhost:${PORT}/cabinet/catalog.json`
 
 // File-based routes: api/counter/a/[id]/b.js -> /api/counter/a/:id/b
@@ -40,6 +41,12 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 
 http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`)
+  if (req.method === 'PUT' && url.pathname.startsWith('/dev-upload/')) { // stands in for the presigned R2 URL
+    const chunks = []; for await (const c of req) chunks.push(c)
+    const { ctx } = await import(pathToFileURL(join(API, '_ctx.js')).href)
+    ;(await ctx()).storage.put(decodeURIComponent(url.pathname.slice('/dev-upload/'.length)), Buffer.concat(chunks).length)
+    res.statusCode = 200; return res.end()
+  }
   if (url.pathname.startsWith('/api/counter')) {
     const m = match(url.pathname)
     if (!m) { res.statusCode = 404; return res.end('{}') }

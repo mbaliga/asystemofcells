@@ -1,0 +1,102 @@
+---
+// The slicer page. Quiet: it holds a canvas, a Worker and an order form, so it carries no page
+// count. The heavy modules (three.js, the Worker) load only after a file is chosen.
+import SimplePageLayout from '../../layouts/SimplePageLayout.astro'
+import pricing from '../../../../../data/pricing.prints.json'
+import tiers from '../../../../../data/finish-tiers.json'
+import '../../styles/prints.css'
+---
+<SimplePageLayout title="Slicer and print order: Alloy prints" description="Look at a model on a plate, get an estimate of weight and time, and order a print. The model stays in your browser until you press order." noindex={false} quiet>
+  <p class="eyebrow"><a href="/prints/">Alloy prints</a></p>
+  <h1>Put it on the plate.</h1>
+  <p class="pr-lede">Choose an STL, 3MF or OBJ. It is read in your browser. It goes nowhere unless you press order.</p>
+
+  <label class="pr-drop" id="drop" for="file">
+    <span>Drop a model here, or choose one.<small>STL · 3MF · OBJ · up to 100 MB</small></span>
+    <input id="file" type="file" accept=".stl,.3mf,.obj,model/stl,model/3mf" />
+  </label>
+
+  <div id="app" hidden>
+    <section class="pr-pane" aria-labelledby="h-plate">
+      <h2 id="h-plate">Plate <span id="fileName" class="pr-note"></span></h2>
+      <canvas id="plate" aria-label="The model on the print plate. Drag to turn, pinch or scroll to zoom."></canvas>
+      <p id="noGl" class="pr-note" hidden>This browser cannot draw the 3D view. The estimate and the order work without it.</p>
+      <p id="error" role="alert" hidden></p>
+      <div id="workspace" hidden>
+        <p><span id="fits" role="status"></span> <span id="tris" class="pr-note"></span></p>
+        <div class="pr-actions">
+          <button class="cab-link" id="layFlat" type="button">Lay flat</button>
+          <button class="cab-link" id="rotate" type="button">Turn 90°</button>
+          <button class="cab-link" id="fitBtn" type="button" hidden>Scale to fit</button>
+          <button class="cab-link" id="recentre" type="button">Recentre view</button>
+          <button class="cab-link" id="another" type="button">Another file</button>
+        </div>
+        <p id="facts"></p>
+      </div>
+    </section>
+
+    <section class="pr-pane" aria-labelledby="h-set">
+      <h2 id="h-set">Settings</h2>
+      <div class="pr-grid">
+        <label>Material
+          <select id="filament">{pricing.filaments.map((f) => <option value={f.id}>{f.label}</option>)}</select>
+        </label>
+        <label>Colour <select id="colour"></select></label>
+        <label>Layer height
+          <select id="layer">{pricing.layerHeights.map((h) => <option value={h} selected={h === 0.2}>{h} mm</option>)}</select>
+        </label>
+        <label>Infill
+          <select id="infill">{pricing.infillPresets.map((p) => <option value={p} selected={p === 15}>{p} %</option>)}</select>
+        </label>
+        <label>Supports
+          <select id="supports"><option value="auto">Where needed</option><option value="none">None</option></select>
+        </label>
+        <label>How many <input id="qty" type="number" min="1" max="50" value="1" /></label>
+      </div>
+      <p class="pr-note">Printed on a Bambu Lab A1 mini, 0.4 mm nozzle. Other colours on request, with a note in the order.
+        <details class="pr-info"><summary aria-label="About these numbers">ⓘ</summary>
+          <p>The weight and time are estimates worked out from the shape in your browser. They are not a slice. The real figure comes from slicing the file here, which is why the price can move and you approve it before you pay.</p>
+        </details>
+      </p>
+    </section>
+
+    <section class="pr-pane" aria-labelledby="h-fin">
+      <h2 id="h-fin">Finish</h2>
+      {tiers.tiers.map((t, i) => (
+        <label class="pr-tier"><input type="radio" name="tier" value={t.id} checked={i === 0} /><span><b>{t.name}.</b> {t.what} <span class="pr-note">{t.for}</span></span></label>
+      ))}
+    </section>
+
+    <section class="pr-pane" aria-labelledby="h-quote">
+      <h2 id="h-quote">Quote and order</h2>
+      <div id="quote" class="pr-quote" aria-live="polite"></div>
+      <p id="bandNote" class="pr-note"></p>
+      <form id="orderForm" class="pr-form">
+        <label>Name<input name="name" required maxlength="120" autocomplete="name" /></label>
+        <label>Email<input name="email" type="email" required maxlength="200" autocomplete="email" /></label>
+        <label>Phone, if you like<input name="phone" maxlength="30" autocomplete="tel" /></label>
+        <label>Address<input name="line1" required maxlength="300" autocomplete="address-line1" /></label>
+        <label>Address, line 2<input name="line2" maxlength="300" autocomplete="address-line2" /></label>
+        <div class="two"><label>City<input name="city" required maxlength="120" autocomplete="address-level2" /></label><label>State<input name="state" required maxlength="120" autocomplete="address-level1" /></label></div>
+        <div class="two"><label>Postcode<input name="postcode" required maxlength="20" autocomplete="postal-code" /></label><label>Country (two letters)<input id="country" name="country" required value="IN" maxlength="2" minlength="2" autocomplete="country" /></label></div>
+        <label>A note, if you have one<textarea name="note" rows="3" maxlength="1000"></textarea></label>
+        <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off" /></label></div>
+        <p id="orderMsg" class="pr-note" role="status"></p>
+        <button class="cab-btn" type="submit">Order a print — <span id="orderTotal"></span></button>
+        <p class="pr-note">Nothing is charged now. We look at the file, and if we can print it you get a payment link by email. What is kept, and for how long: <a class="inline-link" href="/privacy/#the-counter">the privacy page</a>.</p>
+      </form>
+    </section>
+
+    <section class="pr-pane" aria-labelledby="h-self">
+      <h2 id="h-self">Or print it yourself</h2>
+      <div class="pr-actions">
+        <button class="cab-link" id="dlModel" type="button">Download the model</button>
+        <button class="cab-link" id="dlBrief" type="button">Download print-brief.json</button>
+      </div>
+      <p class="pr-note">This page estimates; it does not slice yet. Slice the model in Bambu Studio, Orca or your own slicer, then:</p>
+      <ul id="selfRoutes" class="pr-note"></ul>
+    </section>
+  </div>
+  <noscript><p>This page needs JavaScript. To ask for a print without it, <a class="inline-link" href="/contact/">write to us</a>.</p></noscript>
+</SimplePageLayout>
+<script>import '../../scripts/prints/slicer-boot.js'</script>
