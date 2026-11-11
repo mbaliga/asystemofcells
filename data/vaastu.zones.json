@@ -1,0 +1,48 @@
+{
+  "$comment": "Traditional Vastu Purusha Mandala tables for the /architecture/tools/vaastu overlay. These are the practitioner's working tables, not physics; the owner (licensed architect) corrects them. Grid is 9x9 = 81 padas; cells indexed [row, col] with row 0 = north edge, col 0 = west edge. Zones: 8 classical directions (dikpalas) and the 16-zone ring. Perimeter padas: 32, named clockwise starting at the NE corner going down the EAST side.",
+  "confidence": "traditional; owner-verify",
+  "grid": 9,
+  "center": { "name": "Brahmasthan", "cells": [[3,3],[3,4],[3,5],[4,3],[4,4],[4,5],[5,3],[5,4],[5,5]], "recommend": ["open court", "light well", "circulation", "nothing heavy"], "avoid": ["toilet", "staircase", "kitchen", "pillar", "wall", "store"] },
+  "zones8": [
+    { "id": "N",  "name": "Uttara",   "dikpala": "Kubera",  "element": "water",  "recommend": ["office", "treasury/safe", "water storage", "living"], "avoid": ["kitchen", "toilet", "heavy storage"] },
+    { "id": "NE", "name": "Ishanya",  "dikpala": "Ishana",  "element": "water",  "recommend": ["prayer", "water source", "open space", "entrance"], "avoid": ["toilet", "kitchen", "staircase", "master bedroom", "store", "septic tank"] },
+    { "id": "E",  "name": "Purva",    "dikpala": "Indra",   "element": "air/light", "recommend": ["entrance", "living", "study", "bath (not toilet)"], "avoid": ["heavy walls blocking light", "store"] },
+    { "id": "SE", "name": "Agneya",   "dikpala": "Agni",    "element": "fire",   "recommend": ["kitchen", "electrical panel", "generator", "inverter"], "avoid": ["water tank", "bedroom (couple)", "prayer", "toilet"] },
+    { "id": "S",  "name": "Dakshina", "dikpala": "Yama",    "element": "earth/fire", "recommend": ["bedroom", "store", "staircase"], "avoid": ["water body", "open court", "basement"] },
+    { "id": "SW", "name": "Nairutya", "dikpala": "Nirriti", "element": "earth",  "recommend": ["master bedroom", "heavy storage", "safe", "staircase"], "avoid": ["toilet", "kitchen", "water tank", "septic tank", "open court", "basement", "entrance"] },
+    { "id": "W",  "name": "Paschima", "dikpala": "Varuna",  "element": "water",  "recommend": ["dining", "children's room", "study", "store"], "avoid": ["kitchen (primary)"] },
+    { "id": "NW", "name": "Vayavya",  "dikpala": "Vayu",    "element": "air",    "recommend": ["guest room", "store (finished goods)", "garage", "toilet", "kitchen (secondary)"], "avoid": ["prayer", "master bedroom", "treasury"] }
+  ],
+  "zones16": [
+    { "id": "N",   "theme": "money, opportunity",     "recommend": ["office", "cash", "water storage"],        "avoid": ["kitchen", "toilet"] },
+    { "id": "NNE", "theme": "health, healing",        "recommend": ["meditation", "clinic", "herbs"],          "avoid": ["kitchen", "toilet", "store"] },
+    { "id": "NE",  "theme": "clarity, prayer",        "recommend": ["prayer", "water", "open"],                "avoid": ["toilet", "kitchen", "staircase", "master bedroom"] },
+    { "id": "ENE", "theme": "recreation, refreshment","recommend": ["sit-out", "games", "garden"],             "avoid": ["heavy storage", "toilet"] },
+    { "id": "E",   "theme": "social, connection",     "recommend": ["living", "entrance", "study"],            "avoid": ["store", "toilet"] },
+    { "id": "ESE", "theme": "churning, analysis",     "recommend": ["pantry", "laundry", "study (analysis)"],  "avoid": ["bedroom", "prayer"] },
+    { "id": "SE",  "theme": "fire, cash flow",        "recommend": ["kitchen", "electricals"],                 "avoid": ["water tank", "bedroom (couple)", "prayer"] },
+    { "id": "SSE", "theme": "power, confidence",      "recommend": ["gym", "kitchen (secondary)"],            "avoid": ["water", "prayer"] },
+    { "id": "S",   "theme": "fame, relaxation",       "recommend": ["bedroom", "lounge"],                      "avoid": ["water body", "open court"] },
+    { "id": "SSW", "theme": "disposal, expenditure",  "recommend": ["toilet", "waste", "store (discard)"],     "avoid": ["kitchen", "bedroom", "cash"] },
+    { "id": "SW",  "theme": "relationships, stability","recommend": ["master bedroom", "heavy storage", "safe"],"avoid": ["toilet", "kitchen", "water", "entrance", "basement"] },
+    { "id": "WSW", "theme": "education, savings",     "recommend": ["study", "library", "children's room"],   "avoid": ["toilet", "kitchen"] },
+    { "id": "W",   "theme": "gains, fulfilment",      "recommend": ["dining", "children's room", "store"],     "avoid": ["kitchen (primary)"] },
+    { "id": "WNW", "theme": "detox, release",         "recommend": ["toilet", "washing", "store (seasonal)"],  "avoid": ["prayer", "bedroom (couple)"] },
+    { "id": "NW",  "theme": "support, movement",      "recommend": ["guest room", "garage", "finished-goods store"], "avoid": ["prayer", "master bedroom"] },
+    { "id": "NNW", "theme": "attraction, bedroom",    "recommend": ["bedroom", "lounge"],                      "avoid": ["kitchen", "store"] }
+  ],
+  "padas32": {
+    "$comment": "Clockwise from the NE corner. East side runs north→south, south side east→west, west side south→north, north side west→east. index 1..8 per side. favouredEntrance per widely-cited practice (verify).",
+    "E": ["Shikhi", "Parjanya", "Jayanta", "Mahendra", "Surya", "Satya", "Bhrisha", "Antariksha"],
+    "S": ["Agni", "Pusha", "Vitatha", "Grihakshata", "Yama", "Gandharva", "Bhringaraja", "Mriga"],
+    "W": ["Pitru", "Dauvarika", "Sugriva", "Pushpadanta", "Varuna", "Asura", "Shosha", "Papayakshma"],
+    "N": ["Roga", "Naga", "Mukhya", "Bhallata", "Soma", "Bhujaga", "Aditi", "Diti"],
+    "favouredEntrance": { "E": [3, 4], "S": [3, 4], "W": [3, 4], "N": [3, 4, 5] }
+  },
+  "cellToZone16": "computed: angle from grid centre to cell centre, 22.5° sectors, N centred on 0°; for the 3x3 Brahmasthan return 'center'",
+  "surfaceCopy": {
+    "disclaimer": "Vastu is a traditional design system, not a physical model. This tool lays the tradition's grid on your plan and lists what the tradition places where. For a reading of your plan, ask Madhav.",
+    "phrasing": "the tradition places {function} in {zone}",
+    "neverUse": ["dosha", "inauspicious", "bad luck", "curse"]
+  }
+}

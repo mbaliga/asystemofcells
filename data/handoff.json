@@ -1,0 +1,11 @@
+{
+  "$comment": "Feature flags for the print-from-phone handoff routes on /prints/slicer. OWNER flips these after verifying on his own A1 mini. False = the route is not shown and not mentioned.",
+  "routes": {
+    "sdCard":         { "enabled": true,  "label": "Copy to the printer's microSD card" },
+    "bambuStudio":    { "enabled": true,  "label": "Open in Bambu Studio and send to the printer" },
+    "bambuHandyLocal":{ "enabled": false, "label": "Open in Bambu Handy", "note": "NOT VERIFIED as of 2026-11-04 that Handy opens a local sliced .gcode.3mf. Verify, then enable." },
+    "alloyApp":       { "enabled": false, "label": "Send to Alloy (LAN)", "note": "Enable when Alloy ships its LAN push. Uses Web Share / intent://." },
+    "plainGcode":     { "enabled": true,  "label": "Download .gcode for other printers", "note": "The page cannot POST to a LAN printer from https; say so." },
+    "orderHere":      { "enabled": true,  "label": "Have it printed here" }
+  }
+}
