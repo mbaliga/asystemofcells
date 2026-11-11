@@ -17,6 +17,8 @@ export class LedgerError extends Error {
 }
 
 const MAX_RETRIES = 3
+// Every PUT is a commit on one branch, so unrelated writers collide too: back off with jitter.
+const backoff = (attempt) => new Promise((r) => setTimeout(r, 40 * 2 ** attempt + Math.random() * 80))
 const toText = (v) => (typeof v === 'string' ? v : JSON.stringify(v, null, 2) + '\n')
 
 // Shared logic over any backend that provides getRaw / putRaw / delRaw / listRaw.
@@ -38,7 +40,7 @@ export function buildLedger(raw) {
             // Some servers answer 409, not 422, for create-on-existing. If the
             // path is there, that is the lock speaking: EXISTS, not a retry.
             if (await raw.get(path)) throw new LedgerError('EXISTS', path)
-            if (attempt < MAX_RETRIES) continue
+            if (attempt < MAX_RETRIES) { await backoff(attempt); continue }
           }
           throw e
         }
@@ -54,7 +56,7 @@ export function buildLedger(raw) {
           await raw.put(path, next, cur ? cur.sha : undefined, `update ${path}`)
           return next
         } catch (e) {
-          if (e instanceof LedgerError && ['CONFLICT', 'EXISTS'].includes(e.code) && attempt < MAX_RETRIES) continue
+          if (e instanceof LedgerError && ['CONFLICT', 'EXISTS'].includes(e.code) && attempt < MAX_RETRIES) { await backoff(attempt); continue }
           throw e
         }
       }

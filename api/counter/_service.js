@@ -14,6 +14,9 @@ const UNVERIFIED_MS = 24 * 3600e3
 const RETAIN_MODEL_MS = 30 * 24 * 3600e3
 const MAX_OPEN_PER_EMAIL = 5
 const MIN_FORM_MS = 3000
+const MARKER_STALE_MS = 60e3
+const GHOST_LOCK_MS = 10 * 60e3
+const PAY_GRACE_MS = 3600e3
 
 const iso = (ms) => new Date(ms).toISOString()
 export const orderPath = (id) => {
@@ -35,7 +38,7 @@ export async function appendEvent(ctx, id, ev) {
 /** Take the lock for a one-off. create-without-sha is the lock; an *expired* lock is taken over with update-with-sha. */
 async function reserve(ctx, item, orderId) {
   const path = `reservations/${item}.json`
-  const doc = { item, orderId, expiresAt: iso(ctx.now() + RESERVATION_MS), sold: false }
+  const doc = { item, orderId, at: iso(ctx.now()), expiresAt: iso(ctx.now() + RESERVATION_MS), sold: false }
   try {
     await ctx.ledger.create(path, doc)
     return doc
@@ -45,24 +48,37 @@ async function reserve(ctx, item, orderId) {
   let taken = false
   let blocking
   await ctx.ledger.update(path, (cur) => {
+    // fn re-runs on every retry: reset, or a lost race would keep the last run's `taken`.
+    taken = false; blocking = undefined
     if (!cur || (!cur.sold && Date.parse(cur.expiresAt) <= ctx.now())) { taken = true; return doc }
     blocking = cur
     return undefined // leave it alone
-  })
+  }, { create: true }) // create:true: a sweep may delete the file between EXISTS and the read
   if (taken) return doc
   throw new HttpError(409, blocking.sold ? 'sold' : 'reserved', blocking.sold ? 'That piece has been sold.' : 'That piece is reserved for someone else.', blocking.sold ? {} : { expiresAt: blocking.expiresAt })
 }
 
 async function releaseReservation(ctx, item, orderId) {
   const path = `reservations/${item}.json`
-  try {
+  for (let i = 0; i < 4; i++) {
     const cur = await ctx.ledger.readJson(path)
-    if (cur && cur.json.orderId === orderId && !cur.json.sold) await ctx.ledger.remove(path)
-  } catch (e) { if (!(e instanceof LedgerError)) throw e } // CONFLICT: a sweeper got there first
+    if (!cur || cur.json.orderId !== orderId || cur.json.sold) return
+    try { await ctx.ledger.remove(path); return } catch (e) { if (!(e instanceof LedgerError) || e.code !== 'CONFLICT') throw e }
+  }
 }
 
 async function markReservationSold(ctx, item, orderId) {
-  await ctx.ledger.update(`reservations/${item}.json`, (cur) => ({ ...(cur || { item }), orderId, sold: true, expiresAt: null }), { create: true })
+  let conflict = null
+  await ctx.ledger.update(`reservations/${item}.json`, (cur) => {
+    conflict = null
+    if (cur && cur.orderId !== orderId && !(cur.sold === false && Date.parse(cur.expiresAt) <= ctx.now() && false)) { conflict = cur; return undefined }
+    return { ...(cur || { item }), item, orderId, sold: true, expiresAt: null }
+  }, { create: true })
+  if (conflict) {
+    // The piece is held or sold under another order: two people paid for one thing. Never overwrite; say so loudly.
+    await appendEvent(ctx, orderId, { type: 'double-sale', item, heldBy: conflict.orderId })
+    await ctx.ntfy.publish({ title: 'One piece, two payments', message: `${item}: ${orderId} paid, but the piece is held by ${conflict.orderId}. Refund one.`, priority: 'high' })
+  }
 }
 
 // ---- forms --------------------------------------------------------------------
@@ -168,23 +184,28 @@ export async function createOrder(ctx, body) {
   const id = ulid(ctx.now())
   const token = newToken()
   const markerPath = `idempotency/order-${key}.json`
+  const mine = { orderId: id, token, at: iso(ctx.now()) }
   try {
-    await ctx.ledger.create(markerPath, { orderId: id, token, at: iso(ctx.now()) })
+    await ctx.ledger.create(markerPath, mine)
   } catch (e) {
     if (!(e instanceof LedgerError) || e.code !== 'EXISTS') throw e
     const m = await ctx.ledger.readJson(markerPath)
     const existing = m && (await ctx.ledger.readJson(orderPath(m.json.orderId)))
-    if (!existing) throw new HttpError(409, 'in_progress', 'That order is still being placed. Try again in a moment.')
-    return replayBody(ctx, existing.json, m.json.token)
+    if (existing) return replayBody(ctx, existing.json, m.json.token)
+    // A marker with no order: either another attempt is mid-flight, or it died. After a minute, take it over.
+    if (m && ctx.now() - Date.parse(m.json.at) < MARKER_STALE_MS) throw new HttpError(409, 'in_progress', 'That order is still being placed. Try again in a moment.')
+    let took = false
+    await ctx.ledger.update(markerPath, (cur) => { took = !!cur && cur.orderId === (m && m.json.orderId) && ctx.now() - Date.parse(cur.at) >= MARKER_STALE_MS; return took ? mine : undefined }, { create: false })
+    if (!took) throw new HttpError(409, 'in_progress', 'That order is still being placed. Try again in a moment.')
   }
 
-  if ((await openOrdersFor(ctx, customer.email)) >= MAX_OPEN_PER_EMAIL) throw new HttpError(429, 'too_many_open', 'There are already several open orders for that email.')
-
   const reserved = []
+  let committed = false
   try {
+    if ((await openOrdersFor(ctx, customer.email)) >= MAX_OPEN_PER_EMAIL) throw new HttpError(429, 'too_many_open', 'There are already several open orders for that email.')
     const resolved = kind === 'cabinet' ? await resolveCabinet(ctx, body, zone) : resolvePrint(ctx, body, zone)
     if (kind === 'cabinet') {
-      for (const it of resolved.items) if (it.kind === 'curiosity') { await reserve(ctx, it.item, id); reserved.push(it.item) }
+      for (const it of resolved.items) if (it.kind === 'curiosity') { reserved.push(it.item); await reserve(ctx, it.item, id) } // push first: a lost response must still be rolled back
     }
     const flags = [...resolved.flags, ...(zone === 'INTL' ? ['intl'] : [])]
     const drift = driftInr(Number(body.clientQuote && body.clientQuote.total), resolved.quote)
@@ -202,14 +223,16 @@ export async function createOrder(ctx, body) {
       upload = await ctx.storage.presignUpload({ key: m.storageKey, maxBytes: m.bytes, contentType: MODEL_TYPES[m.ext], sha256Hex: m.sha256 })
     }
     await ctx.ledger.create(orderPath(id), order)
-    await appendEvent(ctx, id, { type: 'placed', status: 'placed', public: true })
-    await ctx.ledger.update(`customers/${emailKey(customer.email)}.json`, (cur) => ({ orders: [...((cur && cur.orders) || []), id] }), { create: true })
+    committed = true // from here the order exists: never roll back, or a retry would make a second one
+    await appendEvent(ctx, id, { type: 'placed', status: 'placed', public: true }).catch(() => {})
+    await ctx.ledger.update(`customers/${emailKey(customer.email)}.json`, (cur) => ({ orders: [...((cur && cur.orders) || []), id] }), { create: true }).catch(() => {})
 
     const statusUrl = `${ctx.siteUrl}/orders/?id=${id}&t=${token}`
     await ctx.ntfy.publish({ title: `New ${kind} order`, message: `${id} · ₹${order.quote.total}${flags.length ? ' · ' + flags.join(', ') : ''}`, click: `asoc-counter://orders/${id}`, tags: kind === 'print' ? 'printer' : 'package' })
     await ctx.mail.send({ to: customer.email, subject: 'Your order is in', text: placedMail(order, statusUrl) })
     return { status: 201, body: { id, statusUrl, token, quote: order.quote, ...(upload ? { upload } : {}) } }
   } catch (e) {
+    if (committed) throw e
     // Roll back what this attempt took, and free the idempotency key so the customer can retry.
     for (const item of reserved) await releaseReservation(ctx, item, id).catch(() => {})
     await ctx.ledger.remove(markerPath).catch(() => {})
@@ -251,6 +274,8 @@ export async function getPublicOrder(ctx, id, token, { verify = false } = {}) {
 }
 
 async function finishUnpaid(ctx, o, to, { reason } = {}) {
+  // Close the payment link first, so nobody can pay a link for an order we are closing.
+  if (o.payment && o.payment.status === 'created') await ctx.razorpay.cancelPaymentLink(o.payment.linkId)
   const next = await ctx.ledger.update(orderPath(o.id), (cur) => {
     if (!canTransition(cur.kind, cur.status, to)) return undefined
     return { ...cur, status: to }
@@ -258,7 +283,6 @@ async function finishUnpaid(ctx, o, to, { reason } = {}) {
   if (next.status !== to) throw new HttpError(409, 'bad_state', `That order cannot become ${to} from ${next.status}.`)
   if (releasesReservation(to)) for (const it of next.items) if (it.kind === 'curiosity') await releaseReservation(ctx, it.item, o.id)
   if (deletesModel(to) && next.kind === 'print') await ctx.storage.delete(next.items[0].model.storageKey).catch(() => {})
-  if (next.payment && next.payment.status === 'created') await ctx.razorpay.cancelPaymentLink(next.payment.linkId)
   await appendEvent(ctx, o.id, { type: to, status: to, public: true, ...(reason ? { note: reason } : {}) })
   return next
 }
@@ -341,9 +365,17 @@ export async function handleRazorpayEvent(ctx, event, eventId) {
   if (await ctx.ledger.read(marker)) return { handled: true, replay: true }
   const link = event.payload && event.payload.payment_link && event.payload.payment_link.entity
   const pay = event.payload && event.payload.payment && event.payload.payment.entity
-  if (!link || !isUlid(link.reference_id)) return { handled: false }
-  const o = await loadOrder(ctx, link.reference_id)
-  if (!o.payment || o.payment.linkId !== link.id) return { handled: false }
+  if (!link || typeof link.reference_id !== 'string' || !isUlid(link.reference_id.slice(0, 26))) return { handled: false }
+  const orderId = link.reference_id.slice(0, 26)
+  const o = await loadOrder(ctx, orderId)
+  if (!o.payment || o.payment.linkId !== link.id) {
+    // The webhook can beat the ledger write in ownerAccept: ask Razorpay to retry.
+    if (['placed', 'reviewing'].includes(o.status)) throw new HttpError(503, 'not_ready', 'Order not ready; retry.')
+    // A link we no longer track (lost accept race, crash after creating it): the money is real. Record it, tell the owner.
+    await appendEvent(ctx, o.id, { type: 'paid-unknown-link', linkId: link.id, paymentId: pay && pay.id, status: o.status })
+    await ctx.ntfy.publish({ title: 'Payment on an unknown link', message: `${o.id} ${link.id}. Refund or reconcile.`, priority: 'high' })
+    return { handled: true }
+  }
   const next = await ctx.ledger.update(orderPath(o.id), (cur) => {
     if (cur.status === 'accepted') {
       return { ...cur, status: 'paid', payment: { ...cur.payment, status: 'paid', paidAt: iso(ctx.now()), paymentId: pay && pay.id } }
@@ -351,12 +383,17 @@ export async function handleRazorpayEvent(ctx, event, eventId) {
     return undefined
   })
   if (next.status === 'paid' && next.payment.paymentId === (pay && pay.id)) {
-    // First delivery, or a retry after a crash before the effects ran: the events log decides if they ran.
-    const already = (await ctx.ledger.read(eventsPath(o.id)))
-    const seen = already && already.text.includes(`"paymentId":"${pay && pay.id}"`)
-    if (!seen) {
-      await appendEvent(ctx, o.id, { type: 'paid', status: 'paid', public: true, paymentId: pay && pay.id })
-      for (const it of next.items) if (it.kind === 'curiosity') await markReservationSold(ctx, it.item, o.id)
+    // Idempotent work runs every time; only the notifications are gated, by an atomic append to the events log.
+    for (const it of next.items) if (it.kind === 'curiosity') await markReservationSold(ctx, it.item, o.id)
+    const needle = `"type":"paid","status":"paid","public":true,"paymentId":"${pay.id}"`
+    let won = false
+    await ctx.ledger.updateText(eventsPath(o.id), (t) => {
+      won = false
+      if (t && t.includes(needle)) return undefined
+      won = true
+      return (t ? (t.endsWith('\n') ? t : t + '\n') : '') + JSON.stringify({ at: iso(ctx.now()), type: 'paid', status: 'paid', public: true, paymentId: pay.id }) + '\n'
+    }, { create: true })
+    if (won) {
       await ctx.ntfy.publish({ title: 'Paid', message: `${o.id} · ₹${next.accepted ? next.accepted.total : next.quote.total}`, priority: 'high', click: `asoc-counter://orders/${o.id}`, tags: 'moneybag' })
       await ctx.mail.send({ to: next.customer.email, subject: 'Payment received', text: paidMail(next) })
     }
@@ -372,18 +409,53 @@ export async function handleRazorpayEvent(ctx, event, eventId) {
 // ---- owner --------------------------------------------------------------------
 
 export async function ownerAccept(ctx, id, { total, note } = {}) {
-  const o = await loadOrder(ctx, id)
+  let o = await loadOrder(ctx, id)
+  if (o.status === 'accepted' && o.payment && o.payment.shortUrl) return { shortUrl: o.payment.shortUrl } // a second click is not an error
   if (!canTransition(o.kind, o.status, 'accepted')) throw new HttpError(409, 'bad_state', `Cannot accept an order that is ${o.status}.`)
-  if (o.status === 'accepted' && o.payment) return { shortUrl: o.payment.shortUrl } // idempotent
   const t = total === undefined ? o.quote.total : int(total, { min: 1, max: 10000000, label: 'Total' })
   const noteText = optStr(note, { max: 1000, label: 'Note' })
   if (t > o.quote.total + (o.quote.bandInr || 0) && !noteText) throw new HttpError(400, 'reason_required', 'A total above the quoted band needs a note the customer will see.')
-  const link = await ctx.razorpay.createPaymentLink({ amountInr: t, orderId: id, customer: o.customer, expireBy: ctx.now() + PAYMENT_MS, callbackUrl: `${ctx.siteUrl}/orders/?id=${id}&t=${o.statusToken}`, description: `Order ${id}` })
-  const next = await ctx.ledger.update(orderPath(id), (cur) => {
+
+  // The 48h hold ends "without acceptance" (05 §4): accepting must still hold the lock, and extends it to cover payment.
+  for (const it of o.items) if (it.kind === 'curiosity') {
+    let held = false
+    await ctx.ledger.update(`reservations/${it.item}.json`, (cur) => {
+      held = !!cur && cur.orderId === id && !cur.sold
+      return held ? { ...cur, expiresAt: iso(ctx.now() + PAYMENT_MS + PAY_GRACE_MS) } : undefined
+    }, { create: false }).catch((e) => { if (!(e instanceof LedgerError) || e.code !== 'NOT_FOUND') throw e })
+    if (!held) throw new HttpError(409, 'reservation_lost', 'This piece is no longer reserved for this order.')
+  }
+
+  // One device at a time creates the link: a guarded write claims it, the loser is told to wait.
+  let claimed = false
+  o = await ctx.ledger.update(orderPath(id), (cur) => {
+    claimed = false
     if (!canTransition(cur.kind, cur.status, 'accepted')) return undefined
+    if (cur.payment && cur.payment.status === 'creating' && ctx.now() - Date.parse(cur.payment.at) < MARKER_STALE_MS) return undefined
+    claimed = true
+    return { ...cur, payment: { provider: 'razorpay', status: 'creating', at: iso(ctx.now()) } }
+  })
+  if (!claimed) {
+    if (o.status === 'accepted' && o.payment && o.payment.shortUrl) return { shortUrl: o.payment.shortUrl }
+    throw new HttpError(409, 'in_progress', o.status === 'placed' || o.status === 'reviewing' ? 'Another device is accepting this order.' : `Cannot accept an order that is ${o.status}.`)
+  }
+  let link
+  try {
+    // reference_id carries the order id as its first 26 characters; the suffix keeps it unique across a retry.
+    link = await ctx.razorpay.createPaymentLink({ amountInr: t, orderId: id, referenceId: `${id}-${ctx.now().toString(36).slice(-8)}`, customer: o.customer, expireBy: ctx.now() + PAYMENT_MS, callbackUrl: `${ctx.siteUrl}/orders/?id=${id}&t=${o.statusToken}`, description: `Order ${id}` })
+  } catch (e) {
+    await ctx.ledger.update(orderPath(id), (cur) => (cur.payment && cur.payment.status === 'creating' ? { ...cur, payment: null } : undefined))
+    throw e
+  }
+  const next = await ctx.ledger.update(orderPath(id), (cur) => {
+    if (!canTransition(cur.kind, cur.status, 'accepted') || !cur.payment || cur.payment.status !== 'creating') return undefined
     return { ...cur, status: 'accepted', accepted: { at: iso(ctx.now()), total: t, note: noteText }, payment: { provider: 'razorpay', linkId: link.id, shortUrl: link.shortUrl, status: 'created', expiresAt: iso(ctx.now() + PAYMENT_MS) } }
   })
-  if (next.payment.linkId !== link.id) { await ctx.razorpay.cancelPaymentLink(link.id); return { shortUrl: next.payment.shortUrl } } // lost a race: keep the winner's link
+  if (!next.payment || next.payment.linkId !== link.id) {
+    // The order closed (the customer cancelled) while the link was being made.
+    await ctx.razorpay.cancelPaymentLink(link.id)
+    throw new HttpError(409, 'bad_state', `The order became ${next.status} before it could be accepted.`)
+  }
   await appendEvent(ctx, id, { type: 'accepted', status: 'accepted', public: true, ...(noteText ? { note: noteText } : {}) })
   await ctx.mail.send({ to: o.customer.email, subject: 'Your order is accepted — pay to confirm', text: acceptedMail(next, link.shortUrl) })
   return { shortUrl: link.shortUrl }
@@ -418,7 +490,13 @@ export async function ownerAdvance(ctx, id, { status, carrier, tracking }) {
 
 export async function ownerMarkSoldOffline(ctx, item) {
   str(item, { min: 1, max: 80, label: 'Item' })
-  await ctx.ledger.update(`reservations/${item}.json`, (cur) => ({ item, orderId: 'offline', sold: true, expiresAt: null, ...(cur && cur.sold ? cur : {}) }), { create: true })
+  let blocked = null
+  await ctx.ledger.update(`reservations/${item}.json`, (cur) => {
+    blocked = null
+    if (cur && !cur.sold && Date.parse(cur.expiresAt) > ctx.now()) { blocked = cur; return undefined }
+    return cur && cur.sold ? cur : { item, orderId: 'offline', sold: true, expiresAt: null }
+  }, { create: true })
+  if (blocked) throw new HttpError(409, 'reserved', `That piece is held for order ${blocked.orderId}. Reject or cancel that order first.`, { expiresAt: blocked.expiresAt })
   await ownerRebuild(ctx, { skipHook: true })
 }
 
@@ -441,8 +519,14 @@ export async function ownerRebuild(ctx, { skipHook = false } = {}) {
   const orders = []
   for (const path of await listOrderFiles(ctx)) {
     let o = (await ctx.ledger.readJson(path)).json
-    if (o.status === 'accepted' && o.payment && Date.parse(o.payment.expiresAt) <= now) o = await finishUnpaid(ctx, o, 'expired')
-    else if (o.status === 'placed' && !o.emailVerified && now - Date.parse(o.createdAt) > UNVERIFIED_MS) o = await finishUnpaid(ctx, o, 'expired')
+    const expire = async () => {
+      try { return await finishUnpaid(ctx, o, 'expired') } catch (e) {
+        if (!(e instanceof HttpError) || e.status !== 409) throw e // a webhook paid it meanwhile: keep the fresh state
+        return (await ctx.ledger.readJson(path)).json
+      }
+    }
+    if (o.status === 'accepted' && o.payment && Date.parse(o.payment.expiresAt) + PAY_GRACE_MS <= now) o = await expire()
+    else if (o.status === 'placed' && !o.emailVerified && now - Date.parse(o.createdAt) > UNVERIFIED_MS) o = await expire()
     if (o.kind === 'print' && o.fulfilment.dispatchedAt && !o.fulfilment.modelDeletedAt && now - Date.parse(o.fulfilment.dispatchedAt) > RETAIN_MODEL_MS) {
       await ctx.storage.delete(o.items[0].model.storageKey).catch(() => {})
       o = await ctx.ledger.update(path, (cur) => ({ ...cur, fulfilment: { ...cur.fulfilment, modelDeletedAt: iso(now) } }))
@@ -457,6 +541,7 @@ export async function ownerRebuild(ctx, { skipHook = false } = {}) {
     if (!r) continue
     if (r.json.sold) items[r.json.item] = { status: 'sold' }
     else if (Date.parse(r.json.expiresAt) <= now) await ctx.ledger.remove(f.path).catch(() => {})
+    else if (r.json.orderId !== 'offline' && now - Date.parse(r.json.at || 0) > GHOST_LOCK_MS && !(await ctx.ledger.read(orderPath(r.json.orderId)))) await ctx.ledger.remove(f.path).catch(() => {}) // lock from an attempt that never wrote its order
     else items[r.json.item] = { status: 'reserved', reservedUntil: r.json.expiresAt }
   }
   for (const o of orders) if (o.kind === 'cabinet' && ['paid', 'dispatched', 'delivered', 'in_production', 'finishing'].includes(o.status)) {

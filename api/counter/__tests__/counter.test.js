@@ -203,13 +203,14 @@ test('payment on a closed order is recorded and flagged for refund, never silent
   assert.ok(ctx.rec.sent.some((m) => m.title === 'Payment on a closed order'))
 })
 
-test('webhook: events for unknown orders or other link ids are ignored; unrelated events are not handled', async () => {
+test('webhook: a payment on an untracked link is flagged, a non-payment event is not handled', async () => {
   const ctx = makeCtx()
   const out = await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'hyle-cell-brass', qty: 1 }]))
   await S.ownerAccept(ctx, out.body.id, {})
   const acc = await getOrder(ctx, out.body.id)
   const wrong = paidEvent(acc); wrong.payload.payment_link.entity.id = 'plink_other'
-  assert.equal((await S.handleRazorpayEvent(ctx, wrong, 'x')).handled, false)
+  assert.equal((await S.handleRazorpayEvent(ctx, wrong, 'x')).handled, true) // recorded and flagged, never dropped
+  assert.ok(ctx.rec.sent.some((m) => m.title === 'Payment on an unknown link'))
   assert.equal((await S.handleRazorpayEvent(ctx, { event: 'payment.captured' }, 'y')).handled, false)
   assert.equal((await getOrder(ctx, out.body.id)).status, 'accepted')
 })
@@ -358,4 +359,157 @@ test('presign: SigV4 query shape, signed checksum header, deterministic for a fi
 test('rate limit: the eleventh write in a minute is refused', () => {
   for (let i = 0; i < 10; i++) rateLimit('t', { perMinute: 10, now: 1000 })
   assert.throws(() => rateLimit('t', { perMinute: 10, now: 1000 }), (e) => e.status === 429)
+})
+
+// ---- regressions from the Opus ledger review ---------------------------------------------
+
+test('review #1: a takeover that loses the race does not also believe it holds the lock', async () => {
+  // Two callers both read the same expired lock; the first PUT wins, the second must back off, not claim it.
+  let first = true
+  const ctx = makeCtx()
+  await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'inkwell-1962', qty: 1 }]))
+  ctx.clock.now += 49 * 3600e3 // lock expired
+  const ledger = ctx.ledger
+  const orig = ledger.updateText.bind(ledger)
+  ledger.updateText = async (path, fn, o) => {
+    if (path === 'reservations/inkwell-1962.json' && first) { // an interleaved winner takes it between B's read and PUT
+      first = false
+      await orig(path, () => JSON.stringify({ item: 'inkwell-1962', orderId: 'WINNER', at: new Date(ctx.now()).toISOString(), expiresAt: new Date(ctx.now() + 3600e3).toISOString(), sold: false }) + '\n')
+    }
+    return orig(path, fn, o)
+  }
+  await rejects(S.createOrder(ctx, { ...cabinetBody(ctx, [{ item: 'inkwell-1962', qty: 1 }]), customer: { name: 'B', email: 'b@example.com' } }), 409, 'reserved')
+  assert.equal((await ctx.ledger.readJson('reservations/inkwell-1962.json')).json.orderId, 'WINNER')
+})
+
+test('review #2: accepting an order whose hold lapsed fails; accepting extends the hold past the payment window', async () => {
+  const ctx = makeCtx()
+  const a = await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'inkwell-1962', qty: 1 }]))
+  ctx.clock.now += 40 * 3600e3
+  await S.ownerAccept(ctx, a.body.id, {})
+  const hold = (await ctx.ledger.readJson('reservations/inkwell-1962.json')).json
+  assert.ok(Date.parse(hold.expiresAt) > ctx.now() + 72 * 3600e3) // survives the 72 h payment window
+  ctx.clock.now += 49 * 3600e3 // past the original 48 h, still inside payment
+  await rejects(S.createOrder(ctx, { ...cabinetBody(ctx, [{ item: 'inkwell-1962', qty: 1 }]), customer: { name: 'B', email: 'b@example.com' } }), 409, 'reserved')
+
+  const ctx2 = makeCtx(); const b = await S.createOrder(ctx2, cabinetBody(ctx2, [{ item: 'inkwell-1962', qty: 1 }]))
+  ctx2.clock.now += 49 * 3600e3
+  await S.createOrder(ctx2, { ...cabinetBody(ctx2, [{ item: 'inkwell-1962', qty: 1 }]), customer: { name: 'B', email: 'b@example.com' } }) // took the lapsed lock
+  await rejects(S.ownerAccept(ctx2, b.body.id, {}), 409, 'reservation_lost')
+})
+
+test('review #2: a second payment for a piece held by another order is flagged, never overwritten', async () => {
+  const ctx = makeCtx()
+  const a = await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'inkwell-1962', qty: 1 }]))
+  await S.ownerAccept(ctx, a.body.id, {})
+  await ctx.ledger.update('reservations/inkwell-1962.json', (c) => ({ ...c, orderId: 'SOMEONE_ELSE' }))
+  await S.handleRazorpayEvent(ctx, paidEvent(await getOrder(ctx, a.body.id)), 'ds')
+  assert.equal((await ctx.ledger.readJson('reservations/inkwell-1962.json')).json.orderId, 'SOMEONE_ELSE')
+  assert.ok(ctx.rec.sent.some((m) => m.title === 'One piece, two payments'))
+})
+
+test('review #3a: a payment webhook that beats the accept write is told to retry (503), not dropped', async () => {
+  const ctx = makeCtx()
+  const a = await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'hyle-cell-brass', qty: 1 }]))
+  const early = { event: 'payment_link.paid', payload: { payment_link: { entity: { id: 'plink_x', reference_id: a.body.id + '-abc' } }, payment: { entity: { id: 'pay_9' } } } }
+  await assert.rejects(S.handleRazorpayEvent(ctx, early, 'early'), (e) => e.status === 503)
+  assert.equal(await ctx.ledger.read('idempotency/rzp-early.json'), null) // not marked done, so the retry is processed
+})
+
+test('review #3c: the customer cancels while the link is being created -> link cancelled, clean 409, no crash', async () => {
+  const ctx = makeCtx()
+  const a = await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'hyle-cell-brass', qty: 1 }]))
+  const make = ctx.razorpay.createPaymentLink.bind(ctx.razorpay)
+  ctx.razorpay.createPaymentLink = async (x) => { const r = await make(x); await S.cancelOrder(ctx, a.body.id, a.body.token); return r }
+  await rejects(S.ownerAccept(ctx, a.body.id, {}), 409, 'bad_state')
+  assert.ok(ctx.razorpay.links.some((l) => l.cancelled))
+  assert.equal((await getOrder(ctx, a.body.id)).status, 'cancelled')
+})
+
+test('review #4: two devices accepting at once make one link; a second click returns it', async () => {
+  const ctx = makeCtx()
+  const a = await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'hyle-cell-brass', qty: 1 }]))
+  const r = await Promise.allSettled([S.ownerAccept(ctx, a.body.id, {}), S.ownerAccept(ctx, a.body.id, {})])
+  assert.equal(ctx.razorpay.links.filter((l) => l.id).length, 1)
+  assert.ok(r.some((x) => x.status === 'fulfilled'))
+  const again = await S.ownerAccept(ctx, a.body.id, {})
+  assert.match(again.shortUrl, /rzp\.io/)
+})
+
+test('review #5: concurrent deliveries of one payment notify once and still mark the piece sold', async () => {
+  const ctx = makeCtx()
+  const a = await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'inkwell-1962', qty: 1 }]))
+  await S.ownerAccept(ctx, a.body.id, {})
+  const acc = await getOrder(ctx, a.body.id)
+  await Promise.all([S.handleRazorpayEvent(ctx, paidEvent(acc), 'c1'), S.handleRazorpayEvent(ctx, paidEvent(acc), 'c2'), S.handleRazorpayEvent(ctx, paidEvent(acc), 'c3')])
+  assert.equal(ctx.rec.sent.filter((m) => m.title === 'Paid').length, 1)
+  assert.equal(ctx.rec.sent.filter((m) => m.subject === 'Payment received').length, 1)
+  assert.equal((await ctx.ledger.readJson('reservations/inkwell-1962.json')).json.sold, true)
+})
+
+test('review #6: once the order file is written, a failure afterwards does not roll it back or free the key', async () => {
+  const ctx = makeCtx()
+  const body = cabinetBody(ctx, [{ item: 'inkwell-1962', qty: 1 }])
+  const orig = ctx.ledger.updateText.bind(ctx.ledger)
+  ctx.ledger.updateText = async (p, ...r) => { if (p.endsWith('.events.jsonl')) throw new LedgerError('UNAVAILABLE'); return orig(p, ...r) }
+  const a = await S.createOrder(ctx, body) // events append fails; still a success
+  ctx.ledger.updateText = orig
+  const b = await S.createOrder(ctx, body)
+  assert.equal(b.body.id, a.body.id)
+  assert.ok(await ctx.ledger.read('reservations/inkwell-1962.json'))
+})
+
+test('review #7: a dead attempt does not wedge its key; a stale marker is taken over, a fresh one is not', async () => {
+  const ctx = makeCtx()
+  const body = cabinetBody(ctx, [{ item: 'hyle-cell-brass', qty: 1 }])
+  await ctx.ledger.create(`idempotency/order-${body.idempotencyKey}.json`, { orderId: 'X'.repeat(26), token: 't', at: new Date(ctx.now()).toISOString() })
+  await rejects(S.createOrder(ctx, body), 409, 'in_progress')
+  ctx.clock.now += 120e3
+  const out = await S.createOrder({ ...ctx, ...{ now: () => ctx.clock.now } }, { ...body, startedAt: ctx.now() - 10000 })
+  assert.equal(out.status, 201)
+})
+
+test('review #7: the 5-open-orders refusal frees the idempotency key', async () => {
+  const ctx = makeCtx()
+  for (let i = 0; i < 5; i++) await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'hyle-cell-brass', qty: 1 }]))
+  const body = cabinetBody(ctx, [{ item: 'hyle-cell-brass', qty: 1 }])
+  await rejects(S.createOrder(ctx, body), 429, 'too_many_open')
+  assert.equal(await ctx.ledger.read(`idempotency/order-${body.idempotencyKey}.json`), null)
+})
+
+test('review #7: rebuild sweeps a lock whose order was never written', async () => {
+  const ctx = makeCtx()
+  await ctx.ledger.create('reservations/inkwell-1962.json', { item: 'inkwell-1962', orderId: ulid(ctx.now()), at: new Date(ctx.now()).toISOString(), expiresAt: new Date(ctx.now() + 48 * 3600e3).toISOString(), sold: false })
+  ctx.clock.now += 20 * 60e3
+  await S.ownerRebuild(ctx, { skipHook: true })
+  assert.equal(await ctx.ledger.read('reservations/inkwell-1962.json'), null)
+})
+
+test('review #8: releasing a reservation retries a branch-level conflict instead of leaving it held', async () => {
+  const ctx = makeCtx()
+  const a = await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'inkwell-1962', qty: 1 }]))
+  let fail = 2
+  const orig = ctx.ledger.remove.bind(ctx.ledger)
+  ctx.ledger.remove = async (p) => { if (p.startsWith('reservations/') && fail-- > 0) throw new LedgerError('CONFLICT'); return orig(p) }
+  await S.cancelOrder(ctx, a.body.id, a.body.token)
+  assert.equal(await ctx.ledger.read('reservations/inkwell-1962.json'), null)
+})
+
+test('review #9: rebuild survives an order paid mid-sweep; a payment just inside the grace hour is not closed', async () => {
+  const ctx = makeCtx()
+  const a = await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'hyle-cell-brass', qty: 1 }]))
+  await S.ownerAccept(ctx, a.body.id, {})
+  ctx.clock.now += 72.5 * 3600e3 // past the link, inside the 1 h grace
+  await S.ownerRebuild(ctx, { skipHook: true })
+  assert.equal((await getOrder(ctx, a.body.id)).status, 'accepted')
+  ctx.clock.now += 1 * 3600e3
+  await S.ownerRebuild(ctx, { skipHook: true })
+  assert.equal((await getOrder(ctx, a.body.id)).status, 'expired')
+  assert.ok(ctx.razorpay.links.some((l) => l.cancelled)) // link closed before the transition
+})
+
+test('review: marking sold offline refuses a piece that a live order holds', async () => {
+  const ctx = makeCtx()
+  await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'inkwell-1962', qty: 1 }]))
+  await rejects(S.ownerMarkSoldOffline(ctx, 'inkwell-1962'), 409, 'reserved')
 })

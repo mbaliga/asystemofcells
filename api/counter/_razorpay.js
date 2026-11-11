@@ -17,9 +17,9 @@ export function createRazorpay({ keyId, keySecret, fetchImpl = fetch }) {
     return res.json()
   }
   return {
-    async createPaymentLink({ amountInr, orderId, customer, expireBy, callbackUrl, description }) {
+    async createPaymentLink({ amountInr, orderId, referenceId, customer, expireBy, callbackUrl, description }) {
       const j = await call('/payment_links', {
-        amount: Math.round(amountInr * 100), currency: 'INR', accept_partial: false, reference_id: orderId, description,
+        amount: Math.round(amountInr * 100), currency: 'INR', accept_partial: false, reference_id: referenceId || orderId, description,
         customer: { name: customer.name, email: customer.email, ...(customer.phone ? { contact: customer.phone } : {}) },
         notify: { email: true, sms: !!customer.phone }, reminder_enable: false,
         expire_by: Math.floor(expireBy / 1000), callback_url: callbackUrl, callback_method: 'get',
