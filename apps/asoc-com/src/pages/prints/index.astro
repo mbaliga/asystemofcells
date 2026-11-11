@@ -1,4 +1,35 @@
 ---
-import SectionIndex from '../../components/SectionIndex.astro'
+// Alloy prints: the landing page. It describes; the slicer is the quiet page.
+import SimplePageLayout from '../../layouts/SimplePageLayout.astro'
+import tiers from '../../../../../data/finish-tiers.json'
+import pricing from '../../../../../data/pricing.prints.json'
+import '../../styles/prints.css'
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href
+const jsonLd = { '@context': 'https://schema.org', '@type': 'Service', name: 'Alloy prints', description: 'Made-to-order 3D prints in PLA and PETG, with three finish tiers.', provider: { '@type': 'Organization', name: 'asystemofcells', url: 'https://asystemofcells.com' }, areaServed: 'Worldwide', offers: tiers.tiers.map((t) => ({ '@type': 'Offer', name: t.name, description: t.what, priceCurrency: 'INR' })) }
 ---
-<SectionIndex slug="prints" />
+<SimplePageLayout title="Alloy prints: asystemofcells" description="Slice in your browser, print at home from your phone, or have it printed here and sent to you. Three finishes, one printer, no account." canonical={pageUrl} jsonLd={jsonLd}>
+  <p class="eyebrow">3D prints</p>
+  <h1>Alloy prints.</h1>
+  <p class="pr-lede">Look at a model on a plate. Get a weight and a time. Print it yourself, or have it printed here and sent to you.</p>
+  <p><a class="cab-btn" href="/prints/slicer/">Put a model on the plate</a></p>
+
+  <h2>How it works</h2>
+  <ol class="pr-steps">
+    <li>Choose an STL, 3MF or OBJ. It is read in your browser and goes nowhere.</li>
+    <li>See whether it fits, what it weighs and how long it takes. These are estimates.</li>
+    <li>Download it, or order. If you order, the file is uploaded then and only then. We read it, and if we can print it you get a payment link.</li>
+  </ol>
+
+  <h2>Three finishes</h2>
+  <ul class="pr-tiers">{tiers.tiers.map((t) => <li><b>{t.name}</b><span>{t.what} {t.for}</span></li>)}</ul>
+
+  <h2>What it is printed on</h2>
+  <p>A Bambu Lab A1 mini with a 0.4 mm nozzle. The plate is {pricing.buildVolumeMm.x} × {pricing.buildVolumeMm.y} × {pricing.buildVolumeMm.z} mm. Materials: {pricing.filaments.map((f) => f.label).join(', ')}. Other colours on request.</p>
+  <p>Lead time after payment: {pricing.leadTimeDays['as-is']} days as-is, {pricing.leadTimeDays['supports-removed']} with supports removed, {pricing.leadTimeDays.processed} processed, plus the post.</p>
+
+  <h2>Questions</h2>
+  <details><summary>Does my model leave my phone?</summary><p>Not unless you press order. Reading, placing and estimating all happen in your browser.</p></details>
+  <details><summary>Why is the price an estimate?</summary><p>The weight and time are worked out from the shape. The real figure comes from slicing it here. The price can move by up to {Math.round(pricing.estimateBand * 100)} % and you approve it before you pay.</p></details>
+  <details><summary>Can you print any file?</summary><p>If it fits the plate. A model that is too big can be scaled down a little. A file with holes in its surface can still be ordered; we will tell you what we see.</p></details>
+  <details><summary>Where does the order go?</summary><p>To the counter described on <a class="inline-link" href="/privacy/#the-counter">the privacy page</a>. The payment page is Razorpay's, not ours.</p></details>
+</SimplePageLayout>

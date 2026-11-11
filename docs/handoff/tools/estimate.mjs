@@ -20,15 +20,23 @@ export const DEFAULT_CALIBRATION = {
  *  Support detection is a height-map occlusion test, not a face-normal count: a downward face only
  *  needs support where nothing of the model lies beneath it, and the support height is the gap to
  *  the surface below (or to the plate). Resolution `cellMm` (default 1 mm). */
-export function meshStats(pos, { overhangDeg = 45, supportFill = 0.12, plateEpsilonMm = 0.3, cellMm = 1 } = {}) {
+export function meshStats(pos, { overhangDeg = 45, supportFill = 0.12, plateEpsilonMm = 0.3, cellMm: cellMm0 = 1 } = {}) {
   const n = pos.length / 9
+  if (n < 1) throw new Error('empty mesh')
   let vol = 0, area = 0
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity]
   const edges = new Map()
   const key = (a, b) => a < b ? `${a}|${b}` : `${b}|${a}`
-  const vkey = (x, y, z) => `${x.toFixed(4)},${y.toFixed(4)},${z.toFixed(4)}`
+  const q = (x) => Math.round(x * 1e4) + 0                       // +0: float noise around zero must not split a vertex into -0 / 0
+  const vkey = (x, y, z) => `${q(x)},${q(y)},${q(z)}`
   for (let i = 0; i < pos.length; i += 3) for (let k = 0; k < 3; k++) { const v = pos[i + k]; if (v < min[k]) min[k] = v; if (v > max[k]) max[k] = v }
   const z0 = min[2]
+  // Keep the raster grid bounded: a model in the wrong unit (microns read as mm) must not allocate gigabytes.
+  const cellMm = Math.max(cellMm0, (max[0] - min[0]) / 2048, (max[1] - min[1]) / 2048, 1e-3)
+  // An inside-out mesh (negative signed volume) has every normal reversed: flip them, or the top reads as an overhang.
+  let sv = 0
+  for (let i = 0; i < pos.length; i += 9) sv += (pos[i] * (pos[i + 4] * pos[i + 8] - pos[i + 5] * pos[i + 7]) - pos[i + 1] * (pos[i + 3] * pos[i + 8] - pos[i + 5] * pos[i + 6]) + pos[i + 2] * (pos[i + 3] * pos[i + 7] - pos[i + 4] * pos[i + 6])) / 6
+  const sgn = sv < 0 ? -1 : 1
   const sinOver = Math.sin(overhangDeg * Math.PI / 180)
   const W = Math.max(1, Math.ceil((max[0] - min[0]) / cellMm) + 1), H = Math.max(1, Math.ceil((max[1] - min[1]) / cellMm) + 1)
   const up = new Array(W * H)            // per cell: array of z of upward-facing surface samples
@@ -43,7 +51,7 @@ export function meshStats(pos, { overhangDeg = 45, supportFill = 0.12, plateEpsi
     const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx
     const len = Math.hypot(nx, ny, nz); const a = len / 2; area += a
     if (len > 0) {
-      const nzn = nz / len
+      const nzn = sgn * nz / len
       const projArea = Math.abs(a * nzn)                              // xy-projected area
       if (projArea > 1e-9 && (nzn > 0 || nzn < -sinOver)) {
         // rasterise the triangle's xy projection: every cell whose centre is inside gets a sample
@@ -70,7 +78,7 @@ export function meshStats(pos, { overhangDeg = 45, supportFill = 0.12, plateEpsi
       }
     }
     const ka = vkey(ax, ay, az), kb = vkey(bx, by, bz), kc = vkey(cx, cy, cz)
-    for (const e of [key(ka, kb), key(kb, kc), key(kc, ka)]) edges.set(e, (edges.get(e) || 0) + 1)
+    for (const [e1, e2] of [[ka, kb], [kb, kc], [kc, ka]]) if (e1 !== e2) { const e = key(e1, e2); edges.set(e, (edges.get(e) || 0) + 1) }   // collapsed edges can never pair up: skip
   }
   for (const list of up) if (list) list.sort((p, q) => p - q)
   let supportVolume = 0, supportedArea = 0
@@ -90,6 +98,8 @@ export function meshStats(pos, { overhangDeg = 45, supportFill = 0.12, plateEpsi
 
 export function estimatePrint(stats, settings = {}, cal = DEFAULT_CALIBRATION) {
   const s = { ...DEFAULT_SETTINGS, ...settings }
+  s.layerHeight = Math.min(0.32, Math.max(0.04, +s.layerHeight || 0.2))   // never a zero or negative layer / infill
+  s.infillPct = Math.min(100, Math.max(0, +s.infillPct || 0))
   const density = (FILAMENTS[s.filament] || FILAMENTS.PLA).density
   const wallT = s.perimeters * s.lineWidth
   const shellVolume = Math.min(stats.volume, stats.area * wallT)

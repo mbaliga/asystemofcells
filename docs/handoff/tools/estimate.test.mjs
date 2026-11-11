@@ -63,3 +63,24 @@ test('quote: minimum applies per part; INTL zone bands', () => {
   const q = quote({ est, tier: 'as-is', qty: 1, pricing, tiers, shipping, zone: 'INTL' })
   assert.equal(q.base, 299); assert.equal(q.shipping, 1100)
 })
+
+// ---- from the Opus review of the browser port ----
+test('an inside-out mesh costs the same as the outward one (no phantom overhang)', () => {
+  const out = boxMesh(20, 20, 20), inv = Float32Array.from(out)
+  for (let i = 0; i < inv.length; i += 9) for (let k = 0; k < 3; k++) { const t = inv[i + 3 + k]; inv[i + 3 + k] = inv[i + 6 + k]; inv[i + 6 + k] = t }
+  const a = meshStats(out), b = meshStats(inv)
+  assert.equal(b.overhangArea, 0); near(b.volume, a.volume, 1e-6, 'volume')
+  near(estimatePrint(b).massG, estimatePrint(a).massG, 1e-9, 'mass')
+})
+test('empty mesh is refused, not turned into Infinity', () => { assert.throws(() => meshStats(new Float32Array(0)), /empty/) })
+test('a model in the wrong unit does not blow up the raster', () => {
+  const s = meshStats(boxMesh(20000, 20000, 20000)); assert.ok(Number.isFinite(s.volume) && Number.isFinite(estimatePrint(s).printMin))
+})
+test('degenerate settings are clamped', () => {
+  const s = meshStats(boxMesh(20, 20, 20))
+  const e = estimatePrint(s, { layerHeight: 0, infillPct: -500 }); assert.ok(Number.isFinite(e.printMin) && e.massG > 0)
+})
+test('float noise around zero does not read as open edges', () => {
+  const b = boxMesh(20, 20, 20, 0, 0, 0), n = Float32Array.from(b, (v, i) => (v === 0 ? (i % 2 ? -1e-9 : 1e-9) : v))
+  assert.equal(meshStats(n).manifold, true)
+})
