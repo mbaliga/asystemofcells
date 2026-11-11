@@ -1,4 +1,4 @@
-// The homepage sections beyond the apps: architecture (past projects), shop
+// The homepage sections beyond the apps: architecture (past projects), cabinet
 // (collectibles) and prints (3D prints someone can ask for). Apps are the
 // existing roster; this file owns the other three and the one list of all four,
 // in nav order.
@@ -9,7 +9,7 @@
 // placeholdersHidden). A section with no real entries then renders its honest
 // "nothing published yet" state instead of fake work.
 import architecture from './sections/architecture.public.json' with { type: 'json' }
-import shop from './sections/shop.public.json' with { type: 'json' }
+import cabinet from './sections/cabinet.public.json' with { type: 'json' }
 import prints from './sections/prints.public.json' with { type: 'json' }
 
 // Nav order, left to right. `href` is the section's own real page (apps is the
@@ -20,24 +20,30 @@ export const SECTIONS = [
   { slug: 'apps', label: 'Apps', accent: '#8E7BFF', href: '/', blurb: 'Small, quiet apps, on your device.' },
   {
     slug: 'architecture',
-    label: 'Architecture',
+    label: 'Practice',
     accent: '#7EB5C8',
     href: '/architecture/',
-    blurb: 'Past architecture projects.',
+    blurb: 'Built work as explorables, free tools for architects, and a way to commission the practice.',
   },
-  { slug: 'shop', label: 'Shop', accent: '#E8A33D', href: '/shop/', blurb: 'Collectibles, made in small editions.' },
+  {
+    slug: 'cabinet',
+    label: 'The Cabinet',
+    accent: '#B08D57',
+    href: '/cabinet/',
+    blurb: 'Things made here, and things kept a while and now let go. One of each, mostly.',
+  },
   {
     slug: 'prints',
-    label: 'Prints',
+    label: 'Alloy prints',
     accent: '#C87EA8',
     href: '/prints/',
-    blurb: 'Ask for a 3D print of one of these, made to order.',
+    blurb: 'Slice in your browser, print at home, or have it printed here and sent to you.',
   },
 ]
 
 export const AVAILABILITY_LABEL = { available: 'Available', 'sold-out': 'Sold out', soon: 'Soon' }
 
-const FILES = { architecture, shop, prints }
+const FILES = { architecture, cabinet, prints }
 const HEX = /^#[0-9a-fA-F]{6}$/
 
 // A production deploy (Vercel sets VERCEL_ENV at build time) must never show a
@@ -77,7 +83,7 @@ export function getSection(slug) {
   return SECTIONS.find((s) => s.slug === slug) || null
 }
 
-// The entries of architecture / shop / prints that this build may show.
+// The entries of architecture / cabinet / prints that this build may show.
 export function getSectionItems(slug) {
   const file = FILES[slug]
   if (!file) return []
@@ -99,7 +105,7 @@ export function priceLine(item) {
 export function kickerFor(slug, item) {
   if (item.placeholder && slug !== 'apps') return 'Placeholder'
   if (slug === 'architecture') return [item.type, item.year, item.place].filter(Boolean).join(' · ') || 'Architecture'
-  if (slug === 'shop') return item.edition || 'Collectible'
+  if (slug === 'cabinet') return item.edition || 'Collectible'
   if (slug === 'prints') {
     const material = (item.options || []).find((o) => /material/i.test(o.label))
     return material ? material.values.join(' / ') : '3D print'
