@@ -525,6 +525,35 @@ async function listOrderFiles(ctx, monthsBack = 14) {
   return out
 }
 
+/** The owner's inbox: every order file from the last 14 months, newest first, as light summaries. */
+export async function ownerListOrders(ctx, { open = true } = {}) {
+  const out = []
+  for (const path of await listOrderFiles(ctx)) {
+    const o = (await ctx.ledger.readJson(path)).json
+    if (open && !isOpen(o.status)) continue
+    out.push({
+      id: o.id, kind: o.kind, status: o.status, createdAt: o.createdAt, nextAction: nextAction(o),
+      customer: { firstName: o.customer.name.split(/\s+/)[0], city: o.shipTo.city, country: o.shipTo.country },
+      total: o.accepted ? o.accepted.total : o.quote.total, flags: o.flags, summary: o.kind === 'print' ? o.items[0].model.name : o.items.map((i) => i.title).join(', '),
+    })
+  }
+  return out.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+}
+
+/** One order in full for the owner (address, items, estimate, events), plus a short-lived model download link. */
+export async function ownerGetOrder(ctx, id) {
+  const o = await loadOrder(ctx, id)
+  const ev = await ctx.ledger.read(eventsPath(id))
+  const events = ev ? ev.text.split('\n').filter(Boolean).map((l) => JSON.parse(l)) : []
+  let modelUrl = null
+  if (o.kind === 'print' && !o.fulfilment.modelDeletedAt && ['reviewing', 'accepted', 'paid', 'in_production', 'finishing', 'placed'].includes(o.status)) {
+    const key = o.items[0].model.storageKey
+    if (await ctx.storage.head(key)) modelUrl = await ctx.storage.presignDownload(key, 900)
+  }
+  const { statusToken, ...order } = o // the customer's token is theirs
+  return { order, events, modelUrl, nextAction: nextAction(o) }
+}
+
 /** Sweep expiries, apply retention, recompute derived files, trigger the deploy hook. */
 export async function ownerRebuild(ctx, { skipHook = false } = {}) {
   const now = ctx.now()

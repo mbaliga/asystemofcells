@@ -1,0 +1,95 @@
+{
+ "order": {
+  "id": "01M6NEZEM0484K9J3H01KDEPTV",
+  "kind": "print",
+  "createdAt": "2026-11-05T09:00:00.000Z",
+  "status": "reviewing",
+  "customer": {
+   "name": "Asha Rao",
+   "email": "a@example.com",
+   "phone": "+919999999999"
+  },
+  "shipTo": {
+   "line1": "1 Road",
+   "line2": "",
+   "city": "Hyderabad",
+   "state": "TS",
+   "postcode": "500001",
+   "country": "IN"
+  },
+  "zone": "IN",
+  "items": [
+   {
+    "model": {
+     "name": "cube.stl",
+     "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+     "bytes": 684,
+     "ext": "stl",
+     "storageKey": "orders/01M6NEZEM0484K9J3H01KDEPTV/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.stl"
+    },
+    "settings": {
+     "layerHeight": 0.2,
+     "infillPct": 15,
+     "supports": "auto",
+     "filament": "PLA"
+    },
+    "estimate": {
+     "massG": 8,
+     "printMin": 30,
+     "supports": false,
+     "manifold": true
+    },
+    "tier": "processed",
+    "qty": 2,
+    "colour": "Black",
+    "filament": "PLA"
+   }
+  ],
+  "quote": {
+   "material": 64,
+   "machine": 60,
+   "subtotal": 598,
+   "finish": 758.8,
+   "packaging": 40,
+   "shipping": 80,
+   "total": 1477,
+   "bandInr": 295,
+   "currency": "INR",
+   "zone": "IN",
+   "grams": 87,
+   "overTable": false
+  },
+  "accepted": null,
+  "payment": null,
+  "fulfilment": {
+   "startedAt": null,
+   "finishedAt": null,
+   "dispatchedAt": null,
+   "carrier": null,
+   "tracking": null,
+   "deliveredAt": null
+  },
+  "customerNote": null,
+  "flags": [
+   "client-estimate"
+  ],
+  "emailVerified": false,
+  "quoteDrift": 0
+ },
+ "events": [
+  {
+   "at": "2026-11-05T09:00:00.000Z",
+   "type": "placed",
+   "status": "placed",
+   "public": true
+  },
+  {
+   "at": "2026-11-05T09:00:00.000Z",
+   "type": "reviewing",
+   "status": "reviewing",
+   "public": true
+  }
+ ],
+ "modelUrl": "memory://orders/01M6NEZEM0484K9J3H01KDEPTV/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.stl?download",
+ "nextAction": "decide"
+}

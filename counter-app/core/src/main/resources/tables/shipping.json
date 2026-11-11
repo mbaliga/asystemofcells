@@ -1,0 +1,21 @@
+{
+  "$comment": "Flat shipping table used identically by the client cart (quote) and the Counter function (authoritative). All amounts INR. PLACEHOLDERS: the owner calibrates from real India Post / Delhivery rates before go-live. packagingAllowance is added to the summed item weight before banding.",
+  "currency": "INR",
+  "packagingAllowancePct": 15,
+  "fragileSurchargeInr": 120,
+  "freeShippingOverInr": { "IN": 5000, "INTL": null },
+  "zones": {
+    "IN":   { "label": "India", "carriers": ["India Post Speed Post", "Delhivery"], "bands": [
+      { "maxGrams": 250,  "inr": 80 },
+      { "maxGrams": 500,  "inr": 110 },
+      { "maxGrams": 1000, "inr": 160 },
+      { "maxGrams": 2000, "inr": 240 },
+      { "maxGrams": 5000, "inr": 420 } ] },
+    "INTL": { "label": "International", "carriers": ["India Post International"], "customsNote": "Duties and taxes at destination are the recipient's.", "bands": [
+      { "maxGrams": 250,  "inr": 1100 },
+      { "maxGrams": 500,  "inr": 1500 },
+      { "maxGrams": 1000, "inr": 2200 },
+      { "maxGrams": 2000, "inr": 3400 } ] }
+  },
+  "usdDisplayRate": { "inrPerUsd": 84, "note": "display estimate only; Razorpay settles in INR" }
+}
