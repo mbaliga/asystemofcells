@@ -1,0 +1,10 @@
+---
+import SimplePageLayout from '../../layouts/SimplePageLayout.astro'
+import '../../styles/cabinet.css'
+---
+<SimplePageLayout title="Your basket: The Cabinet" description="Your basket." noindex quiet>
+  <p class="eyebrow"><a href="/cabinet/">The Cabinet</a></p>
+  <h1>Your basket.</h1>
+  <div id="cartRoot"><noscript><p>The basket needs JavaScript.</p></noscript></div>
+</SimplePageLayout>
+<script>import '../../scripts/cabinet/cartpage.js'</script>

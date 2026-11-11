@@ -1,0 +1,573 @@
+{
+  "version": 1,
+  "generated": "2026-11-04T03:16:27.622Z",
+  "entries": [
+    {
+      "id": "nooz.feature-graphic.art",
+      "imagery": "nooz",
+      "role": "feature",
+      "lane": "art",
+      "label": "Nooz feature graphic",
+      "src": "apps/asoc-com/src/assets/screens/nooz/feature-graphic.png",
+      "w": 1024,
+      "h": 500,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/nooz",
+        "ref": "c377004",
+        "path": "fastlane/metadata/android/en-US/images/featureGraphic.png",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "tools.texture-generator.desktop.dark",
+      "imagery": "tools",
+      "role": "gallery",
+      "lane": "web",
+      "label": "Texture background generator",
+      "src": "apps/asoc-com/src/assets/screens/tools/texture-generator.desktop.dark.png",
+      "w": 2160,
+      "h": 1350,
+      "scheme": "dark",
+      "viewport": "desktop",
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/asystemofcells",
+        "ref": "63fa04b",
+        "path": "apps/asoc-com/public/tools/texture-background.html",
+        "tool": "playwright 1.56 (headless Chromium)"
+      },
+      "device": null
+    },
+    {
+      "id": "tools.cells-generator.desktop.dark",
+      "imagery": "tools",
+      "role": "gallery",
+      "lane": "web",
+      "label": "Cells logo generator",
+      "src": "apps/asoc-com/src/assets/screens/tools/cells-generator.desktop.dark.png",
+      "w": 2160,
+      "h": 1350,
+      "scheme": "dark",
+      "viewport": "desktop",
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/asystemofcells",
+        "ref": "63fa04b",
+        "path": "apps/asoc-com/public/tools/cells-logo.html",
+        "tool": "playwright 1.56 (headless Chromium)"
+      },
+      "device": null
+    },
+    {
+      "id": "orrery.horizon.desktop.dark",
+      "imagery": "orrery",
+      "role": "hero",
+      "lane": "web",
+      "label": "The canopy view, on sample data",
+      "src": "apps/asoc-com/src/assets/screens/orrery/horizon.desktop.dark.png",
+      "w": 2160,
+      "h": 1350,
+      "scheme": "dark",
+      "viewport": "desktop",
+      "mask": null,
+      "sample_data": true,
+      "source": {
+        "repo": "mbaliga/orrery",
+        "ref": "a088eb2",
+        "path": "web/ (built with web/build.py, public sample data)",
+        "tool": "playwright 1.56 (headless Chromium)"
+      },
+      "device": null
+    },
+    {
+      "id": "odyssey.trireme.phone.dark",
+      "imagery": "odyssey",
+      "role": "hero",
+      "lane": "web",
+      "label": "The trireme at night, from the HTML spec",
+      "src": "apps/asoc-com/src/assets/screens/odyssey/trireme.phone.dark.png",
+      "w": 824,
+      "h": 1830,
+      "scheme": "dark",
+      "viewport": "phone",
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/RTS-live-wallpapers",
+        "ref": "ba40f25",
+        "path": "trireme.html",
+        "tool": "playwright 1.56 (headless Chromium), software WebGL"
+      },
+      "device": null
+    },
+    {
+      "id": "globe.face.watch.dark",
+      "imagery": "globe",
+      "role": "hero",
+      "lane": "web",
+      "label": "The Baliga Globe face, from the HTML mock",
+      "src": "apps/asoc-com/src/assets/screens/globe/face.watch.dark.png",
+      "w": 900,
+      "h": 903,
+      "scheme": "dark",
+      "viewport": "watch",
+      "mask": "circle",
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Watch-Apps",
+        "ref": "9ed3b2d",
+        "path": "faces/baliga-globe/mock/baliga-globe.html (canvas #main)",
+        "tool": "playwright 1.56 (headless Chromium)"
+      },
+      "device": null
+    },
+    {
+      "id": "bocal.tuner.phone.dark",
+      "imagery": "bocal",
+      "role": "feature",
+      "lane": "web",
+      "label": "The tuner in the web prototype",
+      "src": "apps/asoc-com/src/assets/screens/bocal/tuner.phone.dark.png",
+      "w": 824,
+      "h": 1830,
+      "scheme": "dark",
+      "viewport": "phone",
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Bocal",
+        "ref": "3a8a63c",
+        "path": "web-standalone/index.html",
+        "tool": "playwright 1.56 (headless Chromium)"
+      },
+      "device": null
+    },
+    {
+      "id": "bocal.alto-sax.art",
+      "imagery": "bocal",
+      "role": "hero",
+      "lane": "art",
+      "label": "Alto saxophone",
+      "src": "apps/asoc-com/src/assets/screens/bocal/alto-sax.webp",
+      "w": 1672,
+      "h": 941,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Bocal",
+        "ref": "3a8a63c",
+        "path": "web-source/public/images/bocal-alto-sax-cinematic.webp",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "bocal.soprano-sax.art",
+      "imagery": "bocal",
+      "role": "gallery",
+      "lane": "art",
+      "label": "Soprano saxophone",
+      "src": "apps/asoc-com/src/assets/screens/bocal/soprano-sax.webp",
+      "w": 853,
+      "h": 1280,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Bocal",
+        "ref": "3a8a63c",
+        "path": "web-source/public/images/bocal-soprano-sax-cinematic.webp",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "bocal.tenor-sax.art",
+      "imagery": "bocal",
+      "role": "gallery",
+      "lane": "art",
+      "label": "Tenor saxophone",
+      "src": "apps/asoc-com/src/assets/screens/bocal/tenor-sax.webp",
+      "w": 853,
+      "h": 1280,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Bocal",
+        "ref": "3a8a63c",
+        "path": "web-source/public/images/bocal-tenor-sax-cinematic.webp",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "bocal.clarinet.art",
+      "imagery": "bocal",
+      "role": "gallery",
+      "lane": "art",
+      "label": "Clarinet",
+      "src": "apps/asoc-com/src/assets/screens/bocal/clarinet.webp",
+      "w": 853,
+      "h": 1280,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Bocal",
+        "ref": "3a8a63c",
+        "path": "web-source/public/images/bocal-clarinet-cinematic.webp",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "bocal.flute.art",
+      "imagery": "bocal",
+      "role": "gallery",
+      "lane": "art",
+      "label": "Flute",
+      "src": "apps/asoc-com/src/assets/screens/bocal/flute.webp",
+      "w": 853,
+      "h": 1280,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Bocal",
+        "ref": "3a8a63c",
+        "path": "web-source/public/images/bocal-flute-cinematic.webp",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "bocal.oboe.art",
+      "imagery": "bocal",
+      "role": "gallery",
+      "lane": "art",
+      "label": "Oboe",
+      "src": "apps/asoc-com/src/assets/screens/bocal/oboe.webp",
+      "w": 1280,
+      "h": 960,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Bocal",
+        "ref": "3a8a63c",
+        "path": "web-source/public/images/bocal-oboe-cinematic.webp",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "bocal.bassoon.art",
+      "imagery": "bocal",
+      "role": "gallery",
+      "lane": "art",
+      "label": "Bassoon",
+      "src": "apps/asoc-com/src/assets/screens/bocal/bassoon.webp",
+      "w": 853,
+      "h": 1280,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Bocal",
+        "ref": "3a8a63c",
+        "path": "web-source/public/images/bocal-bassoon-cinematic.webp",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "bocal.logotype.art",
+      "imagery": "bocal",
+      "role": "gallery",
+      "lane": "art",
+      "label": "Bocal logotype",
+      "src": "apps/asoc-com/src/assets/screens/bocal/logotype.png",
+      "w": 471,
+      "h": 167,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Bocal",
+        "ref": "f10ed32",
+        "path": "web-source/public/images/bocal-logotype.png",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "crocodyl.recurve-dark.art",
+      "imagery": "crocodyl",
+      "role": "hero",
+      "lane": "art",
+      "label": "Recurve bow, atelier art (dark)",
+      "src": "apps/asoc-com/src/assets/screens/crocodyl/recurve-desktop-dark.jpg",
+      "w": 1440,
+      "h": 1000,
+      "scheme": "dark",
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Form-analyser",
+        "ref": "d13351c",
+        "path": "docs/crocodyl/atelier-previews/recurve-desktop-dark.jpg",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "crocodyl.recurve-light.art",
+      "imagery": "crocodyl",
+      "role": "feature",
+      "lane": "art",
+      "label": "Recurve bow, atelier art (light)",
+      "src": "apps/asoc-com/src/assets/screens/crocodyl/recurve-desktop-light.jpg",
+      "w": 1440,
+      "h": 1000,
+      "scheme": "light",
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Form-analyser",
+        "ref": "d13351c",
+        "path": "docs/crocodyl/atelier-previews/recurve-desktop-light.jpg",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "crocodyl.target-light.art",
+      "imagery": "crocodyl",
+      "role": "feature",
+      "lane": "art",
+      "label": "Target face, atelier art (light)",
+      "src": "apps/asoc-com/src/assets/screens/crocodyl/target-desktop-light.jpg",
+      "w": 1440,
+      "h": 1000,
+      "scheme": "light",
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Form-analyser",
+        "ref": "d13351c",
+        "path": "docs/crocodyl/atelier-previews/target-desktop-light.jpg",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "crocodyl.arrow-dark.art",
+      "imagery": "crocodyl",
+      "role": "feature",
+      "lane": "art",
+      "label": "Arrow, atelier art (dark)",
+      "src": "apps/asoc-com/src/assets/screens/crocodyl/arrow-desktop-dark.jpg",
+      "w": 1440,
+      "h": 1000,
+      "scheme": "dark",
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/Form-analyser",
+        "ref": "d13351c",
+        "path": "docs/crocodyl/atelier-previews/arrow-desktop-dark.jpg",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "alloy.a1-mini-plates.light.art",
+      "imagery": "alloy",
+      "role": "hero",
+      "lane": "art",
+      "label": "A1 mini build plates (light)",
+      "src": "apps/asoc-com/src/assets/screens/alloy/a1-mini-plates.light.png",
+      "w": 1080,
+      "h": 1680,
+      "scheme": "light",
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/alloy",
+        "ref": "926b25859732c2400d790f2ad86365f0279ef2b4",
+        "path": "marketing/alloy-a1-mini-plates-light.png (branch codex/alloy-phone-first-ui)",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "alloy.a1-mini-plates.dark.art",
+      "imagery": "alloy",
+      "role": "feature",
+      "lane": "art",
+      "label": "A1 mini build plates (night)",
+      "src": "apps/asoc-com/src/assets/screens/alloy/a1-mini-plates.dark.png",
+      "w": 1080,
+      "h": 1680,
+      "scheme": "dark",
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/alloy",
+        "ref": "926b25859732c2400d790f2ad86365f0279ef2b4",
+        "path": "marketing/alloy-a1-mini-plates-night.png (branch codex/alloy-phone-first-ui)",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "alloy.logo.art",
+      "imagery": "alloy",
+      "role": "gallery",
+      "lane": "art",
+      "label": "Alloy logo",
+      "src": "apps/asoc-com/src/assets/screens/alloy/logo.png",
+      "w": 1100,
+      "h": 1100,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/alloy",
+        "ref": "926b25859732c2400d790f2ad86365f0279ef2b4",
+        "path": "branding/alloy-logo.png (branch codex/alloy-phone-first-ui)",
+        "tool": null
+      },
+      "device": null
+    },
+    {
+      "id": "hafx.workbench.web",
+      "imagery": "hafx",
+      "role": "hero",
+      "lane": "web",
+      "label": "The haptics workbench",
+      "src": "apps/asoc-com/src/assets/screens/hafx/workbench.png",
+      "w": 1180,
+      "h": 820,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/hnm_playground",
+        "ref": "30ac7df",
+        "path": "docs/workbench.png",
+        "tool": "unknown (existing capture committed by the owner)"
+      },
+      "device": null
+    },
+    {
+      "id": "hafx.material.web",
+      "imagery": "hafx",
+      "role": "feature",
+      "lane": "web",
+      "label": "Workbench: material",
+      "src": "apps/asoc-com/src/assets/screens/hafx/workbench-material.png",
+      "w": 1180,
+      "h": 900,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/hnm_playground",
+        "ref": "30ac7df",
+        "path": "docs/workbench-material.png",
+        "tool": "unknown (existing capture committed by the owner)"
+      },
+      "device": null
+    },
+    {
+      "id": "hafx.motion.web",
+      "imagery": "hafx",
+      "role": "feature",
+      "lane": "web",
+      "label": "Workbench: motion",
+      "src": "apps/asoc-com/src/assets/screens/hafx/workbench-motion.png",
+      "w": 1180,
+      "h": 820,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/hnm_playground",
+        "ref": "30ac7df",
+        "path": "docs/workbench-motion.png",
+        "tool": "unknown (existing capture committed by the owner)"
+      },
+      "device": null
+    },
+    {
+      "id": "hafx.navigator.web",
+      "imagery": "hafx",
+      "role": "feature",
+      "lane": "web",
+      "label": "Workbench: navigator",
+      "src": "apps/asoc-com/src/assets/screens/hafx/workbench-navigator.png",
+      "w": 1180,
+      "h": 900,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/hnm_playground",
+        "ref": "30ac7df",
+        "path": "docs/workbench-navigator.png",
+        "tool": "unknown (existing capture committed by the owner)"
+      },
+      "device": null
+    },
+    {
+      "id": "hafx.texture.web",
+      "imagery": "hafx",
+      "role": "feature",
+      "lane": "web",
+      "label": "Workbench: texture",
+      "src": "apps/asoc-com/src/assets/screens/hafx/workbench-texture.png",
+      "w": 1180,
+      "h": 820,
+      "scheme": null,
+      "viewport": null,
+      "mask": null,
+      "sample_data": false,
+      "source": {
+        "repo": "mbaliga/hnm_playground",
+        "ref": "30ac7df",
+        "path": "docs/workbench-texture.png",
+        "tool": "unknown (existing capture committed by the owner)"
+      },
+      "device": null
+    }
+  ]
+}

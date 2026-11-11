@@ -1,0 +1,12 @@
+---
+import SectionItemLayout from '../../layouts/SectionItemLayout.astro'
+import { getSectionItems } from '@asoc/roster/sections'
+
+// Empty in a production build until real entries exist; that builds cleanly.
+export function getStaticPaths() {
+  return getSectionItems('architecture').map((item) => ({ params: { key: item.key }, props: { item } }))
+}
+
+const { item } = Astro.props
+---
+<SectionItemLayout section="architecture" item={item} />

@@ -1,0 +1,2056 @@
+{
+ "prints": [
+  {
+   "input": {
+    "est": {
+     "massG": 0.5,
+     "printMin": 5,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 2,
+    "machine": 5,
+    "subtotal": 299,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 419,
+    "bandInr": 84,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 70,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 32,
+    "machine": 30,
+    "subtotal": 299,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 419,
+    "bandInr": 84,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 78,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 2,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 64,
+    "machine": 60,
+    "subtotal": 598,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 718,
+    "bandInr": 144,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 87,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 40,
+     "printMin": 300,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 3,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 480,
+    "machine": 900,
+    "subtotal": 1380,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 1500,
+    "bandInr": 300,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 207,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 120,
+     "printMin": 900,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 2,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 960,
+    "machine": 1800,
+    "subtotal": 2760,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 110,
+    "total": 2910,
+    "bandInr": 582,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 345,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 600,
+     "printMin": 3000,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 2400,
+    "machine": 3000,
+    "subtotal": 5400,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 0,
+    "total": 5440,
+    "bandInr": 1088,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 759,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 0.5,
+     "printMin": 5,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 2,
+    "machine": 5,
+    "subtotal": 299,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1439,
+    "bandInr": 288,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 70,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 32,
+    "machine": 30,
+    "subtotal": 299,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1439,
+    "bandInr": 288,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 78,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 2,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 64,
+    "machine": 60,
+    "subtotal": 598,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1738,
+    "bandInr": 348,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 87,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 40,
+     "printMin": 300,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 3,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 480,
+    "machine": 900,
+    "subtotal": 1380,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 2520,
+    "bandInr": 504,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 207,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 120,
+     "printMin": 900,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 2,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 960,
+    "machine": 1800,
+    "subtotal": 2760,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 1500,
+    "total": 4300,
+    "bandInr": 860,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 345,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 600,
+     "printMin": 3000,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 2400,
+    "machine": 3000,
+    "subtotal": 5400,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 2200,
+    "total": 7640,
+    "bandInr": 1528,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 759,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 0.5,
+     "printMin": 5,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 2.5,
+    "machine": 5,
+    "subtotal": 299,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 419,
+    "bandInr": 84,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 70,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 40,
+    "machine": 30,
+    "subtotal": 299,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 419,
+    "bandInr": 84,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 78,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 2,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 80,
+    "machine": 60,
+    "subtotal": 598,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 718,
+    "bandInr": 144,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 87,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 40,
+     "printMin": 300,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 3,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 600,
+    "machine": 900,
+    "subtotal": 1500,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 1620,
+    "bandInr": 324,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 207,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 120,
+     "printMin": 900,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 2,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 1200,
+    "machine": 1800,
+    "subtotal": 3000,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 110,
+    "total": 3150,
+    "bandInr": 630,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 345,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 600,
+     "printMin": 3000,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 3000,
+    "machine": 3000,
+    "subtotal": 6000,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 0,
+    "total": 6040,
+    "bandInr": 1208,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 759,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 0.5,
+     "printMin": 5,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 2.5,
+    "machine": 5,
+    "subtotal": 299,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1439,
+    "bandInr": 288,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 70,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 40,
+    "machine": 30,
+    "subtotal": 299,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1439,
+    "bandInr": 288,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 78,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 2,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 80,
+    "machine": 60,
+    "subtotal": 598,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1738,
+    "bandInr": 348,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 87,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 40,
+     "printMin": 300,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 3,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 600,
+    "machine": 900,
+    "subtotal": 1500,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 2640,
+    "bandInr": 528,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 207,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 120,
+     "printMin": 900,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 2,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 1200,
+    "machine": 1800,
+    "subtotal": 3000,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 1500,
+    "total": 4540,
+    "bandInr": 908,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 345,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 600,
+     "printMin": 3000,
+     "band": 0.2
+    },
+    "tier": "as-is",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 3000,
+    "machine": 3000,
+    "subtotal": 6000,
+    "finish": 0,
+    "packaging": 40,
+    "shipping": 2200,
+    "total": 8240,
+    "bandInr": 1648,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 759,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 0.5,
+     "printMin": 5,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 2,
+    "machine": 5,
+    "subtotal": 299,
+    "finish": 104.85,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 524,
+    "bandInr": 105,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 70,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 32,
+    "machine": 30,
+    "subtotal": 299,
+    "finish": 104.85,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 524,
+    "bandInr": 105,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 78,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 2,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 64,
+    "machine": 60,
+    "subtotal": 598,
+    "finish": 209.7,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 928,
+    "bandInr": 186,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 87,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 40,
+     "printMin": 300,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 3,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 480,
+    "machine": 900,
+    "subtotal": 1380,
+    "finish": 387,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 1887,
+    "bandInr": 377,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 207,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 120,
+     "printMin": 900,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 2,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 960,
+    "machine": 1800,
+    "subtotal": 2760,
+    "finish": 534,
+    "packaging": 40,
+    "shipping": 110,
+    "total": 3444,
+    "bandInr": 689,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 345,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 600,
+     "printMin": 3000,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 2400,
+    "machine": 3000,
+    "subtotal": 5400,
+    "finish": 870,
+    "packaging": 40,
+    "shipping": 0,
+    "total": 6310,
+    "bandInr": 1262,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 759,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 0.5,
+     "printMin": 5,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 2,
+    "machine": 5,
+    "subtotal": 299,
+    "finish": 104.85,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1544,
+    "bandInr": 309,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 70,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 32,
+    "machine": 30,
+    "subtotal": 299,
+    "finish": 104.85,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1544,
+    "bandInr": 309,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 78,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 2,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 64,
+    "machine": 60,
+    "subtotal": 598,
+    "finish": 209.7,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1948,
+    "bandInr": 390,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 87,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 40,
+     "printMin": 300,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 3,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 480,
+    "machine": 900,
+    "subtotal": 1380,
+    "finish": 387,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 2907,
+    "bandInr": 581,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 207,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 120,
+     "printMin": 900,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 2,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 960,
+    "machine": 1800,
+    "subtotal": 2760,
+    "finish": 534,
+    "packaging": 40,
+    "shipping": 1500,
+    "total": 4834,
+    "bandInr": 967,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 345,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 600,
+     "printMin": 3000,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 2400,
+    "machine": 3000,
+    "subtotal": 5400,
+    "finish": 870,
+    "packaging": 40,
+    "shipping": 2200,
+    "total": 8510,
+    "bandInr": 1702,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 759,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 0.5,
+     "printMin": 5,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 2.5,
+    "machine": 5,
+    "subtotal": 299,
+    "finish": 104.85,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 524,
+    "bandInr": 105,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 70,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 40,
+    "machine": 30,
+    "subtotal": 299,
+    "finish": 104.85,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 524,
+    "bandInr": 105,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 78,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 2,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 80,
+    "machine": 60,
+    "subtotal": 598,
+    "finish": 209.7,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 928,
+    "bandInr": 186,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 87,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 40,
+     "printMin": 300,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 3,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 600,
+    "machine": 900,
+    "subtotal": 1500,
+    "finish": 405,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 2025,
+    "bandInr": 405,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 207,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 120,
+     "printMin": 900,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 2,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 1200,
+    "machine": 1800,
+    "subtotal": 3000,
+    "finish": 570,
+    "packaging": 40,
+    "shipping": 110,
+    "total": 3720,
+    "bandInr": 744,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 345,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 600,
+     "printMin": 3000,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 3000,
+    "machine": 3000,
+    "subtotal": 6000,
+    "finish": 960,
+    "packaging": 40,
+    "shipping": 0,
+    "total": 7000,
+    "bandInr": 1400,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 759,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 0.5,
+     "printMin": 5,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 2.5,
+    "machine": 5,
+    "subtotal": 299,
+    "finish": 104.85,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1544,
+    "bandInr": 309,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 70,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 40,
+    "machine": 30,
+    "subtotal": 299,
+    "finish": 104.85,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1544,
+    "bandInr": 309,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 78,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 2,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 80,
+    "machine": 60,
+    "subtotal": 598,
+    "finish": 209.7,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1948,
+    "bandInr": 390,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 87,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 40,
+     "printMin": 300,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 3,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 600,
+    "machine": 900,
+    "subtotal": 1500,
+    "finish": 405,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 3045,
+    "bandInr": 609,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 207,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 120,
+     "printMin": 900,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 2,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 1200,
+    "machine": 1800,
+    "subtotal": 3000,
+    "finish": 570,
+    "packaging": 40,
+    "shipping": 1500,
+    "total": 5110,
+    "bandInr": 1022,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 345,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 600,
+     "printMin": 3000,
+     "band": 0.2
+    },
+    "tier": "supports-removed",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 3000,
+    "machine": 3000,
+    "subtotal": 6000,
+    "finish": 960,
+    "packaging": 40,
+    "shipping": 2200,
+    "total": 9200,
+    "bandInr": 1840,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 759,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 0.5,
+     "printMin": 5,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 2,
+    "machine": 5,
+    "subtotal": 299,
+    "finish": 379.4,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 798,
+    "bandInr": 160,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 70,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 32,
+    "machine": 30,
+    "subtotal": 299,
+    "finish": 379.4,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 798,
+    "bandInr": 160,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 78,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 2,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 64,
+    "machine": 60,
+    "subtotal": 598,
+    "finish": 758.8,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 1477,
+    "bandInr": 295,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 87,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 40,
+     "printMin": 300,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 3,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 480,
+    "machine": 900,
+    "subtotal": 1380,
+    "finish": 1428,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 2928,
+    "bandInr": 586,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 207,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 120,
+     "printMin": 900,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 2,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 960,
+    "machine": 1800,
+    "subtotal": 2760,
+    "finish": 2056,
+    "packaging": 40,
+    "shipping": 110,
+    "total": 4966,
+    "bandInr": 993,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 345,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 600,
+     "printMin": 3000,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 2400,
+    "machine": 3000,
+    "subtotal": 5400,
+    "finish": 3440,
+    "packaging": 40,
+    "shipping": 0,
+    "total": 8880,
+    "bandInr": 1776,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 759,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 0.5,
+     "printMin": 5,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 2,
+    "machine": 5,
+    "subtotal": 299,
+    "finish": 379.4,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1818,
+    "bandInr": 364,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 70,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 32,
+    "machine": 30,
+    "subtotal": 299,
+    "finish": 379.4,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1818,
+    "bandInr": 364,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 78,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 2,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 64,
+    "machine": 60,
+    "subtotal": 598,
+    "finish": 758.8,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 2497,
+    "bandInr": 499,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 87,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 40,
+     "printMin": 300,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 3,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 480,
+    "machine": 900,
+    "subtotal": 1380,
+    "finish": 1428,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 3948,
+    "bandInr": 790,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 207,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 120,
+     "printMin": 900,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 2,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 960,
+    "machine": 1800,
+    "subtotal": 2760,
+    "finish": 2056,
+    "packaging": 40,
+    "shipping": 1500,
+    "total": 6356,
+    "bandInr": 1271,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 345,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 600,
+     "printMin": 3000,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 1,
+    "filament": "PLA",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 2400,
+    "machine": 3000,
+    "subtotal": 5400,
+    "finish": 3440,
+    "packaging": 40,
+    "shipping": 2200,
+    "total": 11080,
+    "bandInr": 2216,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 759,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 0.5,
+     "printMin": 5,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 2.5,
+    "machine": 5,
+    "subtotal": 299,
+    "finish": 379.4,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 798,
+    "bandInr": 160,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 70,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 40,
+    "machine": 30,
+    "subtotal": 299,
+    "finish": 379.4,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 798,
+    "bandInr": 160,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 78,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 2,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 80,
+    "machine": 60,
+    "subtotal": 598,
+    "finish": 758.8,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 1477,
+    "bandInr": 295,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 87,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 40,
+     "printMin": 300,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 3,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 600,
+    "machine": 900,
+    "subtotal": 1500,
+    "finish": 1500,
+    "packaging": 40,
+    "shipping": 80,
+    "total": 3120,
+    "bandInr": 624,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 207,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 120,
+     "printMin": 900,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 2,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 1200,
+    "machine": 1800,
+    "subtotal": 3000,
+    "finish": 2200,
+    "packaging": 40,
+    "shipping": 0,
+    "total": 5240,
+    "bandInr": 1048,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 345,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 600,
+     "printMin": 3000,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "IN"
+   },
+   "expect": {
+    "material": 3000,
+    "machine": 3000,
+    "subtotal": 6000,
+    "finish": 3800,
+    "packaging": 40,
+    "shipping": 0,
+    "total": 9840,
+    "bandInr": 1968,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 759,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 0.5,
+     "printMin": 5,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 2.5,
+    "machine": 5,
+    "subtotal": 299,
+    "finish": 379.4,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1818,
+    "bandInr": 364,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 70,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 40,
+    "machine": 30,
+    "subtotal": 299,
+    "finish": 379.4,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 1818,
+    "bandInr": 364,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 78,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 8,
+     "printMin": 30,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 2,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 80,
+    "machine": 60,
+    "subtotal": 598,
+    "finish": 758.8,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 2497,
+    "bandInr": 499,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 87,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 40,
+     "printMin": 300,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 3,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 600,
+    "machine": 900,
+    "subtotal": 1500,
+    "finish": 1500,
+    "packaging": 40,
+    "shipping": 1100,
+    "total": 4140,
+    "bandInr": 828,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 207,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 120,
+     "printMin": 900,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 2,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 1200,
+    "machine": 1800,
+    "subtotal": 3000,
+    "finish": 2200,
+    "packaging": 40,
+    "shipping": 1500,
+    "total": 6740,
+    "bandInr": 1348,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 345,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "est": {
+     "massG": 600,
+     "printMin": 3000,
+     "band": 0.2
+    },
+    "tier": "processed",
+    "qty": 1,
+    "filament": "PETG",
+    "zone": "INTL"
+   },
+   "expect": {
+    "material": 3000,
+    "machine": 3000,
+    "subtotal": 6000,
+    "finish": 3800,
+    "packaging": 40,
+    "shipping": 2200,
+    "total": 12040,
+    "bandInr": 2408,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 759,
+    "overTable": false
+   }
+  }
+ ],
+ "cabinet": [
+  {
+   "input": {
+    "lines": [
+     {
+      "unitInr": 2400,
+      "qty": 2,
+      "weightGrams": 120,
+      "fragile": false
+     }
+    ],
+    "zone": "IN"
+   },
+   "expect": {
+    "subtotal": 4800,
+    "finish": 0,
+    "packaging": 0,
+    "shipping": 110,
+    "total": 4910,
+    "bandInr": 0,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 276,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "lines": [
+     {
+      "unitInr": 1800,
+      "qty": 1,
+      "weightGrams": 400,
+      "fragile": true
+     }
+    ],
+    "zone": "IN"
+   },
+   "expect": {
+    "subtotal": 1800,
+    "finish": 0,
+    "packaging": 0,
+    "shipping": 230,
+    "total": 2030,
+    "bandInr": 0,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 460,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "lines": [
+     {
+      "unitInr": 3200,
+      "qty": 1,
+      "weightGrams": 250,
+      "fragile": false
+     },
+     {
+      "unitInr": 2400,
+      "qty": 1,
+      "weightGrams": 120,
+      "fragile": false
+     }
+    ],
+    "zone": "INTL"
+   },
+   "expect": {
+    "subtotal": 5600,
+    "finish": 0,
+    "packaging": 0,
+    "shipping": 1500,
+    "total": 7100,
+    "bandInr": 0,
+    "currency": "INR",
+    "zone": "INTL",
+    "grams": 425,
+    "overTable": false
+   }
+  },
+  {
+   "input": {
+    "lines": [
+     {
+      "unitInr": 6000,
+      "qty": 1,
+      "weightGrams": 900,
+      "fragile": false
+     }
+    ],
+    "zone": "IN"
+   },
+   "expect": {
+    "subtotal": 6000,
+    "finish": 0,
+    "packaging": 0,
+    "shipping": 0,
+    "total": 6000,
+    "bandInr": 0,
+    "currency": "INR",
+    "zone": "IN",
+    "grams": 1035,
+    "overTable": false
+   }
+  }
+ ]
+}

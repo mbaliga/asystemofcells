@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "roster.schema.json",
+  "title": "roster.public.json",
+  "type": "object",
+  "required": ["cells"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "generated": { "type": "string" },
+    "notes": { "type": "string" },
+    "cells": { "type": "array", "items": { "$ref": "#/$defs/cell" } }
+  },
+  "$defs": {
+    "url": { "type": "string", "format": "uri-reference", "minLength": 1 },
+    "cell": {
+      "type": "object",
+      "required": ["slug", "name", "tissue", "type", "status", "accent", "oneLiner", "isHub"],
+      "additionalProperties": true,
+      "properties": {
+        "slug": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "tissue": { "enum": ["daily-cells", "ambient-cells", "maker-cells", "connective-tissue"] },
+        "type": { "enum": ["A", "B", "C", "D"] },
+        "status": { "enum": ["live", "beta", "soon", "building"] },
+        "accent": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+        "oneLiner": { "type": "string", "minLength": 1 },
+        "isHub": { "type": "boolean" },
+        "parent": { "type": "string" },
+        "hubUrl": { "type": "string", "format": "uri" },
+        "repo": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+        "packageId": { "type": "string" },
+        "install": {
+          "type": "object",
+          "properties": {
+            "play": { "type": "string", "format": "uri" },
+            "fdroid": { "type": "string", "format": "uri" },
+            "github": { "type": "string", "format": "uri" }
+          },
+          "additionalProperties": false
+        },
+        "web": {
+          "type": "object",
+          "required": ["label", "href"],
+          "properties": { "label": { "type": "string" }, "href": { "$ref": "#/$defs/url" } }
+        },
+        "imagery": { "type": "string" },
+        "hidden": { "type": "boolean" },
+        "model": { "enum": ["freemium"] },
+        "kind": { "enum": ["app", "design-system", "typeface", "plugins", "watchface"] },
+        "leaves": {
+          "type": "object",
+          "required": ["heading", "body"],
+          "properties": { "heading": { "type": "string" }, "body": { "type": "string" } }
+        },
+        "privacyUrl": { "$ref": "#/$defs/url" },
+        "ctaLabel": { "type": "string" },
+        "ctaUrl": { "$ref": "#/$defs/url" },
+        "readerUrl": { "$ref": "#/$defs/url" },
+        "verify": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

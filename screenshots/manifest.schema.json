@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "screenshots/manifest.json",
+  "type": "object",
+  "required": ["version", "entries"],
+  "properties": {
+    "version": { "const": 1 },
+    "generated": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "imagery", "role", "lane", "label", "src"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$" },
+          "imagery": { "type": "string" },
+          "role": { "enum": ["hero", "feature", "gallery"] },
+          "lane": { "enum": ["device", "preview", "web", "render", "art"] },
+          "label": { "type": "string", "maxLength": 80 },
+          "src": { "type": "string" },
+          "w": { "type": "integer" }, "h": { "type": "integer" },
+          "scheme": { "enum": ["light", "dark", null] },
+          "viewport": { "enum": ["phone", "tablet", "desktop", "watch", "figma", null] },
+          "mask": { "enum": ["circle", null] },
+          "sample_data": { "type": "boolean" },
+          "source": { "type": "object", "properties": { "repo": {}, "ref": {}, "path": {}, "tool": {} } },
+          "device": { "oneOf": [ { "type": "null" }, { "type": "object", "required": ["model", "android"], "properties": { "model": { "type": "string" }, "android": { "type": "string" }, "package": {}, "appVersion": {} } } ] }
+        },
+        "allOf": [
+          { "if": { "properties": { "lane": { "const": "device" } } }, "then": { "properties": { "device": { "type": "object" } }, "required": ["device"] } }
+        ]
+      }
+    }
+  }
+}

@@ -1,7 +1,11 @@
 ---
+import { getEntry } from 'astro:content'
 import ProductLayout from '../layouts/ProductLayout.astro'
 import { getRoster } from '@asoc/roster'
 
+// One page per roster cell. Hub cells (Animalcules, Fonebrew) live on their
+// own sites and have never had a page here, so they stay out. A hidden cell
+// still gets its page.
 export function getStaticPaths() {
   return getRoster()
     .filter(cell => !cell.isHub)
@@ -9,5 +13,16 @@ export function getStaticPaths() {
 }
 
 const { cell } = Astro.props
+// The copy lives in src/content/products/<slug>.md. A cell without a file
+// still renders (headline = the roster one-liner, no features) so a missing
+// file can never break the build.
+const entry = await getEntry('products', cell.slug)
+const product = entry ? entry.data : null
+const rendered = entry && entry.body.trim() ? await entry.render() : null
+const Content = rendered ? rendered.Content : null
 ---
-<ProductLayout cell={cell} />
+{Content ? (
+  <ProductLayout cell={cell} product={product}><Content /></ProductLayout>
+) : (
+  <ProductLayout cell={cell} product={product} />
+)}

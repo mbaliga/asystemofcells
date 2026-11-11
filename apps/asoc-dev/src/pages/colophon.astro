@@ -3,7 +3,7 @@ import DevLayout from '../layouts/DevLayout.astro'
 ---
 <DevLayout
   title="Colophon: asystemofcells.dev"
-  description="How asystemofcells.dev is built: Astro static in a pnpm workspace, sharing one design kit and one roster with the product site, with no runtime scripts from anyone else."
+  description="How asystemofcells.dev is built: Astro static in a pnpm workspace, sharing one design kit and one roster with the product site, with no ad or tracking scripts."
   canonical="https://asystemofcells.dev/colophon/"
 >
   <div class="shell" style="padding-top:3.4rem">
@@ -53,13 +53,15 @@ import DevLayout from '../layouts/DevLayout.astro'
 
       <h2>What runs in your browser</h2>
       <p>
-        Two small scripts, both first-party, both operating on markup that is
-        already in the page: the filter on the home page, and the tissue filter
-        on the roster. Every row they act on is server-rendered, so the full
-        list is there for a crawler, for <code>curl</code>, and for anyone with
-        JavaScript off. Nothing fetches. Nothing is lazy-loaded. There are no
-        third-party scripts, no analytics, no cookies, and no serverless
-        functions behind this site at all.
+        Two small scripts of ours, both first-party, both operating on markup
+        that is already in the page: the filter on the home page, and the
+        tissue filter on the roster. Every row they act on is server-rendered,
+        so the full list is there for a crawler, for <code>curl</code>, and for
+        anyone with JavaScript off. The third script is the host's cookieless
+        page counter, loaded from this site's own <code>/_vercel</code> path;
+        it is the only thing that fetches. Nothing is lazy-loaded. There are no
+        ad or tracking scripts, no cookies, and no serverless functions behind
+        this site at all.
       </p>
 
       <h2>Type and colour</h2>

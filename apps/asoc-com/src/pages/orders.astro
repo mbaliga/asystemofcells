@@ -1,0 +1,10 @@
+---
+import SimplePageLayout from '../layouts/SimplePageLayout.astro'
+import '../styles/cabinet.css'
+---
+<SimplePageLayout title="Your order" description="Order status." noindex quiet>
+  <p class="eyebrow">Order</p>
+  <h1>Your order.</h1>
+  <div id="orderRoot"><noscript><p>This page needs JavaScript to show your order. Your email has the details.</p></noscript></div>
+</SimplePageLayout>
+<script>import '../scripts/cabinet/orders.js'</script>

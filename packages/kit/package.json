@@ -11,7 +11,9 @@
     "./SiteHeader.astro": "./src/components/SiteHeader.astro",
     "./SiteFooter.astro": "./src/components/SiteFooter.astro",
     "./Seo.astro": "./src/components/Seo.astro",
-    "./texture.js": "./src/texture/texture.js"
+    "./texture.js": "./src/texture/texture.js",
+    "./CellMark.astro": "./src/components/CellMark.astro",
+    "./Provenance.astro": "./src/components/Provenance.astro"
   },
   "peerDependencies": {
     "astro": "^4.0.0"

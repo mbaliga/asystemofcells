@@ -1,8 +1,8 @@
 ---
 import DevLayout from '../layouts/DevLayout.astro'
-import { getRoster, TISSUES } from '@asoc/roster'
+import { getVisibleRoster, TISSUES } from '@asoc/roster'
 
-const cells = getRoster()
+const cells = getVisibleRoster()
 const tissueLabel = Object.fromEntries(TISSUES.map((t) => [t.slug, t.label]))
 
 const counts = cells.reduce((acc, c) => ({ ...acc, [c.status]: (acc[c.status] || 0) + 1 }), {})
@@ -10,7 +10,7 @@ const hubs = cells.filter((c) => c.isHub)
 
 // Ordered so the shipped things lead. Within a status the roster's own order
 // stands: it is grouped by tissue, which is the house's own taxonomy.
-const RANK = { live: 0, beta: 1, soon: 2 }
+const RANK = { live: 0, beta: 1, building: 2, soon: 3 }
 const stream = [...cells].sort((a, b) => RANK[a.status] - RANK[b.status])
 
 const grouped = TISSUES.map((t) => ({
@@ -25,7 +25,7 @@ const SECTIONS = [
   { label: 'colophon', href: '/colophon/', glyph: '⌘', hue: 'var(--sect-notes)', count: '' },
   {
     label: 'generators',
-    href: 'https://asystemofcells.com/tools',
+    href: 'https://www.asystemofcells.com/tools',
     glyph: '◈',
     hue: 'var(--sect-tools)',
     count: '2',
@@ -34,7 +34,7 @@ const SECTIONS = [
 ---
 <DevLayout
   title="asystemofcells.dev: the engineering surface"
-  description="The builder-facing side of the asystemofcells house: the full cell roster, the engineering rules the apps are held to, and how this is put together. Static, no analytics, no runtime scripts."
+  description="The builder-facing side of the asystemofcells house: the full cell roster, the engineering rules the apps are held to, and how this is put together. Static pages, cookieless page counts, no third-party trackers."
   canonical="https://asystemofcells.dev/"
 >
   <header class="dev-head shell">
@@ -43,15 +43,16 @@ const SECTIONS = [
       <span><b>{grouped.length}</b> tissues</span>
       <span><b>{counts.live || 0}</b> live</span>
       <span><b>{counts.beta || 0}</b> beta</span>
+      <span><b>{counts.building || 0}</b> building</span>
       <span><b>{counts.soon || 0}</b> soon</span>
-      <span>roster hand-authored <b>2026-07-20</b></span>
+      <span>roster hand-authored <b>2026-11-04</b></span>
     </div>
 
     <a class="dev-wordmark" href="/">asystemofcells<span class="tld">.dev</span></a>
     <p class="dev-tagline">
       The engineering side of the house. Everything on this page is read from the
       same roster the product site is built from, so the two cannot disagree.
-      Static pages, no analytics, no third-party runtime scripts.
+      Static pages, cookieless page counts, no third-party trackers.
     </p>
 
     <nav class="dev-sections" aria-label="Sections">
@@ -120,7 +121,7 @@ const SECTIONS = [
       ))}
 
       <div class="col-label" style="margin-top:1.8rem"><span>elsewhere</span></div>
-      <a class="rail-card" href="https://asystemofcells.com">
+      <a class="rail-card" href="https://www.asystemofcells.com">
         <span class="rail-card__head"><span class="rail-card__name">asystemofcells.com</span></span>
         <p class="rail-card__body">The product house: what each cell is, for people who want to use them rather than read about how they are built.</p>
       </a>

@@ -1,0 +1,52 @@
+---
+// One piece. Quiet page: it has a basket button and asks the ledger for live
+// status, so it carries no page count (the analytics boundary).
+import SimplePageLayout from '../../layouts/SimplePageLayout.astro'
+import { getCabinetItems, kickerOf, STATUS_LABEL } from '../../lib/cabinet.js'
+import '../../styles/cabinet.css'
+
+export async function getStaticPaths() {
+  return (await getCabinetItems()).map((e) => ({ params: { slug: e.slug }, props: { entry: e } }))
+}
+const { entry } = Astro.props
+const d = entry.data
+const { Content } = await entry.render()
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href
+const left = d.edition ? d.edition.size - d.edition.sold : null
+const canBuy = d.status === 'available' && (left === null || left > 0)
+const line = { item: entry.slug, title: d.title.replace(/^Sample: /, ''), kind: d.kind, unitInr: d.price.inr, qty: 1, weightGrams: d.weightGrams, fragile: d.fragile, left, edition: d.edition ? d.edition.size : undefined }
+const facts = [
+  ['Kind', d.kind === 'made' ? 'Made here' : 'Curiosity'],
+  d.edition && ['Edition', `${d.edition.sold} of ${d.edition.size} sold`],
+  d.condition && ['Condition', d.conditionNote ? `${d.condition}. ${d.conditionNote}` : d.condition],
+  d.provenance && ['Provenance', d.provenance],
+  d.making && ['Making', d.making],
+  d.dims && ['Size', `${d.dims.w} × ${d.dims.h} × ${d.dims.d} ${d.dims.unit}`],
+  d.materials.length && ['Materials', d.materials.join(', ')],
+  ['Ships', d.shipsTo.includes('INTL') ? 'India and abroad' : 'Within India only'],
+].filter(Boolean)
+const jsonLd = {
+  '@context': 'https://schema.org', '@type': 'Product', name: d.title, description: d.summary, material: d.materials.join(', ') || undefined,
+  offers: { '@type': 'Offer', price: d.price.inr, priceCurrency: 'INR', availability: d.status === 'sold' || left === 0 ? 'https://schema.org/SoldOut' : d.status === 'reserved' ? 'https://schema.org/LimitedAvailability' : 'https://schema.org/InStock', url: pageUrl },
+}
+---
+<SimplePageLayout title={`${d.title}: The Cabinet`} description={d.summary} canonical={pageUrl} jsonLd={jsonLd} noindex={d.sample} quiet>
+  <a class="cab-basket" href="/cabinet/cart/">Basket (<span id="basketCount">0</span>)</a>
+  <p class="eyebrow"><a href="/cabinet/">The Cabinet</a> · {kickerOf(d)}</p>
+  <h1>{d.title}</h1>
+  <p>{d.summary}</p>
+  <p class="cab-price">₹{d.price.inr.toLocaleString('en-IN')} · <span class="cab-state">{STATUS_LABEL[d.status]}{left === 0 ? ' out' : ''}</span></p>
+  <ul class="cab-facts">{facts.map(([k, v]) => <li><b>{k}</b><span>{v}</span></li>)}</ul>
+  <Content />
+  {canBuy ? (
+    <p>
+      <button class="cab-btn" id="addToBasket" type="button" data-line={JSON.stringify(line)}>{d.kind === 'curiosity' ? 'Reserve for 48 hours' : 'Add to basket'}</button>
+      <span class="cab-note" id="stateNote" role="status"></span>
+    </p>
+  ) : (
+    <p class="cab-note">{d.status === 'sold' || left === 0 ? 'This one has gone.' : 'This one is not available right now.'}</p>
+  )}
+  <p id="toBasket" hidden><a class="cab-link" href="/cabinet/cart/">Go to your basket</a></p>
+  <noscript><p class="cab-note">The basket needs JavaScript. To ask for this piece, <a class="inline-link" href="/contact/">write to us</a>.</p></noscript>
+</SimplePageLayout>
+<script>import '../../scripts/cabinet/item.js'</script>

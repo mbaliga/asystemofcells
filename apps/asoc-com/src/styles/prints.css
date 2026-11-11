@@ -1,0 +1,30 @@
+.pr-lede { color: var(--muted); }
+.pr-steps { padding-left: 20px; }
+.pr-tiers { list-style: none; padding: 0; margin: 28px 0; display: grid; gap: 22px; }
+.pr-tiers b { display: block; font-size: 17px; }
+.pr-tiers span { color: var(--muted); font-size: 15px; }
+.pr-drop { display: grid; place-items: center; text-align: center; min-height: 180px; border: 1.5px dashed var(--line); border-radius: 18px; padding: 28px; margin: 28px 0; cursor: pointer; }
+.pr-drop.over { border-color: #6F7D86; background: rgba(111, 125, 134, 0.08); }
+.pr-drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.pr-drop small { color: var(--muted); display: block; margin-top: 6px; }
+.pr-pane { margin: 36px 0; }
+.pr-pane h2 { font-size: 20px; margin: 0 0 10px; letter-spacing: -0.01em; }
+#plate { width: 100%; height: min(62vh, 460px); display: block; border-radius: 16px; background: #07070a; touch-action: none; }
+.pr-actions { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 12px 0; }
+.pr-grid { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
+.pr-grid label, .pr-form label { display: grid; gap: 4px; font-size: 14px; font-weight: 600; }
+.pr-grid select, .pr-grid input, .pr-form input, .pr-form textarea { font: inherit; font-weight: 400; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: inherit; }
+.pr-tier { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; font-weight: 400 !important; }
+.pr-tier b { font-weight: 600; }
+.pr-quote .row { display: flex; justify-content: space-between; padding: 3px 0; }
+.pr-quote .total { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 8px; font-weight: 700; font-size: 18px; }
+.pr-note { color: var(--muted); font-size: 14px; }
+.pr-form { display: grid; gap: 12px; margin-top: 18px; }
+.pr-form .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pr-form .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.pr-info { display: inline; }
+.pr-info summary { display: inline; cursor: pointer; list-style: none; color: var(--muted); font-size: 14px; }
+.pr-info summary::-webkit-details-marker { display: none; }
+.pr-info p { margin: 8px 0; font-size: 14px; color: var(--muted); }
+[data-ok="0"] { font-weight: 600; }
+@media (max-width: 560px) { .pr-grid, .pr-form .two { grid-template-columns: 1fr; } }

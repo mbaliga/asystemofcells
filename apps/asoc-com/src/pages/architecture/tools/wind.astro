@@ -1,0 +1,31 @@
+---
+import SimplePageLayout from '../../../layouts/SimplePageLayout.astro'
+import ArchSite from '../../../components/ArchSite.astro'
+import '../../../styles/arch.css'
+---
+<SimplePageLayout title="Wind rose and ventilation: Practice" description="A wind rose for twenty Indian cities from ten years of NASA data, and a rule-based read of which faces of your plan face the prevailing wind." quiet>
+  <div class="arch-tool">
+    <p class="eyebrow"><a href="/architecture/tools/">Tools</a></p>
+    <h1>Wind rose and ventilation.</h1>
+    <p class="arch-note">Where the wind comes from, by season, and whether the openings you mark make a through-path. This is a reading, not a simulation.</p>
+    <ArchSite north={false} />
+    <p id="norose" class="arch-note" hidden>Wind roses are baked for the twenty places in the list. Choose one; other places are in the plan.</p>
+    <div class="arch-controls">
+      <label>Season <select id="season"></select></label>
+      <label>The plan is turned from north by (°) <input id="prot" type="number" value="0" /></label>
+      <fieldset class="arch-site"><legend>Openings</legend>
+        <label><span><input id="open-front" type="checkbox" /> front</span></label><label><span><input id="open-right" type="checkbox" /> right</span></label>
+        <label><span><input id="open-back" type="checkbox" /> back</span></label><label><span><input id="open-left" type="checkbox" /> left</span></label>
+      </fieldset>
+    </div>
+    <div class="arch-figs">
+      <figure><svg id="rose" viewBox="-1.15 -1.15 2.3 2.3" role="img" aria-label="Wind rose, sixteen sectors"></svg><figcaption class="arch-note" id="rose-note"></figcaption><ul id="legend" class="arch-note" style="list-style:none;padding:0"></ul></figure>
+      <figure><svg id="plan" viewBox="-1.15 -1.15 2.3 2.3" role="img" aria-label="Your plan with the prevailing wind arrow"></svg>
+        <table><thead><tr><th>Face</th><th>Faces</th><th>To the wind</th><th>Openings</th></tr></thead><tbody id="faces"></tbody></table>
+        <p id="through" role="status"></p>
+      </figure>
+    </div>
+    <details><summary>ⓘ About this</summary><p class="arch-note">Roses come from ten years (2015 to 2024) of hourly 10 m wind from NASA POWER, grouped into sixteen sectors and four speed bands, and baked when the site is built. Nothing is fetched while you use this page. Bands are tones of one grey, and the fastest is hatched, so no colour is needed to read it. A face is windward within 67.5° of the wind, leeward beyond 112.5°.</p></details>
+  </div>
+</SimplePageLayout>
+<script>import '../../../scripts/arch/wind-ui.js'</script>

@@ -1,0 +1,25 @@
+---
+// Practice: the landing page. It describes; the tools and the commission form are quiet pages.
+import SimplePageLayout from '../../layouts/SimplePageLayout.astro'
+import { getWork } from '../../lib/work.js'
+import '../../styles/arch.css'
+const work = await getWork()
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href
+const jsonLd = { '@context': 'https://schema.org', '@type': 'ProfessionalService', name: 'asystemofcells: Practice', description: 'Architecture practice in Hyderabad, with free tools for architects.', url: pageUrl, areaServed: 'Hyderabad, India', founder: { '@type': 'Person', name: 'Madhav Baliga' } }
+---
+<SimplePageLayout title="Practice: architecture, asystemofcells" description="Architecture work, free tools for architects, and a way to commission the practice." canonical={pageUrl} jsonLd={jsonLd}>
+  <p class="eyebrow">Architecture</p>
+  <h1>Practice.</h1>
+  <p>An architecture practice in Hyderabad, run by Madhav Baliga. Built work, free tools for the people who draw buildings, and a way to ask for a building of your own.</p>
+  <div class="arch-strands">
+    {work.length > 0 && <a href="#work"><b>Work</b><span>Built projects, opened up to explore.</span></a>}
+    <a href="/architecture/tools/"><b>Tools</b><span>Sun path, wind, tropical design tables and a Vastu grid. They run in your browser.</span></a>
+    <a href="/architecture/commission/"><b>Commission</b><span>Tell us what you are building. We reply by email.</span></a>
+  </div>
+  {work.length > 0 && (
+    <section id="work">
+      <h2>Work</h2>
+      <ul class="arch-hubs">{work.map((e) => <li><a href={`/architecture/work/${e.slug}/`}><b>{e.data.title}</b><span>{[e.data.location, e.data.year].filter(Boolean).join(' · ')}</span></a></li>)}</ul>
+    </section>
+  )}
+</SimplePageLayout>

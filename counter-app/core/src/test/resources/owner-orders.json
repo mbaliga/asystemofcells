@@ -1,0 +1,36 @@
+{
+ "orders": [
+  {
+   "id": "01M6NEZEM0484K9J3H01KDEPTV",
+   "kind": "print",
+   "status": "reviewing",
+   "createdAt": "2026-11-05T09:00:00.000Z",
+   "nextAction": "decide",
+   "customer": {
+    "firstName": "Asha",
+    "city": "Hyderabad",
+    "country": "IN"
+   },
+   "total": 1477,
+   "flags": [
+    "client-estimate"
+   ],
+   "summary": "cube.stl"
+  },
+  {
+   "id": "01M6NEZEM0YX6J9WAGYP7JCQSJ",
+   "kind": "cabinet",
+   "status": "accepted",
+   "createdAt": "2026-11-05T09:00:00.000Z",
+   "nextAction": "waiting-for-payment",
+   "customer": {
+    "firstName": "Asha",
+    "city": "Hyderabad",
+    "country": "IN"
+   },
+   "total": 6600,
+   "flags": [],
+   "summary": "Hyle cell, brass, Glass inkwell, 1962"
+  }
+ ]
+}

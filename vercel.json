@@ -4,12 +4,58 @@
   "outputDirectory": "apps/asoc-com/dist",
   "cleanUrls": true,
   "trailingSlash": true,
+  "redirects": [
+    {
+      "source": "/haptics-workbench",
+      "destination": "/hafx",
+      "permanent": true
+    },
+    {
+      "source": "/haptics-workbench/",
+      "destination": "/hafx/",
+      "permanent": true
+    },
+    {
+      "source": "/shop",
+      "destination": "/cabinet",
+      "permanent": true
+    },
+    {
+      "source": "/shop/",
+      "destination": "/cabinet/",
+      "permanent": true
+    },
+    {
+      "source": "/shop/:key",
+      "destination": "/cabinet/:key",
+      "permanent": true
+    },
+    {
+      "source": "/shop/:key/",
+      "destination": "/cabinet/:key/",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/nooz/read/(fonts|icons)/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     }
-  ]
+  ],
+  "crons": [
+    {
+      "path": "/api/counter/?__p=owner/rebuild",
+      "schedule": "17 3 * * *"
+    }
+  ],
+  "functions": {
+    "api/counter/index.js": {
+      "maxDuration": 30
+    }
+  }
 }

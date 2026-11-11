@@ -1,0 +1,39 @@
+---
+// The Cabinet's listing. It only links to the pieces; the basket lives on the
+// quiet pages (item, cart, checkout), so this page may be counted.
+import SimplePageLayout from '../../layouts/SimplePageLayout.astro'
+import CellMark from '@asoc/kit/CellMark.astro'
+import { getCabinetItems, kickerOf, STATUS_LABEL } from '../../lib/cabinet.js'
+import '../../styles/cabinet.css'
+
+const items = await getCabinetItems()
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href
+---
+<SimplePageLayout
+  title="The Cabinet: asystemofcells"
+  description="Things made here, and things kept for a while and now let go. One of each, mostly."
+  canonical={pageUrl}
+>
+  <p class="eyebrow">Collectibles &amp; curiosities</p>
+  <h1>The Cabinet.</h1>
+  <p>Things made here, and things kept for a while and now let go. One of each, mostly.</p>
+  {items.length ? (
+    <ul class="cab-grid">
+      {items.map((e) => (
+        <li>
+          <a class="cab-card" href={`/cabinet/${e.slug}/`}>
+            <p class="cab-kicker">{kickerOf(e.data)}</p>
+            <h2>{e.data.title}</h2>
+            <p>{e.data.summary}</p>
+            <p class="cab-price">₹{e.data.price.inr.toLocaleString('en-IN')} <span class="cab-state">{STATUS_LABEL[e.data.status]}</span></p>
+          </a>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <div class="sec-empty">
+      <p><strong>Nothing is in the cabinet yet.</strong></p>
+      <p>If you want to be told when something is, <a class="inline-link" href="/contact/">get in touch</a>.</p>
+    </div>
+  )}
+</SimplePageLayout>

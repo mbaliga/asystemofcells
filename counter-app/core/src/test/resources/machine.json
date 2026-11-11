@@ -1,0 +1,129 @@
+{
+ "states": [
+  "placed",
+  "reviewing",
+  "accepted",
+  "paid",
+  "in_production",
+  "finishing",
+  "dispatched",
+  "delivered",
+  "rejected",
+  "cancelled",
+  "expired",
+  "refunded"
+ ],
+ "machine": {
+  "print": {
+   "placed": [
+    "reviewing",
+    "rejected",
+    "cancelled",
+    "expired"
+   ],
+   "reviewing": [
+    "accepted",
+    "rejected",
+    "cancelled"
+   ],
+   "accepted": [
+    "paid",
+    "expired",
+    "cancelled",
+    "rejected"
+   ],
+   "paid": [
+    "in_production",
+    "refunded"
+   ],
+   "in_production": [
+    "finishing",
+    "refunded"
+   ],
+   "finishing": [
+    "dispatched",
+    "refunded"
+   ],
+   "dispatched": [
+    "delivered",
+    "refunded"
+   ],
+   "delivered": [
+    "refunded"
+   ],
+   "rejected": [],
+   "cancelled": [],
+   "expired": [],
+   "refunded": []
+  },
+  "cabinet": {
+   "placed": [
+    "reviewing",
+    "rejected",
+    "cancelled",
+    "expired",
+    "accepted"
+   ],
+   "reviewing": [
+    "accepted",
+    "rejected",
+    "cancelled"
+   ],
+   "accepted": [
+    "paid",
+    "expired",
+    "cancelled",
+    "rejected"
+   ],
+   "paid": [
+    "dispatched",
+    "refunded"
+   ],
+   "in_production": [
+    "finishing",
+    "refunded"
+   ],
+   "finishing": [
+    "dispatched",
+    "refunded"
+   ],
+   "dispatched": [
+    "delivered",
+    "refunded"
+   ],
+   "delivered": [
+    "refunded"
+   ],
+   "rejected": [],
+   "cancelled": [],
+   "expired": [],
+   "refunded": []
+  }
+ },
+ "nextAction": {
+  "print:placed": "wait-for-model",
+  "print:reviewing": "decide",
+  "print:accepted": "waiting-for-payment",
+  "print:paid": "make",
+  "print:in_production": "make",
+  "print:finishing": "make",
+  "print:dispatched": "sent",
+  "print:delivered": null,
+  "print:rejected": null,
+  "print:cancelled": null,
+  "print:expired": null,
+  "print:refunded": null,
+  "cabinet:placed": "decide",
+  "cabinet:reviewing": "decide",
+  "cabinet:accepted": "waiting-for-payment",
+  "cabinet:paid": "pack",
+  "cabinet:in_production": "make",
+  "cabinet:finishing": "make",
+  "cabinet:dispatched": "sent",
+  "cabinet:delivered": null,
+  "cabinet:rejected": null,
+  "cabinet:cancelled": null,
+  "cabinet:expired": null,
+  "cabinet:refunded": null
+ }
+}

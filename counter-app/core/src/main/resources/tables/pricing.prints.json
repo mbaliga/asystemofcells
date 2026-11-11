@@ -1,0 +1,21 @@
+{
+  "$comment": "PLACEHOLDERS. Owner calibrates from real A1 mini runs and spool prices. Used identically by the client (quote preview) and the Counter function (authoritative).",
+  "currency": "INR",
+  "inrPerGram": { "PLA": 4.0, "PETG": 5.0, "TPU": 7.0 },
+  "inrPerHour": 60,
+  "minimumInr": 299,
+  "packagingInr": 40,
+  "boxGrams": 60,
+  "estimateBand": 0.2,
+  "maxPrintMinutesWithoutReview": 1440,
+  "buildVolumeMm": { "x": 180, "y": 180, "z": 180 },
+  "nozzleMm": 0.4,
+  "layerHeights": [0.08, 0.12, 0.16, 0.2, 0.24, 0.28],
+  "infillPresets": [10, 15, 20, 30, 50, 100],
+  "filaments": [
+    { "id": "PLA", "label": "PLA (Bambu Basic)", "colours": ["Jade White", "Black", "Grey", "Bambu Green", "Orange"] },
+    { "id": "PETG", "label": "PETG", "colours": ["Black", "Translucent"] }
+  ],
+  "leadTimeDays": { "as-is": 3, "supports-removed": 4, "processed": 7 },
+  "otherColourOnRequest": true
+}

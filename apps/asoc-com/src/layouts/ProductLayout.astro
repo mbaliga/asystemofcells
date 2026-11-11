@@ -1,30 +1,142 @@
 ---
-// Structural pattern ported from the confirmed apple_style_reconstruction6.html
-// reference (its "category" style-pages: music/fitness/arcade/tv/news/podcasts/
-// books) — hero, alternating feature rows, FAQ, fixed simple footer. That file's
-// own comment marks this as a DISTINCT visual system from the home carousel
-// (Apple-native -apple-system stack, #fff surface), so this deliberately does
-// NOT reuse home's Playfair/Space Mono/Archivo warm-card language, and does NOT
-// reuse the old dark-violet Hyle kit components (SiteHeader/SiteFooter/CellCard) —
-// those were the invented system the owner already rejected once for this site.
-import BaseLayout from './BaseLayout.astro'
-import { ctaLabel } from '@asoc/roster'
+// A product page: a thin wrapper over WingLayout (wing "apps"). The white,
+// Apple-style rhythm the owner accepted: hero, lead image or triptych,
+// alternating feature rows, what never happens, open source, FAQ, fixed simple
+// footer with the wing switcher. It is NOT the dark Hyle kit
+// (SiteHeader/SiteFooter/CellCard), which the owner rejected for this site.
+//
+// Data: identity, status, accent and call to action come from @asoc/roster;
+// copy and the choice of imagery come from the `products` content collection
+// (src/content/products/<slug>.md); images and their provenance come from
+// screenshots/manifest.json via @asoc/roster/screens. A section with no data is
+// omitted, never left as a stub.
+//
+// ANALYTICS: this page DESCRIBES the house, so it opts in. It must stay free of
+// forms, canvases, workers and fetches (docs/handoff/tools/check-analytics-boundary.sh).
+import { Image } from 'astro:assets'
+import WingLayout from './WingLayout.astro'
+import CellMark from '@asoc/kit/CellMark.astro'
+import Provenance from '@asoc/kit/Provenance.astro'
+import { cellCta, displayName as nameOf, installLinks, STATUS_MEANING } from '@asoc/roster'
+import { getHero, getScreens } from '@asoc/roster/screens'
 
-const { cell, title: pageTitle, description } = Astro.props
+const { cell, product, title: pageTitle, description } = Astro.props
+const displayName = nameOf(cell)
 const TISSUE_LABEL = {
   'daily-cells': 'Daily cells',
   'ambient-cells': 'Ambient cells',
   'maker-cells': 'Maker cells',
   'connective-tissue': 'Connective tissue',
 }
-const displayName = cell.slug.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ')
 const eyebrow = TISSUE_LABEL[cell.tissue] || cell.tissue
-const cta = ctaLabel(cell.status)
-const href = cell.hubUrl || '#'
-const external = !!cell.hubUrl
-// Some products ship a same-origin web app (e.g. Nooz's reader at /nooz/read).
-// When present it becomes the primary call to action.
-const readerUrl = cell.readerUrl || null
+const imageryKey = cell.imagery || cell.slug
+
+// ---- images ---------------------------------------------------------------
+// Manifest `src` is repo-root-relative ("apps/asoc-com/src/assets/screens/..");
+// the glob is keyed from this app's root ("/src/assets/screens/..").
+const files = import.meta.glob('/src/assets/screens/**/*.{png,jpg,jpeg,webp}', { eager: true, import: 'default' })
+const manifestEntries = new Map(getScreens(imageryKey).map((e) => [e.id, e]))
+function asset(entry) {
+  const key = '/' + entry.src.split('apps/asoc-com/')[1]
+  const img = files[key]
+  if (!img) throw new Error(`ProductLayout(${cell.slug}): manifest entry "${entry.id}" points at ${entry.src}, which is not under src/assets/screens/`)
+  return img
+}
+// feature.image must be an id of THIS product's imagery key, not just any id.
+function featureEntry(f) {
+  if (!f.image) return null
+  const e = manifestEntries.get(f.image)
+  if (!e) {
+    throw new Error(
+      `products/${cell.slug}.md: feature "${f.title}" has image "${f.image}", which is not in screenshots/manifest.json for imagery key "${imageryKey}". Known ids: ${[...manifestEntries.keys()].join(', ') || '(none)'}`,
+    )
+  }
+  return e
+}
+
+// ---- content --------------------------------------------------------------
+const fallback = !product
+const copy = product || {
+  headline: cell.oneLiner,
+  lede: '',
+  features: [],
+  neverHappens: [],
+  openSource: null,
+  faq: [],
+}
+const isHub = Boolean(cell.isHub || copy.hub)
+const features = isHub ? [] : copy.features
+const hero = isHub ? null : getHero(imageryKey)
+const triptych = !hero && features.length >= 3 ? features.slice(0, 3) : []
+const rowFeatures = features.slice(triptych.length)
+// Resolve (and validate) every feature image up front so a bad id fails the
+// build even for a feature that ends up inside the triptych.
+const rowEntry = new Map(features.map((f) => [f, featureEntry(f)]))
+
+const TAG = { partial: 'partly there', planned: 'in the plan' }
+
+// ---- call to action -------------------------------------------------------
+const readerUrl = (cell.web && cell.web.href) || cell.readerUrl || null
+const readerLabel = (cell.web && cell.web.label) || 'Open the web reader'
+let cta = cellCta(cell)
+// TODO(A7): "Notify me" posts to the Counter inquiries endpoint
+// (POST /api/counter/inquiries, kind "notify"). Until that exists it is a
+// plain link to the contact page, which sends nothing from this site.
+if (!cta && cell.status === 'soon') cta = { label: 'Notify me', url: '/contact/', external: false }
+const primaryCta = cta && cta.url === readerUrl ? null : cta
+// Nothing to install while a cell is building or soon.
+const stores = cell.status === 'building' || cell.status === 'soon' ? [] : installLinks(cell)
+const modelLabel = cell.model === 'freemium' ? 'Freemium' : null
+
+// ---- what leaves the device (fallback when there is no neverHappens) -------
+const KIND_LEAVES = {
+  app: {
+    heading: 'No analytics, cookies or trackers.',
+    body: "None are built into this app. What it sends over the network, if anything, is covered by the house privacy policy and the app's own store listing.",
+  },
+  'design-system': {
+    heading: 'Nothing to phone home.',
+    body: 'Hyle is a design system: tokens, components and fonts you build with. It runs nowhere on its own and sends nothing.',
+  },
+  typeface: {
+    heading: 'Nothing to phone home.',
+    body: 'Hyle Deco is a typeface: font files you download and use. It runs nowhere and sends nothing.',
+  },
+  plugins: {
+    heading: 'Plugins run inside Figma.',
+    body: 'They are not released yet. When they are, what they send, if anything, will be listed here.',
+  },
+  watchface: {
+    heading: 'A watchface runs on the watch.',
+    body: 'It is not released yet. When it is, what it sends, if anything, will be listed here.',
+  },
+}
+const leaves = cell.leaves || KIND_LEAVES[cell.kind] || KIND_LEAVES.app
+const neverHappens = copy.neverHappens
+
+// ---- open source ------------------------------------------------------------
+const os = copy.openSource
+let osLine = null
+if (os) {
+  if (os.isOpen) osLine = `Open source: ${os.licence}`
+  else if (/^no licence/i.test(os.licence)) osLine = 'No licence file in the repository.'
+  else osLine = `Source-available: ${os.licence.replace(/^Source-available \((.*)\)$/i, '$1')}`
+}
+
+// ---- provenance words behind the (i) --------------------------------------
+const LANE_INFO = {
+  device: (d) => `Captured on a physical phone${d ? ` (${[d.model, d.android && `Android ${d.android}`, d.appVersion && `app ${d.appVersion}`].filter(Boolean).join(', ')})` : ''}.`,
+  preview: () => "Rendered from the app's own screen code on a computer, not captured on a phone.",
+  web: () => "Captured from the app's web build in a browser, not from a phone.",
+  render: () => 'Drawn by code from the design, not captured from a running app.',
+  art: () => 'Artwork made for the product. It is not a screenshot of the app.',
+}
+function frameClass(e) {
+  if (e.mask === 'circle' || e.viewport === 'watch') return 'is-circle'
+  if (e.viewport === 'phone') return 'is-phone'
+  if (e.viewport === 'desktop' || e.viewport === 'tablet') return 'is-desktop'
+  return 'is-art'
+}
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -32,191 +144,320 @@ const jsonLd = {
   name: displayName,
   applicationCategory: 'MobileApplication',
   operatingSystem: 'Android',
-  description: cell.oneLiner,
+  description: copy.headline || cell.oneLiner,
 }
+// Only when the app is really on Google Play (02 section 7). No price is
+// claimed: the roster does not carry one.
+if (cell.install && cell.install.play) {
+  jsonLd.offers = { '@type': 'Offer', url: cell.install.play, availability: 'https://schema.org/InStock' }
+}
+
+const hubHost = cell.hubUrl ? new URL(cell.hubUrl).host : null
+const hasBody = Astro.slots.has('default')
 ---
-<BaseLayout
+<WingLayout
+  wing="apps"
+  accent={cell.accent}
+  eyebrow={eyebrow}
   title={pageTitle || `${displayName}: asystemofcells`}
-  description={description || cell.oneLiner}
-  canonical={`https://asystemofcells.com/${cell.slug}`}
+  description={description || copy.headline || cell.oneLiner}
   jsonLd={jsonLd}
   analytics
-  noChrome
 >
-  <div class="product-page" style={`--tile-1:${cell.accent}; --tile-2:color-mix(in srgb, ${cell.accent} 60%, black);`}>
-    <a class="back-link" href="/">&larr; asystemofcells</a>
-
-    <section class="hero">
-      <div class="hero-bg">
-        <div class="hero-frame f1"></div>
-        <div class="hero-frame f2"></div>
+  <Fragment slot="hero">
+    <div class="product-hero">
+      <h1>{displayName}</h1>
+      <p class="product-status">
+        <CellMark variant={cell.status} size={14} />
+        <span>{cell.status}</span>
+        {modelLabel && <span class="product-model">{modelLabel}</span>}
+      </p>
+      <p class="product-headline">{copy.headline}</p>
+      {copy.lede && <p class="product-lede">{copy.lede}</p>}
+      <div class="product-cta">
+        {readerUrl && <a class="btn btn--primary" href={readerUrl}>{readerLabel}</a>}
+        {primaryCta && (
+          <a
+            class={readerUrl ? 'btn btn--ghost' : 'btn btn--primary'}
+            href={primaryCta.url}
+            target={primaryCta.external ? '_blank' : undefined}
+            rel={primaryCta.external ? 'noopener noreferrer' : undefined}
+          >{primaryCta.label}</a>
+        )}
       </div>
-      <div class="hero-content">
-        <p class="eyebrow">{eyebrow}</p>
-        <h1>{displayName}</h1>
-        <p class="tagline">{cell.oneLiner}</p>
-        <div class="btn-row">
-          {readerUrl && (
-            <a class="btn-primary" href={readerUrl}>Open the web reader</a>
-          )}
-          <a class={readerUrl ? 'btn-secondary' : 'btn-primary'} href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}>{cta}</a>
+      {stores.length > 0 && (
+        <p class="install-links">
+          {stores.map((s) => (
+            <a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a>
+          ))}
+        </p>
+      )}
+      {/* The roster's 'building' meaning promises a repository link; show it only when the product file names a repo. */}
+      {!primaryCta && !readerUrl && (cell.status !== 'building' || copy.openSource?.repo) && <p class="product-status-line">{STATUS_MEANING[cell.status]}</p>}
+    </div>
+  </Fragment>
+
+  {hero && (
+    <section class="product-lead">
+      <figure class="shot shot--lead">
+        <div class={`screen frame ${frameClass(hero)}`}>
+          <Image
+            src={asset(hero)}
+            alt={hero.label}
+            width={560}
+            widths={[560, 1120]}
+            sizes={frameClass(hero) === 'is-desktop' || frameClass(hero) === 'is-art' ? '(max-width: 960px) 92vw, 880px' : '320px'}
+            format="webp"
+            loading="eager"
+            fetchpriority="high"
+          />
         </div>
-        <span class={`status-pill status-pill--${cell.status}`}>{cell.status}</span>
+        <figcaption>
+          <Provenance lane={hero.lane} sampleData={Boolean(hero.sample_data)} device={hero.device} />
+          <details class="info">
+            <summary aria-label={`What does "${hero.label}" show?`}>&#9432;</summary>
+            <p>{hero.label}. {LANE_INFO[hero.lane](hero.device)}{hero.sample_data ? ' The data in it is sample data.' : ''}</p>
+          </details>
+        </figcaption>
+      </figure>
+    </section>
+  )}
+
+  {triptych.length > 0 && (
+    <section class="product-triptych">
+      <div class="wrap triptych-grid">
+        {triptych.map((f, i) => (
+          <div class="triptych-item">
+            <span class="numeral" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <h2>
+              {f.title}
+              {TAG[f.status] && <span class="tag">{TAG[f.status]}</span>}
+            </h2>
+            <p>{f.body}</p>
+          </div>
+        ))}
       </div>
     </section>
+  )}
 
-    <slot />
-
-    <section class="feature">
-      <div class="wrap feature-grid">
-        <div>
-          <div class="f-eyebrow">On-device, always the default</div>
-          <h2>Nothing runs in a cloud you did not choose.</h2>
-          <p>Every app in this house computes on your phone first. Cloud is opt-in per use, never a hidden fallback, and every cloud provider is marked as what it is: a watched object.</p>
-        </div>
-        <div class="feature-visual"><div class="screen-crop screen-crop--1"></div></div>
-      </div>
-    </section>
-    <section class="feature reverse">
-      <div class="wrap feature-grid">
-        <div>
-          <div class="f-eyebrow">Zero telemetry</div>
-          <h2>The app has no analytics, no cookies, no trackers. Ever.</h2>
-          <p>Not a setting you have to find and turn off. It was never wired in, in this app or in any other app in the house. This website counts page views on pages like this one, and nothing at all in the reader or the tools. The <a class="inline-link" href="/privacy">privacy policy</a> says exactly what that means.</p>
-        </div>
-        <div class="feature-visual"><div class="screen-crop screen-crop--2"></div></div>
-      </div>
-    </section>
-
-    {/* cell.verify (roster.public.json) is an internal authoring checklist -
-        accent-color TODOs, unresolved pricing, branch/build status, even an
-        internal codename in one entry. It was rendering verbatim on the
-        public page under a "Still filling this page in" label. Never render
-        it here; it's for the person maintaining the roster, not visitors. */}
-
-    <section class="faq">
+  {rowFeatures.length > 0 && (
+    <section class="product-rows">
       <div class="wrap">
-        <h2>Questions? Answers.</h2>
-        <div class="faq-list">
-          <div class="qa"><button class="q" type="button"><span>Is any of this open source?</span><span class="plus"></span></button><div class="a"><p>Most of the plumbing is. A couple of products depend on a shared engine that isn't open — check each product's own page for specifics.</p></div></div>
-          <div class="qa"><button class="q" type="button"><span>Why no tracking, anywhere?</span><span class="plus"></span></button><div class="a"><p>Because every layer being legible, including what leaves the device, is the whole point of this house.</p></div></div>
-          <div class="qa"><button class="q" type="button"><span>Do you build for iOS?</span><span class="plus"></span></button><div class="a"><p>Android first. Some categories, like live wallpapers, are not available on iOS at all regardless of intent.</p></div></div>
-        </div>
+        {rowFeatures.map((f, i) => {
+          const entry = rowEntry.get(f)
+          const n = String(triptych.length + i + 1).padStart(2, '0')
+          const title = (
+            <h2>
+              {f.title}
+              {TAG[f.status] && <span class="tag">{TAG[f.status]}</span>}
+            </h2>
+          )
+          return entry ? (
+            <div class={`row row--image ${i % 2 === 1 ? 'is-reverse' : ''}`}>
+              <div class="row-text">
+                {title}
+                <p>{f.body}</p>
+              </div>
+              <figure class="shot">
+                <div class={`screen frame ${frameClass(entry)}`}>
+                  <Image
+                    src={asset(entry)}
+                    alt={entry.label}
+                    width={560}
+                    widths={[560, 1120]}
+                    sizes={frameClass(entry) === 'is-phone' || frameClass(entry) === 'is-circle' ? '300px' : '(max-width: 820px) 92vw, 540px'}
+                    format="webp"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <figcaption>
+                  <Provenance lane={entry.lane} sampleData={Boolean(entry.sample_data)} device={entry.device} />
+                  <details class="info">
+                    <summary aria-label={`What does "${entry.label}" show?`}>&#9432;</summary>
+                    <p>{entry.label}. {LANE_INFO[entry.lane](entry.device)}{entry.sample_data ? ' The data in it is sample data.' : ''}</p>
+                  </details>
+                </figcaption>
+              </figure>
+            </div>
+          ) : (
+            <div class="row row--text">
+              <span class="numeral" aria-hidden="true">{n}</span>
+              <div class="row-text">
+                {title}
+                <p>{f.body}</p>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </section>
+  )}
 
-    <footer class="site-foot">
-      <div class="wrap foot-simple">
-        <a class="foot-brand-name" href="/">asystemofcells</a>
-        <nav class="foot-links">
-          <a href="/about">About</a>
-          <a href="/faq">FAQ</a>
-          <a href="/privacy">Privacy policy</a>
-          <a href="/contact">Contact</a>
-        </nav>
-        <span class="foot-rights">&copy; 2026 asystemofcells</span>
+  {hasBody && (
+    <section class="product-body">
+      <div class="wrap prose"><slot /></div>
+    </section>
+  )}
+
+  <section class="product-never">
+    <div class="wrap">
+      {neverHappens.length > 0 ? (
+        <>
+          <h2>What never happens</h2>
+          <ul class="never-list">
+            {neverHappens.map((line) => (
+              <li><CellMark variant="soon" size={14} /><span>{line}</span></li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <>
+          <h2>What leaves your device</h2>
+          <p class="never-fallback"><strong>{leaves.heading}</strong> {leaves.body}</p>
+        </>
+      )}
+      <details class="info info--block">
+        <summary><span aria-hidden="true">&#9432;</span> This website</summary>
+        <p>This site counts page views on pages like this one, without cookies, and counts nothing in the reader or the tools. The <a class="inline-link" href="/privacy">privacy policy</a> says exactly what that means.</p>
+      </details>
+      {isHub && cell.hubUrl && (
+        <p class="hub-out"><a href={cell.hubUrl} target="_blank" rel="noopener noreferrer">Go to {hubHost} &rarr;</a></p>
+      )}
+    </div>
+  </section>
+
+  {osLine && !isHub && (
+    <section class="product-open">
+      <div class="wrap">
+        <h2>Open source</h2>
+        <p class="os-line">
+          <CellMark variant={os.isOpen ? 'open' : 'soon'} size={14} />
+          <span>{osLine}</span>
+          {os.repo && <a href={`https://github.com/${os.repo}`} target="_blank" rel="noopener noreferrer">{os.repo}</a>}
+        </p>
+        {os.note && <p class="os-note">{os.note}</p>}
       </div>
-    </footer>
-  </div>
-</BaseLayout>
+    </section>
+  )}
 
-<script>
-  document.querySelectorAll('.qa .q').forEach(btn => {
-    btn.addEventListener('click', () => btn.closest('.qa')?.classList.toggle('open'))
-  })
-</script>
+  {/* cell.verify (roster.public.json) and statusProposal / ownerNotes (the
+      product file) are authoring notes. They are never rendered. */}
+
+  <section class="product-faq" slot="faq">
+    <div class="wrap">
+      <h2>Questions? Answers.</h2>
+      <div class="faq-items">
+        <details>
+          <summary>Is the code open source?</summary>
+          {os ? (
+            <p>{os.isOpen ? `Yes. ${displayName} is under ${os.licence}.` : `Not as open source. ${osLine}.`} {os.note ?? ''} {os.repo ? 'The repository is named in the Open source section above.' : ''}</p>
+          ) : (
+            <p>Each repository carries its own licence file, and this page names the one for {displayName} where there is one. Where a licence is not named, none has been confirmed.</p>
+          )}
+        </details>
+        <details>
+          <summary>Why no tracking in the apps?</summary>
+          <p>Because every layer being legible, including what leaves the device, is the whole point of this house.</p>
+        </details>
+        <details>
+          <summary>What leaves my device?</summary>
+          <p>{neverHappens.length > 0 ? 'The lines under "What never happens" are the ones this page can vouch for. ' : ''}{leaves.heading} {leaves.body}</p>
+        </details>
+        {copy.faq.map((item) => (
+          <details>
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {cell.privacyUrl && <a slot="footer-links" href={cell.privacyUrl}>{displayName} privacy</a>}
+</WingLayout>
 
 <style is:global>
-  .product-page{
-    --bg:#fff; --ink:#1d1d1f; --muted:#6e6e73; --line:#e4e4e6; --surface:#f5f5f7;
-    --dark:#0b0b0c; --dark-ink:#f5f5f7; --dark-muted:#a1a1a6;
-    --radius:18px; --ease:cubic-bezier(.4,0,.2,1);
-    font-family:var(--font-ui);
-    color:var(--ink); background:var(--bg); line-height:1.5; -webkit-font-smoothing:antialiased;
-    padding-bottom:88px;
-  }
-  .product-page .wrap{ max-width:1100px; margin:0 auto; padding-inline:4vw; }
-  .product-page a{ color:inherit; }
+  .product-hero { max-width: 720px; margin: 0 auto; }
+  .product-hero h1 { font-size: clamp(2.4rem, 6vw, 4.4rem); font-weight: 600; letter-spacing: -0.025em; line-height: 1.03; margin: 0 0 12px; }
+  .product-status { display: inline-flex; align-items: center; gap: 0.5em; margin: 0 0 22px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .product-model::before { content: '\00b7'; margin-right: 0.5em; }
+  .product-headline { font-size: clamp(1.15rem, 2vw, 1.5rem); font-weight: 500; letter-spacing: -0.01em; line-height: 1.3; max-width: 34ch; margin: 0 auto 14px; }
+  .product-lede { font-size: clamp(1rem, 1.5vw, 1.15rem); color: var(--muted); max-width: 48ch; margin: 0 auto 26px; }
+  .product-cta { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .product-page .btn, .wing-page .btn { font-size: 14px; font-weight: 600; border-radius: 980px; padding: 12px 24px; display: inline-block; text-decoration: none; }
+  .wing-page .btn--primary { background: var(--ink); color: #fff; border: 1px solid var(--ink); }
+  .wing-page .btn--ghost { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+  .install-links { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin: 16px 0 0; font-size: 13px; }
+  .install-links a { color: var(--muted); text-underline-offset: 3px; }
+  .install-links a:hover { color: var(--ink); }
+  .product-status-line { margin: 14px 0 0; font-size: 14px; color: var(--muted); }
 
-  .back-link{
-    position:absolute; top:20px; left:4vw; z-index:10;
-    font-size:13px; font-weight:600; color:var(--dark-ink); text-decoration:none; opacity:.8;
-  }
-  .back-link:hover{ opacity:1; }
+  /* The frame only: radius and shadow carried over from the old placeholder. */
+  .shot { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .shot .frame { width: 100%; overflow: hidden; background: #f5f5f7; }
+  .shot .frame img { display: block; width: 100%; height: auto; }
+  .shot .frame.is-phone { max-width: 300px; border-radius: 28px; box-shadow: 0 30px 60px -26px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.1); }
+  .shot .frame.is-circle { max-width: 300px; border-radius: 50%; aspect-ratio: 1 / 1; }
+  .shot .frame.is-circle img { height: 100%; object-fit: cover; }
+  .shot .frame.is-desktop { max-width: 880px; border-radius: 6px; outline: 1px solid var(--line); outline-offset: -1px; }
+  .shot .frame.is-art { max-width: 880px; border-radius: 14px; }
+  .shot figcaption { display: inline-flex; align-items: center; gap: 10px; }
 
-  .hero{
-    position:relative; min-height:70vh; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; text-align:center;
-    background:var(--dark); color:var(--dark-ink); overflow:hidden; padding:10vh 6vw;
-  }
-  .hero-bg{ position:absolute; inset:0; z-index:0; }
-  .hero-frame{ position:absolute; inset:0; opacity:0; animation:heroFade 11s infinite; }
-  .hero-frame.f1{ background:linear-gradient(150deg,var(--tile-1), color-mix(in srgb, var(--tile-1) 35%, black)); animation-delay:0s; }
-  .hero-frame.f2{ background:linear-gradient(150deg,var(--tile-2), color-mix(in srgb, var(--tile-2) 35%, black)); animation-delay:5.5s; }
-  @keyframes heroFade{ 0%{opacity:0} 8%{opacity:1} 42%{opacity:1} 50%{opacity:0} 100%{opacity:0} }
-  .hero::after{ content:''; position:absolute; inset:0; z-index:1; background:linear-gradient(0deg, rgba(11,11,12,.7) 0%, rgba(11,11,12,.2) 55%, rgba(11,11,12,.05) 100%); }
-  .hero-content{ position:relative; z-index:2; max-width:720px; }
-  .hero .eyebrow{ font-size:13px; font-weight:600; color:var(--dark-muted); margin-bottom:12px; text-transform:uppercase; letter-spacing:.04em; }
-  .hero h1{ font-size:clamp(2.2rem,6vw,4.4rem); font-weight:600; letter-spacing:-.025em; line-height:1.03; margin-bottom:16px; }
-  .hero p.tagline{ font-size:clamp(1rem,1.5vw,1.2rem); color:#d9d9de; max-width:52ch; margin:0 auto 22px; }
-  .hero .btn-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:4px; }
-  .hero .btn-primary{ font-size:14px; font-weight:600; border:none; border-radius:980px; padding:12px 24px; cursor:pointer; display:inline-block; text-decoration:none; background:#fff; color:var(--ink); }
-  .hero .btn-secondary{ font-size:14px; font-weight:600; border:1px solid rgba(255,255,255,.55); border-radius:980px; padding:12px 24px; cursor:pointer; display:inline-block; text-decoration:none; background:transparent; color:#fff; }
-  .hero .btn-secondary:hover{ border-color:#fff; }
-  .status-pill{ display:inline-block; margin-top:18px; font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.3); color:var(--dark-muted); }
-  .status-pill--live{ color:#3ddc84; border-color:#3ddc84; }
-  .status-pill--beta{ color:#08fed5; border-color:#08fed5; }
+  .info { display: inline-block; }
+  .info summary { cursor: pointer; list-style: none; font-size: 14px; color: var(--muted); }
+  .info summary::-webkit-details-marker { display: none; }
+  .info p { margin: 8px 0 0; max-width: 44ch; font-size: 13px; color: var(--muted); }
+  .info--block { margin-top: 28px; }
+  .info--block summary { font-size: 13px; }
 
-  .feature{ padding:10vh 0; overflow:hidden; }
-  .feature-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6vw; align-items:center; }
-  .feature.reverse .feature-grid{ direction:rtl; }
-  .feature.reverse .feature-grid > *{ direction:ltr; }
-  .feature .f-eyebrow{ font-size:13px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:12px; }
-  .feature h2{ font-size:clamp(1.5rem,3vw,2.3rem); font-weight:600; letter-spacing:-.02em; line-height:1.1; margin-bottom:14px; }
-  .feature p{ font-size:15px; color:var(--muted); max-width:44ch; line-height:1.6; }
-  .feature-visual{ display:flex; justify-content:center; }
-  /* Placeholder device screen: an accent gradient with grain and a soft bezel,
-     a "screenshot goes here" stand-in until real product marketing images land. */
-  .screen-crop{ position:relative; width:100%; max-width:280px; aspect-ratio:9/16; border-radius:28px; margin-inline:auto; overflow:hidden; box-shadow:0 30px 60px -26px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.10); opacity:.9; }
-  .screen-crop::before{ content:''; position:absolute; top:12px; left:50%; transform:translateX(-50%); width:34%; height:5px; border-radius:3px; background:rgba(255,255,255,.22); }
-  .screen-crop::after{ content:''; position:absolute; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"); pointer-events:none; }
-  .screen-crop--1{ background:linear-gradient(160deg, var(--tile-1), color-mix(in srgb, var(--tile-1) 40%, black)); }
-  .screen-crop--2{ background:linear-gradient(160deg, var(--tile-2), color-mix(in srgb, var(--tile-2) 55%, black)); }
+  .product-lead { padding: 4vh 4vw 8vh; }
 
-  .pending-note{ padding:2vh 0 6vh; }
-  .pending-note .wrap{ background:var(--surface); border:1px dashed var(--line); border-radius:var(--radius); padding:16px 20px; }
-  .pending-note p{ margin:0; font-size:13px; color:var(--muted); }
+  .numeral { display: block; font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 300; letter-spacing: -0.03em; line-height: 1; color: #c7c7cc; }
+  .tag { display: inline-block; margin-left: 10px; vertical-align: middle; font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 
-  .faq{ background:var(--surface); padding:10vh 0; }
-  .faq h2{ font-size:clamp(1.5rem,3vw,2.2rem); font-weight:600; letter-spacing:-.02em; margin-bottom:5vh; text-align:center; }
-  .faq-list{ max-width:760px; margin:0 auto; }
-  .qa{ border-top:1px solid var(--line); }
-  .qa:last-child{ border-bottom:1px solid var(--line); }
-  .qa button.q{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:16px; background:none; border:none; text-align:left; padding:18px 4px; cursor:pointer; font-size:15px; font-weight:500; color:var(--ink); }
-  .qa .plus{ flex:0 0 auto; width:18px; height:18px; position:relative; }
-  .qa .plus::before, .qa .plus::after{ content:''; position:absolute; background:var(--ink); transition:transform .3s var(--ease); }
-  .qa .plus::before{ top:50%; left:0; width:100%; height:1.6px; transform:translateY(-50%); }
-  .qa .plus::after{ left:50%; top:0; height:100%; width:1.6px; transform:translateX(-50%); }
-  .qa.open .plus::after{ transform:translateX(-50%) rotate(90deg); opacity:0; }
-  .qa .a{ max-height:0; overflow:hidden; transition:max-height .4s var(--ease); }
-  .qa.open .a{ max-height:200px; }
-  .qa .a p{ padding:0 4px 18px; color:var(--muted); font-size:14px; line-height:1.6; max-width:60ch; }
+  .product-triptych { padding: 6vh 0 10vh; }
+  .triptych-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5vw; }
+  .triptych-item h2 { font-size: clamp(1.15rem, 2vw, 1.5rem); font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; margin: 18px 0 10px; }
+  .triptych-item p { font-size: 15px; color: var(--muted); line-height: 1.6; margin: 0; }
 
-  .site-foot{
-    position:fixed; left:0; right:0; bottom:0; z-index:60;
-    height:52px; overflow:hidden; background:var(--bg); border-top:1px solid var(--line);
-  }
-  .site-foot .wrap{ height:100%; display:flex; align-items:center; }
-  .foot-simple{ width:100%; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; }
-  .foot-brand-name{ font-size:15px; font-weight:600; letter-spacing:-.01em; text-decoration:none; color:var(--ink); }
-  .foot-links{ display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
-  .foot-links a{ font-size:13px; color:var(--muted); text-decoration:none; }
-  .foot-links a:hover{ color:var(--ink); }
-  .foot-rights{ font-size:12px; color:var(--muted); }
+  .product-rows { padding: 4vh 0 6vh; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 6vw; align-items: center; padding: 7vh 0; }
+  .row--image.is-reverse .row-text { order: 2; }
+  .row--text { grid-template-columns: minmax(80px, 140px) 1fr; max-width: 820px; margin: 0 auto; align-items: start; }
+  .row-text h2 { font-size: clamp(1.4rem, 2.8vw, 2.1rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.12; margin: 0 0 12px; }
+  .row-text p { font-size: 15px; color: var(--muted); line-height: 1.6; max-width: 46ch; margin: 0; }
 
-  @media(max-width:820px){
-    .feature-grid{ grid-template-columns:1fr; text-align:center; }
-    .feature.reverse .feature-grid{ direction:ltr; }
-    .feature p{ margin-inline:auto; }
+  .product-body .prose { max-width: 640px; }
+  .product-body .prose p, .product-body .prose li { font-size: 15px; color: var(--muted); }
+
+  .product-never, .product-open { padding: 6vh 0; }
+  .product-never .wrap, .product-open .wrap { max-width: 720px; }
+  .product-never h2, .product-open h2, .product-faq h2 { font-size: clamp(1.4rem, 2.8vw, 2rem); font-weight: 600; letter-spacing: -0.02em; margin: 0 0 22px; }
+  .never-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .never-list li { display: flex; gap: 12px; align-items: baseline; font-size: 16px; line-height: 1.5; }
+  .never-list .cellmark { flex: 0 0 auto; transform: translateY(2px); color: var(--muted); }
+  .never-fallback { font-size: 15px; color: var(--muted); margin: 0; }
+  .never-fallback strong { color: var(--ink); font-weight: 600; }
+  .hub-out { margin: 28px 0 0; font-size: 15px; }
+  .os-line { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; font-size: 16px; margin: 0 0 8px; }
+  .os-line a { font-size: 14px; color: var(--muted); text-underline-offset: 3px; }
+  .os-note { font-size: 14px; color: var(--muted); margin: 0; max-width: 54ch; }
+
+  .product-faq { padding: 6vh 0 10vh; }
+  .product-faq .wrap { max-width: 760px; }
+  .faq-items details { border-top: 1px solid var(--line); }
+  .faq-items details:last-child { border-bottom: 1px solid var(--line); }
+  .faq-items summary { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; cursor: pointer; list-style: none; font-size: 15px; font-weight: 500; }
+  .faq-items summary::-webkit-details-marker { display: none; }
+  .faq-items summary::after { content: '+'; font-size: 20px; font-weight: 300; color: var(--muted); }
+  .faq-items details[open] summary::after { content: '\2212'; }
+  .faq-items details p { margin: 0 0 16px; font-size: 14px; color: var(--muted); max-width: 60ch; }
+
+  @media (max-width: 820px) {
+    .triptych-grid { grid-template-columns: 1fr; gap: 6vh; }
+    .row { grid-template-columns: 1fr; gap: 4vh; }
+    .row--image.is-reverse .row-text { order: 0; }
+    .row--text { grid-template-columns: 1fr; gap: 10px; }
   }
 </style>

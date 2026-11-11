@@ -1,0 +1,29 @@
+---
+import SimplePageLayout from '../../../layouts/SimplePageLayout.astro'
+import ArchSite from '../../../components/ArchSite.astro'
+import '../../../styles/arch.css'
+---
+<SimplePageLayout title="Vastu grid: Practice" description="A traditional Vastu Purusha Mandala laid over a plan, with what the tradition places where." quiet>
+  <div class="arch-tool">
+    <p class="eyebrow"><a href="/architecture/tools/">Tools</a></p>
+    <h1>The Vastu grid.</h1>
+    <p id="disclaimer" class="arch-note"></p>
+    <ArchSite />
+    <div class="arch-controls">
+      <label>A plan image, if you have one (it stays in your browser) <input id="planfile" type="file" accept="image/*" /><span id="planimg" hidden></span></label>
+      <label>Room <select id="func"></select></label>
+      <label>Entrance side <select id="eside"><option>N</option><option>E</option><option>S</option><option>W</option></select></label>
+      <label>Entrance pada (1 to 8) <input id="eidx" type="number" min="1" max="8" value="3" /></label>
+    </div>
+    <p class="arch-note">Choose a room, then press the cells of the grid it covers. Press a cell again to clear it. The plan's top edge is the page's top; set north above if it is not up.</p>
+    <div class="arch-figs">
+      <figure><svg id="grid" viewBox="-0.2 -0.2 1.4 1.4" role="group" aria-label="Nine by nine Vastu grid"></svg></figure>
+      <div><h2>What the tradition says</h2><ul id="report"></ul>
+        <p><a id="ask" class="cab-btn" href="/architecture/commission/">Ask Madhav about this plan</a></p>
+        <p><button class="cab-link" id="print" type="button">Print this report</button> · <button class="cab-link" id="clear" type="button">Clear the rooms</button></p>
+      </div>
+    </div>
+    <details><summary>ⓘ About the tables</summary><p class="arch-note">The grid is nine by nine (81 padas), with eight directional zones, a finer sixteen-zone ring and a central Brahmasthan. The tables are the practitioner's working set and the owner corrects them as a licensed architect; they are a traditional system, not a physical model. The page quotes what the tradition says, and gives no verdict.</p></details>
+  </div>
+</SimplePageLayout>
+<script>import '../../../scripts/arch/vaastu-ui.js'</script>

@@ -31,7 +31,7 @@ import Seo from '@asoc/kit/Seo.astro'
 import SiteHeader from '@asoc/kit/SiteHeader.astro'
 import SiteFooter from '@asoc/kit/SiteFooter.astro'
 
-const { title, description, canonical, jsonLd, noChrome = false, analytics = false } = Astro.props
+const { title, description, canonical, jsonLd, noindex = false, noChrome = false, analytics = false } = Astro.props
 ---
 <!doctype html>
 <html lang="en">
@@ -39,7 +39,7 @@ const { title, description, canonical, jsonLd, noChrome = false, analytics = fal
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <Seo title={title} description={description} canonical={canonical} jsonLd={jsonLd} />
+  <Seo title={title} description={description} canonical={canonical} jsonLd={jsonLd} noindex={noindex} />
   {analytics && <Analytics />}
 </head>
 <body>

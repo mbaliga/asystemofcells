@@ -1,0 +1,33 @@
+---
+// component: Provenance
+// Where an image came from: a cell-mark glyph with its own shape per lane, plus
+// the words. Never colour alone. A "device" label needs the device block that
+// says which phone it was captured on; without one the build fails rather than
+// claiming a capture that nobody can vouch for.
+import CellMark from './CellMark.astro'
+// Relative on purpose: kit does not declare @asoc/roster as a dependency, and
+// adding one would change the lockfile.
+import { laneLabel } from '../../../roster/screens.js'
+
+const { lane, sampleData = false, device = null } = Astro.props
+const text = laneLabel(lane)
+if (!text) throw new Error(`Provenance: unknown lane "${lane}"`)
+if (lane === 'device' && !device) {
+  throw new Error('Provenance: lane "device" needs a device block (model, android). Never label an image as captured on device without one.')
+}
+---
+<span class="provenance">
+  <CellMark variant={lane} size={12} />
+  <span>{text}</span>
+  {sampleData && <span class="provenance__note">sample data</span>}
+</span>
+
+<style>
+  .provenance {
+    display: inline-flex; align-items: center; gap: 0.45em;
+    font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--provenance-ink, #6e6e73);
+  }
+  .provenance__note::before { content: '\00b7'; margin-right: 0.45em; }
+</style>

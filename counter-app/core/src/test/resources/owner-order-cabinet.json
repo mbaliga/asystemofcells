@@ -1,0 +1,90 @@
+{
+ "order": {
+  "id": "01M6NEZEM0YX6J9WAGYP7JCQSJ",
+  "kind": "cabinet",
+  "createdAt": "2026-11-05T09:00:00.000Z",
+  "status": "accepted",
+  "customer": {
+   "name": "Asha Rao",
+   "email": "a@example.com",
+   "phone": "+919999999999"
+  },
+  "shipTo": {
+   "line1": "1 Road",
+   "line2": "",
+   "city": "Hyderabad",
+   "state": "TS",
+   "postcode": "500001",
+   "country": "IN"
+  },
+  "zone": "IN",
+  "items": [
+   {
+    "item": "hyle-cell-brass",
+    "title": "Hyle cell, brass",
+    "qty": 2,
+    "unitInr": 2400,
+    "kind": "made"
+   },
+   {
+    "item": "inkwell-1962",
+    "title": "Glass inkwell, 1962",
+    "qty": 1,
+    "unitInr": 1800,
+    "kind": "curiosity"
+   }
+  ],
+  "quote": {
+   "subtotal": 6600,
+   "finish": 0,
+   "packaging": 0,
+   "shipping": 0,
+   "total": 6600,
+   "bandInr": 0,
+   "currency": "INR",
+   "zone": "IN",
+   "grams": 736,
+   "overTable": false
+  },
+  "accepted": {
+   "at": "2026-11-05T09:00:00.000Z",
+   "total": 6600,
+   "note": null
+  },
+  "payment": {
+   "provider": "razorpay",
+   "linkId": "plink_dev_YP7JCQSJ",
+   "shortUrl": "https://rzp.io/dev/plink_dev_YP7JCQSJ",
+   "status": "created",
+   "expiresAt": "2026-11-08T09:00:00.000Z"
+  },
+  "fulfilment": {
+   "startedAt": null,
+   "finishedAt": null,
+   "dispatchedAt": null,
+   "carrier": null,
+   "tracking": null,
+   "deliveredAt": null
+  },
+  "customerNote": null,
+  "flags": [],
+  "emailVerified": false,
+  "quoteDrift": 0
+ },
+ "events": [
+  {
+   "at": "2026-11-05T09:00:00.000Z",
+   "type": "placed",
+   "status": "placed",
+   "public": true
+  },
+  {
+   "at": "2026-11-05T09:00:00.000Z",
+   "type": "accepted",
+   "status": "accepted",
+   "public": true
+  }
+ ],
+ "modelUrl": null,
+ "nextAction": "waiting-for-payment"
+}

@@ -1,0 +1,53 @@
+---
+// The fixed simple footer shared by every white page (SimplePageLayout and
+// WingLayout). One copy of the markup. With `wing` set it also carries the
+// wing switcher, left of the brand name; the current wing is weighted and
+// marked with the "open" cell glyph in the house violet (a glyph and a weight,
+// never colour alone). Styles live in styles/house-shell.css.
+//
+// Slot "links" adds page-specific links (e.g. a product's own privacy page)
+// ahead of the house Privacy link.
+import CellMark from '@asoc/kit/CellMark.astro'
+import { getWings } from '@asoc/roster'
+
+const { wing = null } = Astro.props
+const wings = wing ? getWings() : []
+---
+<footer class="site-foot">
+  <div class="wrap foot-simple">
+    <div class="foot-lead">
+      {wings.length > 0 && (
+        <nav class="wing-switch" aria-label="Wings of the house">
+          {wings.map((w) => {
+            const current = w.slug === wing
+            return (
+              <a href={w.href} aria-current={current ? 'page' : undefined} class:list={['wing-switch__link', current && 'is-current']}>
+                {current && <CellMark variant="open" size={12} />}
+                <span>{w.name}</span>
+              </a>
+            )
+          })}
+        </nav>
+      )}
+      <a class="foot-brand-name" href="/">asystemofcells</a>
+    </div>
+    <!-- site pages first, then the house's own profiles; GitHub is the
+         maker's account because that is where the code lives, and Ko-fi
+         is where the house takes support. -->
+    <nav class="foot-links">
+      <a href="/about">About</a>
+      <a href="/faq">FAQ</a>
+      <a href="/tools">Tools</a>
+      <a href="/hyle-fonts">Fonts</a>
+      <slot name="links" />
+      <a href="/privacy">Privacy</a>
+      <a href="/contact">Contact</a>
+      <span class="foot-sep" aria-hidden="true"></span>
+      <a href="https://www.instagram.com/asystemofcells" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <a href="https://www.linkedin.com/company/asystemofcells" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href="https://github.com/mbaliga" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://ko-fi.com/asystemofcells" target="_blank" rel="noopener noreferrer">Ko-fi</a>
+    </nav>
+    <span class="foot-rights">&copy; 2026 asystemofcells</span>
+  </div>
+</footer>

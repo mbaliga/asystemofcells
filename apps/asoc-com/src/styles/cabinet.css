@@ -1,0 +1,26 @@
+/* The Cabinet: whitespace over boxes. Status is always a word, never colour alone. */
+.cab-grid { list-style: none; padding: 0; margin: 40px 0 0; display: grid; gap: 44px; }
+.cab-card { display: block; text-decoration: none; }
+.cab-card h2 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+.cab-kicker { font-size: 13px; color: var(--muted); margin: 2px 0 6px; }
+.cab-state { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.cab-mark { width: 28px; height: 28px; margin-bottom: 10px; color: #B08D57; }
+.cab-price { font-size: 17px; margin: 8px 0 0; }
+.cab-facts { margin: 28px 0; padding: 0; list-style: none; font-size: 15px; }
+.cab-facts li { display: flex; gap: 12px; padding: 4px 0; }
+.cab-facts b { min-width: 110px; font-weight: 600; color: var(--muted); }
+.cab-btn { display: inline-block; font: inherit; font-weight: 600; background: #1d1d1f; color: #fff !important; border: 0; border-radius: 999px; padding: 12px 24px; text-decoration: none; cursor: pointer; }
+.cab-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+.cab-link { font: inherit; background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; color: inherit; }
+.cab-lines { list-style: none; padding: 0; margin: 24px 0; }
+.cab-lines li { display: grid; grid-template-columns: 1fr 70px 90px auto; gap: 12px; align-items: center; padding: 10px 0; }
+.cab-lines input { width: 64px; font: inherit; padding: 6px; }
+.cab-total, .cab-empty, .cab-note { color: var(--muted); }
+.cab-form { display: grid; gap: 14px; margin: 24px 0; }
+.cab-form label { display: grid; gap: 4px; font-size: 14px; font-weight: 600; }
+.cab-form input, .cab-form textarea, .cab-form select { font: inherit; font-weight: 400; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+.cab-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cab-form .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.cab-timeline { padding-left: 18px; color: var(--muted); }
+.cab-basket { position: fixed; top: 18px; right: 4vw; z-index: 10; font-size: 13px; font-weight: 600; text-decoration: none; }
+@media (max-width: 520px) { .cab-lines li { grid-template-columns: 1fr 60px; } .cab-form .row { grid-template-columns: 1fr; } }

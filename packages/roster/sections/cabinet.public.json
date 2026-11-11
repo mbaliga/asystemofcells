@@ -1,0 +1,5 @@
+{
+  "section": "cabinet",
+  "notes": "The Cabinet's pieces live in apps/asoc-com/src/content/cabinet/*.md (a content collection), not here. This file stays so the section keeps its slot.",
+  "items": []
+}

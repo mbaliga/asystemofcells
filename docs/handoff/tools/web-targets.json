@@ -1,0 +1,12 @@
+[
+  { "imagery": "nooz", "label": "Newsstand", "role": "hero", "url": "/nooz/read/", "viewports": ["phone", "desktop"], "schemes": ["light", "dark"],
+    "setup": "try{localStorage.setItem('nooz:onboarded','1')}catch(e){}", "wait": 2500, "sample_data": true,
+    "repo": "mbaliga/asystemofcells", "path": "apps/asoc-com/public/nooz/read/" },
+  { "imagery": "nooz", "label": "Loom", "role": "feature", "url": "/nooz/read/#/loom", "viewports": ["phone"], "schemes": ["light"], "wait": 2500, "sample_data": true },
+  { "imagery": "nooz", "label": "Clippings", "role": "feature", "url": "/nooz/read/#/clippings", "viewports": ["phone"], "schemes": ["light"], "wait": 2500, "sample_data": true },
+  { "imagery": "tools", "label": "Texture generator", "role": "gallery", "url": "/tools/texture-background.html", "viewports": ["desktop"], "schemes": ["light"], "wait": 2000 },
+  { "imagery": "tools", "label": "Cells generator", "role": "gallery", "url": "/tools/cells-logo.html", "viewports": ["desktop"], "schemes": ["light"], "wait": 2000 },
+  { "imagery": "hafx", "label": "Editor", "role": "hero", "url": "/haeworkbench/editor/", "viewports": ["desktop", "tablet"], "schemes": ["dark", "light"], "wait": 3000, "sample_data": true },
+  { "imagery": "orrery", "label": "Horizon", "role": "hero", "file": "screenshots/tmp/orrery/web/dist/index.html", "viewports": ["desktop"], "schemes": ["dark"], "wait": 3000, "sample_data": true,
+    "repo": "mbaliga/orrery", "path": "web/" }
+]
