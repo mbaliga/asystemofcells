@@ -54,8 +54,14 @@
     }
   ],
   "functions": {
-    "api/counter/[...path].js": {
+    "api/counter/index.js": {
       "maxDuration": 30
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/counter/:path+",
+      "destination": "/api/counter?__p=:path+"
+    }
+  ]
 }
