@@ -1,0 +1,32 @@
+---
+import SimplePageLayout from '../../layouts/SimplePageLayout.astro'
+import '../../styles/cabinet.css'
+---
+<SimplePageLayout title="Commission the practice: Practice" description="Tell us what you are building. We reply by email." noindex={false} quiet>
+  <p class="eyebrow"><a href="/architecture/">Practice</a></p>
+  <h1>Commission.</h1>
+  <p>Tell us what you are building. Madhav replies by email, usually within three days.</p>
+  <p id="planNote" class="cab-note" hidden>The plan from the Vastu tool will be sent with your message as data.</p>
+  <form id="commission" class="cab-form">
+    <label>Name<input name="name" required maxlength="120" autocomplete="name" /></label>
+    <label>Email<input name="email" type="email" required maxlength="200" autocomplete="email" /></label>
+    <label>Phone, if you like<input name="phone" maxlength="30" autocomplete="tel" /></label>
+    <label>Where is the site? (city, country)<input name="where" required maxlength="200" /></label>
+    <label>What is it?
+      <select name="what"><option value="residential">A house</option><option value="interior">An interior</option><option value="brand">Brand and identity for a space</option><option value="consultation">A consultation</option><option value="other">Something else</option></select>
+    </label>
+    <label>How big, roughly<input name="scale" maxlength="300" /></label>
+    <label>When<input name="timeline" maxlength="120" /></label>
+    <label>Budget, if you want to say
+      <select name="budget"><option value="">Rather not say</option><option>Under ₹25 lakh</option><option>₹25 lakh to ₹1 crore</option><option>Over ₹1 crore</option></select>
+    </label>
+    <label>Tell us about it<textarea name="message" rows="6" maxlength="3800"></textarea></label>
+    <label>Drawings or photos, if you have them (PDF or images, up to 10 MB together)<input id="filesInput" name="files" type="file" multiple accept="application/pdf,image/*" /></label>
+    <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off" /></label></div>
+    <p id="msg" class="cab-note" role="status"></p>
+    <button class="cab-btn" type="submit">Send</button>
+  </form>
+  <div id="done" hidden><h2>Sent.</h2><p>Madhav replies by email, usually within three days.</p></div>
+  <p class="cab-note">What is kept, and for how long: <a class="inline-link" href="/privacy/#the-counter">the privacy page</a>. Files are uploaded only after your message is recorded.</p>
+</SimplePageLayout>
+<script>import '../../scripts/arch/commission.js'</script>

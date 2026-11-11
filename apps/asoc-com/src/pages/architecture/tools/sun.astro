@@ -1,0 +1,35 @@
+---
+import SimplePageLayout from '../../../layouts/SimplePageLayout.astro'
+import ArchSite from '../../../components/ArchSite.astro'
+import '../../../styles/arch.css'
+---
+<SimplePageLayout title="Sun path and shadows: Practice" description="A sun-path diagram and a shadow study for any site, computed in your browser with the NOAA solar position method." noindex={false} quiet>
+  <div class="arch-tool">
+    <p class="eyebrow"><a href="/architecture/tools/">Tools</a></p>
+    <h1>Sun path and shadows.</h1>
+    <p class="arch-note">Where the sun is, any day, any hour, and what a block casts on the ground. Worked out in your browser.</p>
+    <ArchSite north={false} />
+    <div class="arch-controls">
+      <label>Date <input id="date" type="date" /></label>
+      <label>Time <span id="timeLabel"></span><input id="time" type="range" min="0" max="1439" step="10" value="720" /></label>
+    </div>
+    <p id="readout" role="status"></p>
+    <div class="arch-figs">
+      <figure><svg id="diagram" viewBox="-1.25 -1.25 2.5 2.5" role="img" aria-label="Stereographic sun path diagram, north up"></svg><figcaption class="arch-note">Stereographic: the centre is straight overhead, the outer ring the horizon. Hours are local.</figcaption></figure>
+      <figure>
+        <svg id="plan" viewBox="-10 -10 20 20" role="img" aria-label="Shadow of a block on plan, north up"></svg>
+        <figcaption class="arch-note" id="planNote"></figcaption>
+        <div class="arch-controls">
+          <label>Width (m) <input id="bw" type="number" min="1" value="10" /></label>
+          <label>Depth (m) <input id="bd" type="number" min="1" value="8" /></label>
+          <label>Storeys <input id="storeys" type="number" min="1" max="40" value="2" /></label>
+          <label>Turned from north (°) <input id="brot" type="number" value="0" /></label>
+          <label><span>09:00 to 15:00</span> <input id="range" type="checkbox" /></label>
+        </div>
+      </figure>
+    </div>
+    <p><button class="cab-link" id="csv" type="button">Download the day as CSV</button> · <button class="cab-link" id="png" type="button">Download the diagram as PNG</button></p>
+    <details><summary>ⓘ About these numbers</summary><p class="arch-note">The sun's position uses NOAA's solar calculator method, accurate to a few hundredths of a degree for 1950 to 2050, with a refraction correction near the horizon. The shadow is the block's outline thrown onto flat ground; each storey is taken as 3 m. A 3D view of the same study is in the plan.</p></details>
+  </div>
+</SimplePageLayout>
+<script>import '../../../scripts/arch/sun-ui.js'</script>

@@ -1,0 +1,23 @@
+.arch-tool { width: min(980px, 92vw); position: relative; left: 50%; transform: translateX(-50%); margin: 24px 0 60px; }
+.arch-tool h1 { margin-bottom: 4px; }
+.arch-site { border: 0; padding: 0; margin: 20px 0; display: grid; gap: 10px 16px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.arch-site legend { font-weight: 600; margin-bottom: 8px; }
+.arch-site label, .arch-controls label { display: grid; gap: 4px; font-size: 14px; font-weight: 600; }
+.arch-site input, .arch-site select, .arch-controls input, .arch-controls select, .arch-tool table input { font: inherit; font-weight: 400; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: inherit; }
+.arch-controls { display: grid; gap: 10px 16px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 18px 0; }
+.arch-figs { display: grid; gap: 28px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); align-items: start; }
+.arch-figs svg { width: 100%; height: auto; color: #1d1d1f; display: block; }
+.arch-note { color: var(--muted); font-size: 14px; }
+.arch-tool table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.arch-tool th, .arch-tool td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+.arch-tool td input { width: 84px; }
+.arch-tool details { margin: 6px 0; }
+.arch-strands { display: grid; gap: 32px; margin: 36px 0; }
+.arch-strands a { text-decoration: none; display: block; }
+.arch-strands b { display: block; font-size: 22px; letter-spacing: -0.01em; }
+.arch-strands span { color: var(--muted); }
+.arch-hubs { list-style: none; padding: 0; margin: 28px 0; display: grid; gap: 26px; }
+.arch-hubs a { text-decoration: none; display: block; }
+.arch-hubs b { display: block; font-size: 20px; }
+.arch-hubs span { color: var(--muted); font-size: 15px; }
+@media print { .back-link, .arch-site, .arch-controls, .site-foot { display: none !important; } .arch-tool { width: 100%; left: 0; transform: none; } }

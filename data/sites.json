@@ -1,0 +1,22 @@
+[
+  { "slug": "hyderabad", "name": "Hyderabad", "lat": 17.385, "lon": 78.4867 },
+  { "slug": "bengaluru", "name": "Bengaluru", "lat": 12.9716, "lon": 77.5946 },
+  { "slug": "chennai", "name": "Chennai", "lat": 13.0827, "lon": 80.2707 },
+  { "slug": "mumbai", "name": "Mumbai", "lat": 19.076, "lon": 72.8777 },
+  { "slug": "pune", "name": "Pune", "lat": 18.5204, "lon": 73.8567 },
+  { "slug": "delhi", "name": "Delhi", "lat": 28.6139, "lon": 77.209 },
+  { "slug": "kolkata", "name": "Kolkata", "lat": 22.5726, "lon": 88.3639 },
+  { "slug": "ahmedabad", "name": "Ahmedabad", "lat": 23.0225, "lon": 72.5714 },
+  { "slug": "jaipur", "name": "Jaipur", "lat": 26.9124, "lon": 75.7873 },
+  { "slug": "lucknow", "name": "Lucknow", "lat": 26.8467, "lon": 80.9462 },
+  { "slug": "bhopal", "name": "Bhopal", "lat": 23.2599, "lon": 77.4126 },
+  { "slug": "nagpur", "name": "Nagpur", "lat": 21.1458, "lon": 79.0882 },
+  { "slug": "kochi", "name": "Kochi", "lat": 9.9312, "lon": 76.2673 },
+  { "slug": "goa", "name": "Panaji", "lat": 15.4909, "lon": 73.8278 },
+  { "slug": "visakhapatnam", "name": "Visakhapatnam", "lat": 17.6868, "lon": 83.2185 },
+  { "slug": "vijayawada", "name": "Vijayawada", "lat": 16.5062, "lon": 80.648 },
+  { "slug": "warangal", "name": "Warangal", "lat": 17.9689, "lon": 79.5941 },
+  { "slug": "chandigarh", "name": "Chandigarh", "lat": 30.7333, "lon": 76.7794 },
+  { "slug": "guwahati", "name": "Guwahati", "lat": 26.1445, "lon": 91.7362 },
+  { "slug": "mangaluru", "name": "Mangaluru", "lat": 12.9141, "lon": 74.856 }
+]
