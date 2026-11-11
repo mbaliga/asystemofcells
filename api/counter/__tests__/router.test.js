@@ -29,6 +29,16 @@ test('dispatch: 404 JSON for unknown routes, route errors stay JSON, a query can
   assert.equal(r.statusCode, 405)
 })
 
+test('the Vercel form: routed by __p, including a trailing slash, with the original query kept', async () => {
+  let r = res(); await dispatch({ url: '/api/counter?__p=catalog-state/', query: { __p: 'catalog-state/' }, method: 'GET', headers: {} }, r)
+  assert.equal(r.statusCode, 200)
+  r = res(); await dispatch({ url: '/api/counter?__p=orders/01M6NEZEM0484K9J3H01KDEPTV/&t=abc', query: { __p: 'orders/01M6NEZEM0484K9J3H01KDEPTV/', t: 'abc' }, method: 'GET', headers: {} }, r)
+  assert.equal(r.statusCode, 404) // an order that does not exist: JSON 404, route and :id resolved
+  assert.equal(JSON.parse(r.body).error.code, 'not_found')
+  r = res(); await dispatch({ url: '/api/counter?__p=nope/', query: { __p: 'nope/' }, method: 'GET', headers: {} }, r)
+  assert.equal(JSON.parse(r.body).error.message, 'No such counter route.')
+})
+
 test('Vercel Hobby allows 12 functions per deployment: this repo must stay well under', () => {
   const walk = (d) => readdirSync(d).flatMap((n) => { const p = join(d, n); return statSync(p).isDirectory() ? (n.startsWith('_') ? [] : walk(p)) : (n.startsWith('_') || !n.endsWith('.js') ? [] : [p]) })
   const fns = walk(new URL('../../', import.meta.url).pathname)

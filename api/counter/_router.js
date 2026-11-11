@@ -37,9 +37,15 @@ export function match(pathname) {
 
 export async function dispatch(req, res) {
   const url = new URL(req.url, 'http://x')
-  const m = match(url.pathname)
+  // On Vercel, vercel.json rewrites /api/counter/:path+ to /api/counter?__p=:path+ (a dynamic [...path] file name
+  // does not survive the site's trailingSlash setting), and req.query carries the merged query. Locally the
+  // dev server passes the original URL. Either way the route comes from __p when present, else from the path.
+  const q = { ...Object.fromEntries(url.searchParams), ...(req.query || {}) }
+  const routed = q.__p
+  delete q.__p
+  const m = match(routed !== undefined ? '/api/counter/' + routed : url.pathname)
   if (!m) return send(res, 404, { error: { code: 'not_found', message: 'No such counter route.' } })
   // The path wins over a same-named query parameter: a caller must not be able to override :id.
-  req.query = { ...Object.fromEntries(url.searchParams), ...m.query }
+  req.query = { ...q, ...m.query }
   return m.handler(req, res)
 }

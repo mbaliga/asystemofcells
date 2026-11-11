@@ -16,7 +16,7 @@ Later, on the homelab: `LEDGER_PROVIDER=gitea`, `LEDGER_URL`, `LEDGER_REPO`, `LE
 
 1. Finish KYC and activate the account. Payment Links must be enabled. Turn on international cards if you want them.
 2. Create API keys: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`.
-3. Add a webhook to `https://asystemofcells.com/api/counter/webhooks/razorpay`, event **payment_link.paid** only. Choose a secret and set it as `RAZORPAY_WEBHOOK_SECRET`.
+3. Add a webhook to `https://www.asystemofcells.com/api/counter/webhooks/razorpay/` (**with the trailing slash and the `www`**: the site redirects without them, and a webhook sender may not follow a redirect), event **payment_link.paid** only. Choose a secret and set it as `RAZORPAY_WEBHOOK_SECRET`.
 4. Check against Razorpay's live API whether a payment link's `reference_id` must be unique. The code appends a suffix either way, so this only confirms.
 
 ## 3. Notifications and mail
