@@ -1,0 +1,36 @@
+---
+import SimplePageLayout from '../../layouts/SimplePageLayout.astro'
+import '../../styles/cabinet.css'
+---
+<SimplePageLayout title="Check out: The Cabinet" description="Place an order." noindex quiet>
+  <p class="eyebrow"><a href="/cabinet/cart/">Basket</a></p>
+  <h1>Check out.</h1>
+  <p id="summary" class="cab-note"></p>
+  <p class="cab-note">Nothing is charged now. We read the order, and if we can take it on you get a payment link by email.</p>
+  <form id="checkoutForm" class="cab-form" autocomplete="on">
+    <label>Name<input name="name" required maxlength="120" autocomplete="name" /></label>
+    <label>Email<input name="email" type="email" required maxlength="200" autocomplete="email" /></label>
+    <label>Phone, if you like<input name="phone" maxlength="30" autocomplete="tel" /></label>
+    <label>Address<input name="line1" required maxlength="300" autocomplete="address-line1" /></label>
+    <label>Address, line 2<input name="line2" maxlength="300" autocomplete="address-line2" /></label>
+    <div class="row">
+      <label>City<input name="city" required maxlength="120" autocomplete="address-level2" /></label>
+      <label>State<input name="state" required maxlength="120" autocomplete="address-level1" /></label>
+    </div>
+    <div class="row">
+      <label>Postcode<input name="postcode" required maxlength="20" autocomplete="postal-code" /></label>
+      <label>Country (two letters)<input name="country" required value="IN" maxlength="2" minlength="2" autocomplete="country" /></label>
+    </div>
+    <label>A note, if you have one<textarea name="note" rows="3" maxlength="1000"></textarea></label>
+    <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off" /></label></div>
+    <p id="msg" class="cab-note" role="status"></p>
+    <button class="cab-btn" type="submit">Place order</button>
+  </form>
+  <form id="waitlist" class="cab-form" hidden>
+    <p></p>
+    <label>Your email<input name="wemail" type="email" required maxlength="200" /></label>
+    <button class="cab-btn" type="submit">Tell me if it frees up</button>
+  </form>
+  <p class="cab-note">What is kept, and for how long: <a class="inline-link" href="/privacy/#the-counter">the privacy page</a>.</p>
+</SimplePageLayout>
+<script>import '../../scripts/cabinet/checkout.js'</script>

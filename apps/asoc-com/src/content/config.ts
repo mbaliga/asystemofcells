@@ -65,4 +65,39 @@ const products = defineCollection({
     }),
 })
 
-export const collections = { products }
+// The Cabinet (05_WING_CABINET.md section 2). One file per piece. `sample: true`
+// entries exist so the pages and the checkout can be built and tested; they are
+// dropped from a production build, like the placeholders in @asoc/roster/sections.
+const cabinet = defineCollection({
+  type: 'content',
+  schema: z
+    .object({
+      title: z.string().min(1),
+      kind: z.enum(['made', 'curiosity']),
+      status: z.enum(['available', 'reserved', 'sold', 'archived']),
+      sample: z.boolean().default(false),
+      price: z.object({ inr: z.number().int().positive(), usd: z.number().positive().optional() }),
+      edition: z.object({ size: z.number().int().positive(), sold: z.number().int().min(0) }).optional(),
+      qty: z.literal(1).optional(),
+      condition: z.enum(['mint', 'excellent', 'very good', 'good', 'fair']).optional(),
+      conditionNote: z.string().optional(),
+      provenance: z.string().optional(),
+      making: z.string().optional(),
+      dims: z.object({ w: z.number(), h: z.number(), d: z.number(), unit: z.enum(['mm', 'cm']) }).optional(),
+      weightGrams: z.number().positive(),
+      materials: z.array(z.string()).default([]),
+      tags: z.array(z.string()).default([]),
+      shipsTo: z.array(z.enum(['IN', 'INTL'])).min(1),
+      fragile: z.boolean().default(false),
+      madeOn: z.coerce.date().optional(),
+      acquired: z.coerce.date().optional(),
+      summary: z.string().min(1),
+    })
+    .superRefine((v, ctx) => {
+      if (v.kind === 'curiosity' && v.edition) ctx.addIssue({ code: 'custom', message: 'edition is for made pieces only' })
+      if (v.kind === 'made' && !v.edition) ctx.addIssue({ code: 'custom', message: 'a made piece needs an edition' })
+      if (v.kind === 'curiosity' && v.qty !== undefined && v.qty !== 1) ctx.addIssue({ code: 'custom', message: 'curiosities are one of one' })
+    }),
+})
+
+export const collections = { products, cabinet }

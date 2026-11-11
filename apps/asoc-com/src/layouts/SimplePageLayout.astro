@@ -8,13 +8,14 @@ import BaseLayout from './BaseLayout.astro'
 import HouseFooter from '../components/HouseFooter.astro'
 import '../styles/house-shell.css'
 
-const { title, description, canonical, jsonLd, noindex } = Astro.props
+// `quiet` marks a page where someone does something (a basket, a form): no page count.
+const { title, description, canonical, jsonLd, noindex, quiet = false } = Astro.props
 ---
 <!-- analytics: every consumer of this layout is a page that describes the house
      (About, FAQ, Privacy, Contact, Fonts, and the Tools index, which lists the
      generators without being one). A page where someone makes, reads, or runs
      something must not use this layout. See BaseLayout's boundary comment. -->
-<BaseLayout title={title} description={description} canonical={canonical} jsonLd={jsonLd} noindex={noindex} analytics noChrome>
+<BaseLayout title={title} description={description} canonical={canonical} jsonLd={jsonLd} noindex={noindex} analytics={!quiet} noChrome>
   <div class="simple-page">
     <a class="back-link" href="/">&larr; asystemofcells</a>
     <main class="simple-content">
