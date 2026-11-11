@@ -67,7 +67,31 @@ Tone and labelling: the page states, once, that Vastu is a traditional design sy
 
 Geometry: plot polygon → oriented bounding square aligned to true north (rotate the image by the north offset); 9×9 cells; zone lookup by cell index (`data/vaastu.zones.json` has the cell→zone map for 8 and 16 zones and the 32 pada names clockwise from NE along the east side, matching the classical order). Room polygons → zone coverage % by rasterising at 1 px.
 
-### 3.4 Later tools (do not build now; leave the hub hooks)
+### 3.4 Tropical design — the Koenigsberger tools (`/architecture/tools/tropical`)
+
+Source: Koenigsberger, Ingersoll, Mayhew & Szokolay, *Manual of Tropical Housing and Building, Part 1: Climatic Design* (1974). The book's methods are worked procedures, not software; this page makes them runnable. Credit the book by full citation on the page. Reproduce no figures or text from it; implement the procedures only.
+
+Reference implementation: `tools/tropical.mjs` with `tools/tropical.test.mjs`. Port it 1:1 to `src/scripts/arch/tropical.js`.
+
+1. **Mahoney Tables.**
+   - Inputs: 12 months of mean max/min temperature, mean RH and rainfall, prefilled from the baked climate files for the ~20 sites (the same NASA POWER build as Wind; add `T2M_MAX`, `T2M_MIN`, `RH2M`, `PRECTOTCORR` to `build-windrose.mjs`). Every cell is editable.
+   - Tables 1–3 are implemented and tested: humidity groups, comfort limits by AMT, day/night thermal stress, and the six indicators H1, H2, H3, A1, A2, A3.
+   - Output: a month × indicator grid of cell-marks with labels, then the indicator totals.
+   - Tables 4–5 turn the totals into recommendations for layout, spacing, air movement, openings, walls, roofs, outdoor sleeping and rain protection. They are data in `data/mahoney.recommendations.json`. **OWNER: transcribe from the book and check.** Until that file exists, the page shows the totals and a line saying the recommendations are being transcribed. It never shows guessed recommendations.
+2. **Shadow-angle protractor.**
+   - Inputs: a wall orientation and a window, and the sun positions from the Sun tool (`sunpath.mjs`).
+   - Outputs: HSA and VSA through the year, a shading mask on the sun-path diagram, and the overheated period (months and hours where Mahoney day stress is `H`) laid on the same diagram.
+   - Device design: overhang depth and fin cut-offs that shade the overheated period, with `isShaded()` per sun position.
+   - Shares the stereographic diagram with §3.1.
+3. **Climate type.**
+   - Classifies the site using the book's groups (warm-humid, hot-dry, composite/monsoon, tropical upland), as a reading of the Mahoney totals.
+   - The thresholds are the owner's (`data/climate-types.json`, OWNER).
+   - The book's design principles for each type go behind ⓘ, in the owner's own words.
+4. **In the plan (hub hooks only):** thermal performance of walls and roofs (U-value, time lag, decrement factor, sol-air temperature, from a material table the owner supplies), and daylight factor by the BRS protractor method.
+
+Honesty labelling is the same as Wind: these are the book's empirical design aids, not a simulation. The page says so once.
+
+### 3.5 Later tools (do not build now; leave the hub hooks)
 - Telangana building-rules quick check (setbacks/FSI/height by plot size) — data must come from the owner.
 - Area statement generator (carpet/built-up/super built-up from room polygons) — easy once the plan tool exists; share the polygon editor.
 
@@ -80,5 +104,6 @@ Fields: name, email, phone (optional), where (city/country), what (residential /
 - Sun: all test vectors in `tools/sunpath.test.mjs` pass in the ported module (`node --test`); the 3D view renders with shadows on a mid-range phone (no WebGL2 → falls back to the diagram only, with a sentence saying so).
 - Wind: Hyderabad rose renders from the baked file; the cloud button is inert until pressed and labelled.
 - Vaastu: a square plot with north up maps the NE cell to the Ishanya zone; rotating north by 90° rotates the zones; entrance on pada N3 reports as favoured per the table.
+- Tropical: all `tools/tropical.test.mjs` tests pass in the ported module. With Hyderabad's baked climate, the Mahoney grid renders. Without `mahoney.recommendations.json`, the page shows totals only and says why.
 - Work index hides `pending` entries; sitemap excludes them.
 - Commission inquiry lands in the dev ledger with attachments only on success.

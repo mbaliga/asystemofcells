@@ -20,7 +20,7 @@ import { CONTACT_EMAIL, enquiryMailto } from '../lib/contact.js'
 
 const { section: slug, item } = Astro.props
 const section = getSection(slug)
-if (!section || !['architecture', 'shop', 'prints'].includes(slug)) {
+if (!section || !['architecture', 'cabinet', 'prints'].includes(slug)) {
   throw new Error(`SectionItemLayout: "${slug}" is not a section with item pages`)
 }
 
@@ -41,7 +41,7 @@ if (slug === 'architecture') {
   add('Year', item.year)
   add('Place', item.place)
   add('Role', item.role)
-} else if (slug === 'shop') {
+} else if (slug === 'cabinet') {
   add('Edition', item.edition)
   add('Availability', availability, { status: true })
   add('Price', priceLine(item))
@@ -58,7 +58,7 @@ const itemLine = `Item: ${item.name}`
 const tail = ['Quantity: ', 'Country to ship to: ', 'Notes: ']
 const optionLabels = slug === 'prints' ? (item.options || []).map((o) => o.label) : []
 let enquiry = null
-if (slug === 'shop' && soldOut) {
+if (slug === 'cabinet' && soldOut) {
   enquiry = {
     intro: 'This one is sold out. There is no checkout. You can ask by email to be told if it returns.',
     linkText: 'Ask to be told if it returns by email',
@@ -66,7 +66,7 @@ if (slug === 'shop' && soldOut) {
     before: [itemLine],
     after: ['Notes: '],
   }
-} else if (slug === 'shop') {
+} else if (slug === 'cabinet') {
   enquiry = {
     intro: 'There is no checkout. Email the details and the maker replies with a price and lead time.',
     linkText: 'Ask to buy by email',
