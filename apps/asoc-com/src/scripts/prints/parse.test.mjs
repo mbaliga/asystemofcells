@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import zlib from 'node:zlib'
 import { parseModel, parseSTL, parseOBJ, parse3MF, ParseError } from './parse.js'
 import { placeOnPlate, layFlat, rotateZ, fits, scaleToFit, bbox, scaled } from './place.js'
-import { meshStats, boxMesh, parseBinarySTL } from './estimate.js'
+import { meshStats, boxMesh, concat, parseBinarySTL } from './estimate.js'
 
 const binSTL = (pos) => {
   const n = pos.length / 9, b = Buffer.alloc(84 + n * 50)
@@ -91,4 +91,47 @@ test('layFlat puts the biggest face down on a plank, fits() and scaleToFit() jud
   assert.ok(fits(boxMesh(180, 180, 180), vol)); assert.ok(!fits(boxMesh(181, 10, 10), vol))
   assert.ok(scaleToFit(boxMesh(190, 10, 10), vol) > 0.94); assert.equal(scaleToFit(boxMesh(400, 10, 10), vol), null); assert.equal(scaleToFit(boxMesh(10, 10, 10), vol), null)
   assert.equal(bbox(scaled(boxMesh(10, 10, 10), 2)).size[0], 20)
+})
+
+// ---- from the Opus review ----
+test('3MF in the Bambu/Prusa layout: the main file only points at 3D/Objects/*.model through p:path', async () => {
+  const objects = `<?xml version="1.0"?><model unit="millimeter"><resources>${objXml(1)}</resources></model>`
+  const main = `<?xml version="1.0"?><model unit="millimeter"><resources><object id="2" type="model"><components><component p:path="/3D/Objects/object_1.model" objectid="1" transform="1 0 0 0 1 0 0 0 1 50 0 0"/></components></object></resources><build><item objectid="2" transform="1 0 0 0 1 0 0 0 1 100 0 0"/></build></model>`
+  const b = bbox(await parse3MF(zip({ '3D/3dmodel.model': main, '3D/Objects/object_1.model': objects })))
+  assert.deepEqual([b.min[0], b.max[0], b.size[2]], [150, 160, 10])
+})
+
+test('3MF without a build section: components are not emitted twice', async () => {
+  const x = model(objXml(1) + '<object id="2"><components><component objectid="1"/></components></object>')
+  assert.equal((await parse3MF(zip({ '3D/3dmodel.model': x }))).length, 12 * 9)
+})
+
+test('3MF: a mirrored item keeps its volume (winding is flipped back)', async () => {
+  const x = model(objXml(1) + '<build><item objectid="1"/><item objectid="1" transform="-1 0 0 0 1 0 0 0 1 100 0 0"/></build>')
+  const pos = await parse3MF(zip({ '3D/3dmodel.model': x }))
+  assert.ok(Math.abs(meshStats(pos).volume - 2000) < 1e-3, `volume ${meshStats(pos).volume}`)
+})
+
+test('zip bomb: an entry that unpacks past the cap is refused', async () => {
+  const big = zip({ '3D/3dmodel.model': 'x'.repeat(2000) })
+  const dv = new DataView(big); // forge the central-directory uncompressed size to 1 GB
+  for (let i = big.byteLength - 22; i >= 0; i--) if (dv.getUint32(i, true) === 0x06054b50) { dv.setUint32(dv.getUint32(i + 16, true) + 24, 1 << 30, true); break }
+  await assert.rejects(parse3MF(big), (e) => e instanceof ParseError && /too large/.test(e.message))
+})
+
+test('empty STL and empty files are refused with a clear message', async () => {
+  const empty = Buffer.alloc(84); await assert.rejects(parseModel(empty.buffer.slice(0, 84), 'a.stl'), ParseError)
+})
+
+test('a binary STL whose header says "solid" and has trailing bytes still loads', () => {
+  const b = Buffer.from(binSTL(boxMesh(5, 5, 5))); b.write('solid exported by something', 0)
+  const withTail = Buffer.concat([b, Buffer.alloc(20)])
+  assert.equal(parseSTL(withTail.buffer.slice(withTail.byteOffset, withTail.byteOffset + withTail.length)).length, 12 * 9)
+})
+
+test('layFlat on a stepped part picks a plane that can rest on the plate', () => {
+  // a 40x10x2 plank with a 40x10x2 plank on top of half of it: the big lowest face wins over parallel faces at other heights
+  const part = concat(boxMesh(40, 10, 2), boxMesh(20, 10, 2, 0, 0, 2))
+  const flat = placeOnPlate(layFlat(part)), b = bbox(flat)
+  assert.ok(Math.abs(b.size[2] - 4) < 0.05, `height ${b.size[2]}`)
 })

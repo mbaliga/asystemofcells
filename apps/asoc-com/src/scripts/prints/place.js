@@ -46,6 +46,8 @@ function rotateFromTo(pos, a, b) { // Rodrigues: rotate unit vector a onto b
 
 /** "Lay flat": the planar face group with the most area goes down. */
 export function layFlat(pos) {
+  // Group by plane, not just by normal: parallel faces at different heights are different faces. Prefer a group
+  // that sits at the extreme of the mesh along its normal (a face that can actually rest on the plate).
   const groups = new Map()
   for (let i = 0; i < pos.length; i += 9) {
     const ux = pos[i + 3] - pos[i], uy = pos[i + 4] - pos[i + 1], uz = pos[i + 5] - pos[i + 2]
@@ -53,16 +55,25 @@ export function layFlat(pos) {
     const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx
     const a2 = Math.hypot(nx, ny, nz); if (a2 < 1e-12) continue
     const n = [nx / a2, ny / a2, nz / a2]
-    const key = n.map((c) => Math.round(c * 50)).join(',') // ~1° buckets
-    const g = groups.get(key) || { area: 0, n: [0, 0, 0] }
-    g.area += a2 / 2; for (let k = 0; k < 3; k++) g.n[k] += n[k] * (a2 / 2)
+    const d = n[0] * pos[i] + n[1] * pos[i + 1] + n[2] * pos[i + 2]
+    const key = n.map((c) => Math.round(c * 50)).join(',') + '|' + Math.round(d * 2) // ~1 degree, ~0.5 mm planes
+    const g = groups.get(key) || { area: 0, n: [0, 0, 0], d: 0 }
+    g.area += a2 / 2; g.d += d * (a2 / 2); for (let k = 0; k < 3; k++) g.n[k] += n[k] * (a2 / 2)
     groups.set(key, g)
   }
-  let best = null
-  for (const g of groups.values()) if (!best || g.area > best.area) best = g
+  let best = null, bestScore = -1
+  const extent = (n) => { // lowest point of the mesh when n is the down direction: min of (-n . v) ... i.e. the face is extreme if d equals max of n.v
+    let hi = -Infinity; for (let i = 0; i < pos.length; i += 3) { const t = n[0] * pos[i] + n[1] * pos[i + 1] + n[2] * pos[i + 2]; if (t > hi) hi = t } return hi
+  }
+  const ranked = [...groups.values()].sort((p, q) => q.area - p.area).slice(0, 40)
+  for (const g of ranked) {
+    const len = Math.hypot(...g.n), n = g.n.map((c) => c / len), dMean = g.d / g.area
+    const resting = Math.abs(extent(n) - dMean) < 0.6 // the plane is the outermost surface along n: it can lie on the plate
+    const score = g.area * (resting ? 1 : 0.01)
+    if (score > bestScore) { bestScore = score; best = n }
+  }
   if (!best) return Float32Array.from(pos)
-  const len = Math.hypot(...best.n), n = best.n.map((c) => c / len)
-  return rotateFromTo(pos, n, [0, 0, -1])
+  return rotateFromTo(pos, best, [0, 0, -1])
 }
 
 /** Fits the build volume (with a small tolerance for float noise)? */

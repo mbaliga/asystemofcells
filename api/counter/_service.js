@@ -138,6 +138,17 @@ async function resolveCabinet(ctx, body, zone) {
   return { items: items.map(({ weightGrams, fragile, ...rest }) => rest), quote, flags: [] }
 }
 
+const pick = (v, allowed, dflt) => (allowed.includes(v) ? v : dflt)
+function cleanSettings(raw) {
+  const r = raw && typeof raw === 'object' ? raw : {}
+  return {
+    layerHeight: pick(Number(r.layerHeight), TABLES.pricing.layerHeights, 0.2),
+    infillPct: pick(Number(r.infillPct), TABLES.pricing.infillPresets, 15),
+    supports: pick(r.supports, ['auto', 'none'], 'auto'),
+    filament: pick(r.filament, Object.keys(TABLES.pricing.inrPerGram), 'PLA'),
+  }
+}
+
 function resolvePrint(ctx, body, zone) {
   const line = Array.isArray(body.items) ? body.items[0] : null
   if (!line || body.items.length !== 1) throw new HttpError(400, 'invalid', 'A print order carries one model.')
@@ -156,13 +167,14 @@ function resolvePrint(ctx, body, zone) {
   if (!TABLES.tiers.tiers.some((t) => t.id === tier)) throw new HttpError(400, 'invalid', 'Unknown finish.')
   const filament = str(line.filament || 'PLA', { max: 10, label: 'Material' })
   if (!TABLES.pricing.inrPerGram[filament]) throw new HttpError(400, 'invalid', 'Unknown material.')
-  const flags = []
+  // The figures come from the visitor's browser. The owner sees this flag on every print order and checks the file before accepting.
+  const flags = ['client-estimate']
   if (e.manifold === false) flags.push('non-manifold')
   if (est.printMin > TABLES.pricing.maxPrintMinutesWithoutReview) flags.push('long-print')
   const quote = quotePrint({ est, tier, qty, filament, zone })
   return {
     items: [{
-      model: { name: str(m.name, { min: 1, max: 200, label: 'File name' }), sha256, bytes, ext }, settings: line.settings && typeof line.settings === 'object' ? line.settings : {},
+      model: { name: str(m.name, { min: 1, max: 200, label: 'File name' }), sha256, bytes, ext }, settings: cleanSettings(line.settings),
       estimate: { massG: est.massG, printMin: est.printMin, supports: !!e.supports, manifold: e.manifold !== false }, tier, qty,
       colour: optStr(line.colour, { max: 60, label: 'Colour' }), filament,
     }],

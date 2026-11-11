@@ -141,7 +141,7 @@ test('print order: server quote, flags, presigned upload, model attaches, reject
   const out = await S.createOrder(ctx, body)
   const o = await getOrder(ctx, out.body.id)
   assert.equal(o.quote.total, quotePrint({ est: { massG: 8, printMin: 30 }, tier: 'processed', qty: 2 }).total)
-  assert.deepEqual(o.flags, ['non-manifold'])
+  assert.deepEqual(o.flags, ['client-estimate', 'non-manifold'])
   assert.ok(out.body.upload.url.includes(o.items[0].model.storageKey))
   await rejects(S.attachModel(ctx, o.id, out.body.token), 409, 'no_upload')
   await ctx.storage.put(o.items[0].model.storageKey, 999)
@@ -161,7 +161,7 @@ test('print order: server quote, flags, presigned upload, model attaches, reject
 test('print order: long prints are flagged; bad estimate/tier/type refused', async () => {
   const ctx = makeCtx()
   const b = printBody(ctx); b.items[0].estimate.printMin = 2000
-  assert.deepEqual((await getOrder(ctx, (await S.createOrder(ctx, b)).body.id)).flags, ['long-print'])
+  assert.deepEqual((await getOrder(ctx, (await S.createOrder(ctx, b)).body.id)).flags, ['client-estimate', 'long-print'])
   for (const mutate of [(i) => (i.estimate.massG = -1), (i) => (i.tier = 'gold'), (i) => (i.model.ext = 'exe'), (i) => (i.filament = 'unobtainium'), (i) => (i.model.sha256 = 'zz')]) {
     const bad = printBody(ctx); mutate(bad.items[0]); await rejects(S.createOrder(ctx, bad), 400)
   }
@@ -512,4 +512,11 @@ test('review: marking sold offline refuses a piece that a live order holds', asy
   const ctx = makeCtx()
   await S.createOrder(ctx, cabinetBody(ctx, [{ item: 'inkwell-1962', qty: 1 }]))
   await rejects(S.ownerMarkSoldOffline(ctx, 'inkwell-1962'), 409, 'reserved')
+})
+
+test('review: print settings are whitelisted, not stored as sent', async () => {
+  const ctx = makeCtx(); const b = printBody(ctx)
+  b.items[0].settings = { layerHeight: 0.2, infillPct: 99999, supports: '<script>', evil: 'x'.repeat(10000) }
+  const o = await getOrder(ctx, (await S.createOrder(ctx, b)).body.id)
+  assert.deepEqual(o.items[0].settings, { layerHeight: 0.2, infillPct: 15, supports: 'auto', filament: 'PLA' })
 })

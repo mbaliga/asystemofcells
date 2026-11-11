@@ -41,6 +41,8 @@ function renderQuote() {
 
 function renderFacts() {
   const e = state.est, s = state.stats
+  const big = state.bbox ? Math.max(...state.bbox.size) : 0
+  $('unitHint').textContent = !big ? '' : big < 5 ? 'This is very small. If it should be bigger, the file may be in inches or metres; scale it up in your modelling tool.' : big > 1000 ? 'This is enormous. If it should be smaller, the file may be in microns or metres; scale it down in your modelling tool.' : ''
   $('fits').textContent = state.fits ? 'Fits the plate.' : 'Does not fit the plate (it is grey).'
   $('fits').dataset.ok = state.fits ? '1' : '0'
   $('fitBtn').hidden = state.fits || !state.fitScale
@@ -60,7 +62,7 @@ worker.onmessage = (e) => {
   if (m.type === 'error') { $('error').textContent = m.message; $('error').hidden = false; return }
   if (m.type === 'loaded' || m.type === 'transformed') {
     $('error').hidden = true
-    state.fits = m.fits; state.fitScale = m.fitScale
+    state.fits = m.fits; state.fitScale = m.fitScale; state.bbox = m.bbox
     if (state.plate) state.plate.setModel(m.pos, m.fits, colourHex())
     $('tris').textContent = `${m.tris.toLocaleString('en-IN')} triangles · ${m.bbox.size.map((v) => v.toFixed(1)).join(' × ')} mm`
     $('workspace').hidden = false
