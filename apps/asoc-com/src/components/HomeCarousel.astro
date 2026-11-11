@@ -44,6 +44,7 @@
 // No texture/grain anywhere any more: flat colour, soft light, crisp edges.
 import { getVisibleRoster, displayName, TISSUES } from '@asoc/roster'
 import { SECTIONS, getSectionItems, tileOf } from '@asoc/roster/sections'
+import { getCabinetItems, kickerOf, STATUS_LABEL } from '../lib/cabinet.js'
 
 const tissueLabel = Object.fromEntries(TISSUES.map((t) => [t.slug, t.label]))
 const statusLabel = { live: 'Live', beta: 'Beta', soon: 'Soon', building: 'Building' }
@@ -108,9 +109,16 @@ function emptyTile(s) {
   }
 }
 
+// The Cabinet's pieces come from the content collection, not the sections file.
+const cabinetTiles = (await getCabinetItems()).map((e) => ({
+  key: `cabinet/${e.slug}`, name: e.data.title, section: 'cabinet', sectionLabel: 'The Cabinet', kicker: kickerOf(e.data),
+  status: STATUS_LABEL[e.data.status] || '', oneLiner: e.data.summary, color: '#B08D57', href: `/cabinet/${e.slug}/`,
+  external: false, image: null, placeholder: !!e.data.sample,
+}))
+
 const sectionData = Object.fromEntries(
   SECTIONS.map((s) => {
-    const real = s.slug === 'apps' ? appTiles : getSectionItems(s.slug).map((it) => tileOf(s.slug, it))
+    const real = s.slug === 'apps' ? appTiles : s.slug === 'cabinet' ? cabinetTiles : getSectionItems(s.slug).map((it) => tileOf(s.slug, it))
     const empty = real.length === 0
     return [
       s.slug,
