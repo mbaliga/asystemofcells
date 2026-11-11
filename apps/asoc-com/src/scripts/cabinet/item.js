@@ -1,5 +1,6 @@
 // Item page: add to basket, and flip the button to the ledger's truth.
 import { addLine, cartCount, loadCart } from './cart.js'
+import { cfetch } from '../counter-api.js'
 
 const btn = document.getElementById('addToBasket')
 const note = document.getElementById('stateNote')
@@ -19,7 +20,7 @@ if (btn) {
   })
   if (loadCart().some((l) => l.item === line.item) && line.kind === 'curiosity') { btn.disabled = true; btn.textContent = 'In your basket'; document.getElementById('toBasket').hidden = false }
   // Static page, live truth: ask the ledger. A failure leaves the page as built.
-  fetch('/api/counter/catalog-state').then((r) => (r.ok ? r.json() : null)).then((s) => {
+  cfetch('/api/counter/catalog-state').then((r) => (r.ok ? r.json() : null)).then((s) => {
     const st = s && s.items && s.items[line.item]
     if (!st) return
     if (st.status === 'sold') set('Sold.', true)

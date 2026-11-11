@@ -1,6 +1,7 @@
 // Checkout: one POST to the Counter. The customer's figure is a preview; the
 // server recomputes and its number is the one shown on the status page.
 import { loadCart, clearCart, cartQuote, inr } from './cart.js'
+import { cfetch } from '../counter-api.js'
 
 const form = document.getElementById('checkoutForm')
 const lines = loadCart()
@@ -41,7 +42,7 @@ form.addEventListener('submit', async (e) => {
     items: lines.map((l) => ({ item: l.item, qty: l.qty })), clientQuote: { total: q.total }, note: f.get('note') || '',
   }
   try {
-    const res = await fetch('/api/counter/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    const res = await cfetch('/api/counter/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     const j = await res.json().catch(() => ({}))
     if (res.ok) { clearCart(); try { sessionStorage.removeItem('asoc-checkout-key') } catch {} ; location.href = j.statusUrl; return }
     const err = j.error || {}
@@ -57,6 +58,6 @@ const wl = document.getElementById('waitlist')
 wl.addEventListener('submit', async (e) => {
   e.preventDefault()
   const email = wl.querySelector('input[name=wemail]').value
-  const res = await fetch('/api/counter/inquiries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind: 'waitlist', idempotencyKey: 'w' + crypto.randomUUID().replace(/-/g, ''), startedAt: startedAt - 0, fields: { email, item: lines.map((l) => l.item).join(',').slice(0, 80) } }) })
+  const res = await cfetch('/api/counter/inquiries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind: 'waitlist', idempotencyKey: 'w' + crypto.randomUUID().replace(/-/g, ''), startedAt: startedAt - 0, fields: { email, item: lines.map((l) => l.item).join(',').slice(0, 80) } }) })
   wl.querySelector('p').textContent = res.ok ? 'Noted. You will hear if it frees up.' : 'Could not save that. Try again.'
 })

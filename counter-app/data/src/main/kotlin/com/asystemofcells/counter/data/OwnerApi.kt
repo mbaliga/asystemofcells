@@ -24,8 +24,9 @@ class OwnerApi(private val base: () -> String, private val token: () -> String?,
     private val json = "application/json; charset=utf-8".toMediaType()
 
     private suspend fun call(method: String, path: String, body: JsonObject? = null): String = withContext(Dispatchers.IO) {
-        // The site serves the API with a trailing slash; a request without one gets a 308 that OkHttp will not follow for a POST.
-        val q = path.indexOf('?'); val clean = if (q < 0) path.trimEnd('/') + "/" else path.substring(0, q).trimEnd('/') + "/" + path.substring(q)
+        // One function at /api/counter/; the route travels as ?__p= (the site's trailingSlash setting defeated Vercel's dynamic routes).
+        val q = path.indexOf('?'); val route = (if (q < 0) path else path.substring(0, q)).removePrefix("/api/counter").trim('/')
+        val clean = "/api/counter/?__p=$route" + if (q < 0) "" else "&" + path.substring(q + 1)
         val req = Request.Builder().url(base().trimEnd('/') + clean)
             .header("Authorization", "Bearer ${token().orEmpty()}")
             .method(method, if (method == "GET") null else (body?.toString() ?: "{}").toRequestBody(json)).build()
