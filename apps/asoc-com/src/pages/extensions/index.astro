@@ -1,0 +1,82 @@
+---
+import ExtensionShell from '../../components/ExtensionShell.astro'
+import ExtensionCard from '../../components/ExtensionCard.astro'
+import { loadStore, categoryLabel, STATUS_LABEL } from '../../lib/extensions.js'
+
+const { apps, extensions } = loadStore()
+const categories = [...new Set(extensions.map((e) => e.category))].sort()
+const statuses = ['official', 'community', 'fan-made'].filter((s) => extensions.some((e) => e.status === s))
+---
+<ExtensionShell
+  title="Extensions: asystemofcells"
+  description="Browse extensions for the apps from asystemofcells. Each lists exactly what it can do before you install it. No ratings, no tracking."
+>
+  <p class="eyebrow">Extensions</p>
+  <h1>Extensions for the apps.</h1>
+
+  <div class="ext-intro">
+    <p>Extensions add one small thing to one of our apps: a different way to show suggestions, a button that sends text to a notes app. Every extension on this page lists the permissions it asks for, in plain words, before you install it, and the app asks you again at install time.</p>
+    <p>Each one is reviewed by hand against a <a class="inline-link" href="https://asystemofcells.dev/extensions/publish/#checklist">published checklist</a> before it is listed. Browsing here fetches nothing in the background: an app only downloads an extension when you choose to install it. There are no ratings, counts or reviews because the apps collect no telemetry, so there is nothing to base them on.</p>
+  </div>
+
+  {extensions.length === 0 ? (
+    <p class="ext-empty">No extensions are listed yet. Check back soon.</p>
+  ) : (
+    <>
+      <div class="ext-filters" id="ext-filters" role="search" aria-label="Filter extensions" hidden>
+        <div class="ext-field ext-field--grow">
+          <label for="f-q">Search</label>
+          <input id="f-q" type="search" placeholder="Name, summary or tag" autocomplete="off" />
+        </div>
+        <div class="ext-field">
+          <label for="f-app">App</label>
+          <select id="f-app">
+            <option value="">All apps</option>
+            {apps.filter((a) => a.count > 0).map((a) => <option value={a.slug}>{a.name}</option>)}
+          </select>
+        </div>
+        <div class="ext-field">
+          <label for="f-category">Category</label>
+          <select id="f-category">
+            <option value="">All categories</option>
+            {categories.map((c) => <option value={c}>{categoryLabel(c)}</option>)}
+          </select>
+        </div>
+        <div class="ext-field">
+          <label for="f-status">Status</label>
+          <select id="f-status">
+            <option value="">Any status</option>
+            {statuses.map((s) => <option value={s}>{STATUS_LABEL[s]}</option>)}
+          </select>
+        </div>
+        <div class="ext-field ext-field--check">
+          <input id="f-low" type="checkbox" />
+          <label for="f-low">Only extensions with no permission above low risk</label>
+        </div>
+        <button type="button" class="ext-clear" id="f-clear">Clear filters</button>
+      </div>
+
+      <p class="ext-count" id="ext-count" role="status" aria-live="polite">
+        Showing {extensions.length} of {extensions.length} {extensions.length === 1 ? 'extension' : 'extensions'}.
+      </p>
+
+      <ul class="ext-grid" id="ext-grid" data-total={extensions.length}>
+        {extensions.map((e) => <ExtensionCard ext={e} />)}
+      </ul>
+
+      <p class="ext-empty" id="ext-empty" hidden>No extensions match these filters. Clear a filter or change the search.</p>
+      <noscript><p class="ext-note">Filtering needs JavaScript. Without it, every extension is listed above.</p></noscript>
+    </>
+  )}
+
+  <h2>Reading a listing</h2>
+  <ul class="ext-legend">
+    <li><strong>Fan-made</strong>: an independent, unofficial project inspired by something else.</li>
+    <li><strong>Community</strong>: made by someone else and listed after review; not affiliated with any third-party app it works with.</li>
+    <li><strong>Official</strong>: made by the app&rsquo;s own maker.</li>
+    <li><strong>Non-commercial</strong>: free to use, and not to be resold.</li>
+    <li>The risk marker shows the highest-risk permission the extension asks for. It is a guide, not a guarantee: read the permission list.</li>
+  </ul>
+
+  <script is:inline src="/extensions-store.js" defer></script>
+</ExtensionShell>

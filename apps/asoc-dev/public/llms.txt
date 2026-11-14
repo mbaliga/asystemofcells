@@ -1,0 +1,42 @@
+# asystemofcells.dev
+
+> Developer surface of asystemofcells. This site documents how to build and submit extensions for our apps (today: Clackpad). Static pages, no telemetry. The consumer-facing extension store lives on https://www.asystemofcells.com.
+
+Extensions are declarative packages (.cpx, a zip with extension.json at its root): no native code and no JavaScript in the keyboard; the only code is JavaScript in sandboxed pages. Source of truth for everything below: the repository https://github.com/mbaliga/asystemofcells, folder extensions/.
+
+## Docs
+
+- [Overview and 10-minute path](https://asystemofcells.dev/extensions/): what an extension is, contribution kinds, scaffold, validate, pack, test, submit.
+- [Manifest format](https://asystemofcells.dev/extensions/format/): every manifest key, type and limit, generated from the JSON Schema.
+- [Permissions](https://asystemofcells.dev/extensions/permissions/): every permission, its risk and meaning, and least-permission review expectations.
+- [Publish](https://asystemofcells.dev/extensions/publish/): pull request process, catalog metadata, version policy, status values, curation policy, reviewer checklist, removal policy.
+- [For AI agents](https://asystemofcells.dev/extensions/agents/): exact commands, passing output, common failures, what not to do.
+
+## Machine-readable
+
+- [extension.schema.json](https://asystemofcells.dev/extensions/schemas/extension.schema.json): JSON Schema for extension.json (source: extensions/sdk/schemas/extension.schema.json). An editor aid; validate.mjs is authoritative.
+- [catalog.schema.json](https://asystemofcells.dev/extensions/schemas/catalog.schema.json): JSON Schema for a catalog index entry (source: extensions/sdk/schemas/catalog.schema.json).
+- [permissions.json](https://asystemofcells.dev/extensions/permissions.json): permission ids, labels, risk, meaning (source: extensions/tools/permissions.json).
+
+The three JSON files are generated from the repository sources when the site is built.
+
+## Commands (run from a clone of the repository, Node 18+)
+
+- Scaffold: `node extensions/sdk/create.mjs hello extensions/clackpad/my-ext --id io.github.<owner>.<name> --author "<Author>"` (templates: hello, theme)
+- Validate: `node extensions/sdk/validate.mjs <folder|file.cpx> [--json] [--host-version N]` (exit 0 valid, 1 errors, 2 usage)
+- Pack: `node extensions/sdk/pack.mjs <folder> [out.cpx]`
+- Build catalog: `node extensions/tools/build.mjs clackpad` ; check only: `node extensions/tools/build.mjs clackpad --check`
+
+## Rules
+
+- One extension per pull request, under extensions/<app>/<extension>/, plus one entry in extensions/<app>/catalog.json (dir, status, noncommercial, category, tags, screenshots).
+- category is one of: typing, writing, productivity, appearance, accessibility, developer.
+- status is one of: official, community, fan-made. Maintainers set it; authors do not.
+- Never reuse a version number with different bytes. Keep older .cpx files in dist/.
+- Declare only permissions that something visible in the manifest uses. Never invent permission ids.
+- Do not bundle third-party trademarks, logos, fonts, sounds, dictionaries or code you cannot redistribute. Fan work is free, noncommercial and described as unaffiliated.
+- Do not hand-edit generated files (dist/, index.json, store.json). Do not claim device testing, ratings or install counts you do not have: there is no telemetry.
+
+## Optional
+
+- [Extension Studio](https://asystemofcells.dev/extensions/): the in-browser authoring tool is planned to move to this site; it is not available here yet. Use the scaffold CLI.

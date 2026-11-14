@@ -1,0 +1,21 @@
+---
+// Page shell for the extension store. Same white house surface as the other
+// plain pages (back link, HouseFooter) but a wider column for the card grid.
+// It deliberately does not opt into page counting: the store is a place where
+// someone browses and installs, so the boundary rule keeps it uncounted.
+import BaseLayout from '../layouts/BaseLayout.astro'
+import HouseFooter from './HouseFooter.astro'
+import '../styles/house-shell.css'
+import '../styles/extensions.css'
+
+const { title, description, canonical, jsonLd, backHref = '/', backLabel = 'asystemofcells' } = Astro.props
+---
+<BaseLayout title={title} description={description} canonical={canonical} jsonLd={jsonLd} noChrome>
+  <div class="simple-page ext-page">
+    <a class="back-link" href={backHref}>&larr; {backLabel}</a>
+    <main class="ext-main" id="main">
+      <slot />
+    </main>
+    <HouseFooter />
+  </div>
+</BaseLayout>
