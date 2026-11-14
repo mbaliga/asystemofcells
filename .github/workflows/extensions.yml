@@ -1,0 +1,21 @@
+# Rebuilds every extension package and catalog index and fails if what is committed differs, so a pull request
+# cannot ship a stale index.json, a .cpx that does not match its source, or an invalid extension.
+name: extensions
+on:
+  pull_request:
+    paths: ['extensions/**', '.github/workflows/extensions.yml']
+  push:
+    branches: [main]
+    paths: ['extensions/**']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate, rebuild and compare (clackpad)
+        run: node extensions/tools/build.mjs clackpad --check

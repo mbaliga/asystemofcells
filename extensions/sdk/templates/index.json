@@ -1,0 +1,22 @@
+{
+ "hello": {
+  "title": "Hello",
+  "description": "A Tools Panel tab with a text action and a sandboxed page.",
+  "files": [
+   "extension.json",
+   "icon.png",
+   "pages/about.css",
+   "pages/about.html",
+   "pages/about.js"
+  ]
+ },
+ "theme": {
+  "title": "Theme pack",
+  "description": "A theme the user can pick under Settings > Appearance.",
+  "files": [
+   "extension.json",
+   "icon.png",
+   "themes/dusk.json"
+  ]
+ }
+}

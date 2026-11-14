@@ -1,0 +1,16 @@
+{
+  "format": "clackpad-theme/1",
+  "id": "example-dusk",
+  "name": "Dusk",
+  "author": "Your Name",
+  "description": "Warm dark board, amber accent.",
+  "palette": {
+    "background": "#0E0B0A",
+    "surface": "#1A1412",
+    "ink": "#F3E9DC",
+    "accent": "#FFA43D",
+    "accent-ink": "#0B0B10"
+  },
+  "keys": { "style": "soft", "colorway": "black", "fret": "gold" },
+  "glow": { "accent": "#FFA43D" }
+}

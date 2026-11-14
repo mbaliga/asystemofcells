@@ -1,0 +1,17 @@
+{
+  "schema": "clackpad-extension/1",
+  "id": "com.example.dusk",
+  "name": "Dusk Theme",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "license": "MIT",
+  "description": "A starter theme pack: a warm dark board with an amber accent.",
+  "minClackpad": 50,
+  "icon": "icon.png",
+  "permissions": [],
+  "contributes": {
+    "theme": [
+      { "file": "themes/dusk.json" }
+    ]
+  }
+}

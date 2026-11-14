@@ -1,0 +1,63 @@
+{
+  "schema": "clackpad-extension/1",
+  "id": "dev.asystemofcells.sendto.obsidian",
+  "name": "Send to Obsidian",
+  "version": "1.0.0",
+  "author": "A System of Cells",
+  "description": "Sends text to your own Obsidian vault as notes. Unofficial community extension, not affiliated with Obsidian.",
+  "minClackpad": 50,
+  "homepage": "https://github.com/mbaliga/asystemofcells/tree/main/extensions/clackpad",
+  "license": "MIT",
+  "icon": "icon.png",
+  "permissions": ["typed:read", "clipboard", "folder:write", "uri:obsidian"],
+  "contributes": {
+    "settingsPage": {
+      "title": "Send to Obsidian",
+      "fields": [
+        { "key": "dir", "type": "folder", "label": "Vault folder" },
+        { "key": "vault", "type": "text", "label": "Vault name (for Open vault)", "default": "", "maxLength": 100 },
+        { "key": "mode", "type": "choice", "label": "Each send", "default": "new",
+          "options": [ { "value": "new", "label": "Creates a new note" }, { "value": "daily", "label": "Appends to the daily note" }, { "value": "one", "label": "Appends to one note" } ] },
+        { "key": "nameNew", "type": "text", "label": "New note name", "default": "{{title}}", "maxLength": 120, "template": true },
+        { "key": "nameDaily", "type": "text", "label": "Daily note name", "default": "{{date}}", "maxLength": 120, "template": true },
+        { "key": "nameOne", "type": "text", "label": "Single note name", "default": "Clackpad inbox", "maxLength": 120, "template": true },
+        { "key": "frontmatter", "type": "toggle", "label": "Add frontmatter to new notes", "default": true },
+        { "key": "tags", "type": "text", "label": "Tags (comma separated, no #)", "default": "clackpad", "maxLength": 120 },
+        { "key": "openNote", "type": "text", "label": "Note to open (optional)", "default": "", "maxLength": 120, "template": true }
+      ]
+    },
+    "action": [
+      {
+        "id": "sendTyped", "type": "saveToFolder", "label": "Send typed text", "folder": "dir",
+        "fileName": "{{#config.mode=new}}{{config.nameNew}}{{/config.mode=new}}{{#config.mode=daily}}{{config.nameDaily}}{{/config.mode=daily}}{{#config.mode=one}}{{config.nameOne}}{{/config.mode=one}}.md",
+        "appendWhen": { "config": "mode", "in": ["daily", "one"] },
+        "template": "{{#config.mode=new}}{{#config.frontmatter}}---\ncreated: {{datetime}}\nsource: Clackpad\n{{#config.tags}}tags: [{{config.tags}}]\n{{/config.tags}}---\n\n{{/config.frontmatter}}{{typed}}\n{{/config.mode=new}}{{^config.mode=new}}## {{time}}\n\n{{typed}}\n{{/config.mode=new}}"
+      },
+      {
+        "id": "sendClipboard", "type": "saveToFolder", "label": "Send clipboard", "folder": "dir",
+        "fileName": "{{#config.mode=new}}{{config.nameNew}}{{/config.mode=new}}{{#config.mode=daily}}{{config.nameDaily}}{{/config.mode=daily}}{{#config.mode=one}}{{config.nameOne}}{{/config.mode=one}}.md",
+        "appendWhen": { "config": "mode", "in": ["daily", "one"] },
+        "template": "{{#config.mode=new}}{{#config.frontmatter}}---\ncreated: {{datetime}}\nsource: Clackpad\n{{#config.tags}}tags: [{{config.tags}}]\n{{/config.tags}}---\n\n{{/config.frontmatter}}{{clipboard}}\n{{/config.mode=new}}{{^config.mode=new}}## {{time}}\n\n{{clipboard}}\n{{/config.mode=new}}"
+      },
+      {
+        "id": "openInObsidian", "type": "openUri", "label": "Open vault",
+        "uriTemplate": "obsidian://open?vault={{config.vault}}{{#config.openNote}}&file={{config.openNote}}{{/config.openNote}}"
+      },
+      { "id": "connect", "type": "openSettings", "label": "Connect vault" }
+    ],
+    "toolsTab": [
+      {
+        "id": "main", "title": "Obsidian", "icon": "Md",
+        "ui": [
+          { "type": "field", "config": "dir", "label": "Vault", "empty": "Not connected" },
+          { "type": "button", "label": "Send typed text", "action": "sendTyped", "primary": true },
+          { "type": "row", "children": [
+            { "type": "button", "label": "Send clipboard", "action": "sendClipboard" },
+            { "type": "button", "label": "Open vault", "action": "openInObsidian" }
+          ] },
+          { "type": "button", "label": "Connect vault", "action": "connect" }
+        ]
+      }
+    ]
+  }
+}
