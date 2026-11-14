@@ -65,6 +65,9 @@ for (const e of src.extensions) {
     permissions: m.permissions || [], package: `${src.base}/dist/${file}`,
     sha256: crypto.createHash('sha256').update(buf).digest('hex'),
     homepage: m.homepage, status: e.status, noncommercial: e.noncommercial, minClackpad: m.minClackpad,
+    // Optional listing fields (the app ignores any it does not know): category, up to 5 short tags, package size, icon URL.
+    category: e.category, tags: (e.tags || []).slice(0, 5), size: buf.length,
+    icon: m.icon ? `${src.base}/${e.dir}/${m.icon}` : undefined,
   });
   if (!CATEGORIES.includes(e.category)) problems.push(`${e.dir}: catalog.json needs "category", one of ${CATEGORIES.join(', ')}`);
   const shots = (e.screenshots || []).map((rel) => {
