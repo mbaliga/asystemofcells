@@ -1,0 +1,23 @@
+---
+// A schema-derived table of manifest fields. Every cell is plain text from the
+// schema, escaped by Astro.
+const { rows, label } = Astro.props
+---
+<div class="table-scroll" tabindex="0" role="region" aria-label={label}>
+  <table class="dense-table">
+    <thead><tr><th scope="col">Key</th><th scope="col">Type</th><th scope="col">Required</th><th scope="col">Schema constraints</th></tr></thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr>
+          <th scope="row" style="font-weight:400;text-align:left;text-transform:none;letter-spacing:0;font-size:inherit;color:var(--ink);border-bottom:1px solid var(--hairline-ghost);padding:0.55rem 0.8rem 0.55rem 0;vertical-align:top"><code>{r.key}</code></th>
+          <td>{r.type}</td>
+          <td>{r.required ? <span class="req">yes</span> : 'no'}</td>
+          <td>
+            {r.constraints.length ? r.constraints.map((c, i) => (<>{i > 0 ? <br /> : null}<code>{c}</code></>)) : <span>none</span>}
+            {r.description && <><br /><span>{r.description}</span></>}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>

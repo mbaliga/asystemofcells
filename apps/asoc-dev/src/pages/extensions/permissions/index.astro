@@ -1,0 +1,80 @@
+---
+import Doc from '../_Doc.astro'
+import { permissionRows, permissionPattern, permissionsTable } from '../../../lib/extensions-docs.js'
+
+const rows = permissionRows()
+const note = permissionsTable().note
+const pattern = permissionPattern()
+const T = (s) => s
+---
+<Doc
+  title="Permissions"
+  description="Every permission a Clackpad extension can declare: its id pattern, plain-language label, risk level and meaning, plus the least-permission expectations reviewers apply."
+  path="/extensions/permissions/"
+  eyebrow="Extensions / Reference"
+  heading="Permissions"
+  lead="Permissions are the security boundary. An extension has no code that runs in the keyboard, so what it can do is exactly what it declares."
+  sources={['extensions/tools/permissions.json', 'extensions/sdk/schemas/extension.schema.json']}
+>
+  <h2>The permission table</h2>
+  <p>{note}</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Permissions">
+    <table class="dense-table">
+      <thead><tr><th scope="col">Id</th><th scope="col">Label shown to the user</th><th scope="col">Risk</th><th scope="col">What it means</th></tr></thead>
+      <tbody>
+        {rows.map((p) => (
+          <tr>
+            <td><code>{p.idPattern}</code></td>
+            <td>{p.label}</td>
+            <td><span class={`risk risk--${p.risk}`}>{p.risk}</span></td>
+            <td>{p.summary}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Risk is shown as a word, never by colour alone. <code>net:&lt;host&gt;</code> takes a plain lower-case host (no wildcard, port or path); the store shows it as
+    &ldquo;Talk to &lt;host&gt;&rdquo;. Any other permission string is rejected.
+  </p>
+
+  <h2>The id pattern</h2>
+  <p>The manifest schema accepts a permission only if it matches this pattern (<code>permissions</code> has <code>maxItems 16</code> and unique items):</p>
+  <pre><code>{pattern}</code></pre>
+
+  <h2>What each permission unlocks</h2>
+  <ul>
+    <li><code>typed:read</code>: <code>{T('{{typed}}')}</code> and <code>{T('{{selection}}')}</code> in templates.</li>
+    <li><code>clipboard</code>: <code>{T('{{clipboard}}')}</code>, <code>copyToClipboard</code>, and <code>clipboard.read/write</code> in sandboxed pages.</li>
+    <li><code>notes:write</code>: <code>clackpad.notes.create</code> in pages.</li>
+    <li><code>folder:write</code>: <code>saveToFolder</code> into a user-chosen folder.</li>
+    <li><code>uri:&lt;scheme&gt;</code>: <code>openUri</code> with that scheme (<code>obsidian</code>, <code>logseq</code>, <code>https</code>, <code>mailto</code>, <code>geo</code>).</li>
+    <li><code>net:&lt;host&gt;</code>: <code>clackpad.net.fetch</code> from sandboxed pages to exactly that host: <code>https</code> GET through the host&rsquo;s one audited client, only on a tap, 1 MB cap, redirects must stay on declared hosts.</li>
+    <li><code>suggestions:surface</code>: a <code>suggestionSurface</code> contribution.</li>
+  </ul>
+  <p>
+    An update that asks for a permission the installed version did not have is installed <b>switched off</b>. In password, incognito, &ldquo;force incognito&rdquo; and never-learn
+    fields the host refuses every action that uses typed text, selection or clipboard.
+  </p>
+
+  <h2 id="least-permission-what-reviewers-expect">Least permission: what reviewers expect</h2>
+  <p>For each permission a reviewer asks: <em>is there something visible that needs it?</em> This is the review checklist, from Clackpad&rsquo;s <code>EXTENSIONS_REVIEW.md</code>.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Review expectations per permission">
+    <table class="dense-table">
+      <thead><tr><th scope="col">Permission</th><th scope="col">It is justified when</th><th scope="col">Ask or refuse when</th></tr></thead>
+      <tbody>
+        <tr><td><code>typed:read</code></td><td>an action&rsquo;s template uses <code>{T('{{typed}}')}</code> / <code>{T('{{selection}}')}</code> and the description says it sends or saves typed text</td><td>nothing uses those variables (the validator already refuses that), or the description does not say that typed text is used</td></tr>
+        <tr><td><code>clipboard</code></td><td>a template uses <code>{T('{{clipboard}}')}</code> or a page reads or writes it, on a tap</td><td>it is declared &ldquo;just in case&rdquo;</td></tr>
+        <tr><td><code>notes:write</code></td><td>a page creates notes and the description says so</td><td>any other reason</td></tr>
+        <tr><td><code>folder:write</code></td><td>a <code>saveToFolder</code> action exists and the description names what it writes</td><td>the extension has no folder action</td></tr>
+        <tr><td><code>uri:&lt;scheme&gt;</code></td><td>an <code>openUri</code> template starts with that literal scheme</td><td>the scheme is <code>https</code> and the target is not the service the description names</td></tr>
+        <tr><td><code>net:&lt;host&gt;</code></td><td>the host is the service the description names, and it is used from a sandboxed page</td><td>any host the description does not name, an analytics or ad host, a URL-shortener or a host that serves user-supplied content</td></tr>
+        <tr><td><code>suggestions:surface</code></td><td>a <code>suggestionSurface</code> is contributed</td><td>otherwise</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <code>typed:read</code> and <code>net:*</code> need a one-line justification in the pull request. An <b>update that adds a permission</b> is reviewed again from scratch, not as a diff:
+    the user&rsquo;s install switches it off until accepted, so the change must be worth that friction. Declare only what something visible in the manifest uses; never invent a permission string.
+  </p>
+</Doc>

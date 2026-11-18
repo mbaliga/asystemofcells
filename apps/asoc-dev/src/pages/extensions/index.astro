@@ -1,0 +1,112 @@
+---
+import Doc from './_Doc.astro'
+import { extensionSchema, contributionKinds, permissionRows, categories, statusValues } from '../../lib/extensions-docs.js'
+
+const schema = extensionSchema()
+const kinds = contributionKinds(schema)
+const perms = permissionRows()
+
+const KIND_BLURB = {
+  theme: 'A theme pack the user can pick under Settings > Appearance > Theme.',
+  toolsTab: 'A tab in the Tools Panel, built from text, buttons, rows, lists and fields.',
+  action: 'A named host operation (insert text, open a link, save a file, share, copy) that buttons run.',
+  suggestionSurface: 'Styling for the keyboard’s built-in frets suggestion surface. The keyboard supplies the candidates.',
+  settingsPage: 'Option fields rendered by the host in the extension’s detail screen.',
+}
+
+const SCAFFOLD = `node extensions/sdk/create.mjs hello my-ext --id io.github.you.hello --author "You"
+# or:  node extensions/sdk/create.mjs theme my-ext --id io.github.you.dusk --author "You"
+cd my-ext`
+const VALIDATE = `node extensions/sdk/validate.mjs my-ext
+node extensions/sdk/pack.mjs my-ext my-ext.cpx`
+---
+<Doc
+  title="Extensions"
+  description="How to build an extension for an asystemofcells app: what an extension is, what it can contribute, and the path from scaffold to submission."
+  path="/extensions/"
+  eyebrow="Extensions"
+  heading="Build an extension"
+  lead="Extensions add things to our apps without running any code inside them. This section is the developer reference, for people and for AI coding agents. The consumer-facing extension store lives on asystemofcells.com."
+  sources={['extensions/README.md', 'extensions/sdk/schemas/extension.schema.json']}
+>
+  <h2>Which apps</h2>
+  <p>
+    Extensions live in the <code>extensions/</code> folder of the
+    <a href="https://github.com/mbaliga/asystemofcells">mbaliga/asystemofcells</a> repository, one sub-folder per app.
+    Today the only app with extensions is <b>Clackpad</b> (<code>extensions/clackpad/</code>). The format described here is
+    Clackpad&rsquo;s (<code>clackpad-extension/1</code>); other apps will document their own when they have extensions.
+  </p>
+
+  <h2>What an extension is</h2>
+  <p>
+    A <code>.cpx</code> package: a zip with <code>extension.json</code> at its root. The manifest is pure data. There is no native code
+    and no JavaScript in the keyboard. The host renders and executes everything; the extension chooses which host features to use and
+    supplies text templates. The only code an extension can ship is JavaScript in a sandboxed page, which runs in its own Activity,
+    never in the keyboard.
+  </p>
+  <ul>
+    <li><b>Declarative first.</b> What an extension can do is exactly what it declares.</li>
+    <li><b>Installing is not enabling.</b> Extensions install switched off; the user enables each one.</li>
+    <li><b>Typed text moves only on a tap</b>, and only if the extension declares <code>typed:read</code>.</li>
+    <li><b>Strict validation.</b> An unknown key, permission, action type or template variable is an error, not a warning.</li>
+  </ul>
+
+  <h2>What an extension can contribute</h2>
+  <p>The manifest&rsquo;s <code>contributes</code> object accepts exactly these keys; any other key is rejected.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Contribution kinds">
+    <table class="dense-table">
+      <thead><tr><th scope="col">Kind</th><th scope="col">Max</th><th scope="col">What it is</th></tr></thead>
+      <tbody>
+        {kinds.map((k) => (
+          <tr>
+            <td><code>{k.key}</code></td>
+            <td>{k.isArray ? `${k.maxItems} entries` : 'one'}</td>
+            <td>{KIND_BLURB[k.key] || ''}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p>Full field-by-field reference: <a href="/extensions/format/">Manifest format</a>. There are {perms.length} permission patterns: <a href="/extensions/permissions/">Permissions</a>.</p>
+
+  <h2>The 10-minute path</h2>
+  <ol>
+    <li>
+      <b>Scaffold.</b> From a clone of the repository (Node 18 or newer, no packages needed). The id is permanent and is checked before anything is copied.
+      <pre><code>{SCAFFOLD}</code></pre>
+    </li>
+    <li>
+      <b>Edit</b> <code>extension.json</code>: set <code>name</code>, <code>description</code> (one sentence, 140 characters at most), and the actions and tab you want.
+    </li>
+    <li>
+      <b>Validate and pack.</b> Validation prints actionable errors with the path of each offending field and exits 1; <code>pack.mjs</code> validates, zips and prints the size and sha256.
+      <pre><code>{VALIDATE}</code></pre>
+    </li>
+    <li>
+      <b>Test on a phone.</b> Copy the <code>.cpx</code> to the device, then Clackpad &gt; Extensions &gt; From file. Check the permission list in the confirmation, tap Install, open the extension&rsquo;s row and switch it on. Sideloaded packages show a stronger warning. &ldquo;Safe mode: disable all&rdquo; turns every extension off without uninstalling.
+    </li>
+    <li>
+      <b>Submit.</b> One extension per pull request into the repository, under <code>extensions/&lt;app&gt;/</code>. See <a href="/extensions/publish/">Publish</a>.
+    </li>
+  </ol>
+
+  <h2>Tools</h2>
+  <ul>
+    <li>
+      <b>Scaffold CLI</b>: <code>extensions/sdk/create.mjs</code> (templates: <code>hello</code>, <code>theme</code>), plus
+      <code>validate.mjs</code> and <code>pack.mjs</code> in the same folder. They have no dependencies.
+    </li>
+    <li>
+      <b>Extension Studio</b>, the in-browser authoring tool (forms for the manifest, a Problems list, a preview, and export of the <code>.cpx</code>,
+      its sha256 and a catalog entry; it runs the SDK&rsquo;s own validation in your browser). It currently lives in the Clackpad repository and is
+      <b>planned to move here</b>. We have not confirmed a public deployment, so this page does not link to one.
+    </li>
+    <li><b>Machine-readable aids</b> for agents and editors: <a href="/llms.txt">/llms.txt</a>, <a href="/extensions/schemas/extension.schema.json">extension schema</a>, <a href="/extensions/schemas/catalog.schema.json">catalog schema</a>, <a href="/extensions/permissions.json">permissions.json</a>. See <a href="/extensions/agents/">For AI agents</a>.</li>
+  </ul>
+
+  <h2>Catalog metadata</h2>
+  <p>
+    Besides the manifest, each catalog entry carries a category ({categories().map((c, i) => (<>{i > 0 ? ', ' : ''}<code>{c}</code></>))}),
+    tags and optional screenshots, and a status ({statusValues().map((c, i) => (<>{i > 0 ? ', ' : ''}<code>{c}</code></>))}). Details are on <a href="/extensions/publish/">Publish</a>.
+  </p>
+</Doc>

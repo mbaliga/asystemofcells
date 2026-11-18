@@ -21,6 +21,22 @@ if (!sdk) { console.error('Clackpad SDK not found: set CLACKPAD_SDK or run ./bui
 const { validatePath } = await import(pathToFileURL(path.join(sdk, 'validate.mjs')).href);
 const { zipFolder } = await import(pathToFileURL(path.join(sdk, 'pack.mjs')).href);
 
+const permTable = JSON.parse(fs.readFileSync(path.join(toolsRoot, 'tools', 'permissions.json'), 'utf8')).permissions;
+const CATEGORIES = ['typing', 'writing', 'productivity', 'appearance', 'accessibility', 'developer'];
+const describePerm = (id) => {
+  const hit = permTable.find((p) => p.match === id) || (id.startsWith('net:') ? permTable.find((p) => p.match === 'net:*') : null);
+  if (!hit) return { id, label: id, risk: 'high', summary: 'Unknown permission.' };
+  return { id, label: id.startsWith('net:') ? `Talk to ${id.slice(4)}` : hit.label, risk: hit.risk, summary: hit.summary };
+};
+const parseChangelog = (text) => {
+  const out = [];
+  for (const block of text.split(/^## /m).slice(1)) {
+    const [head, ...rest] = block.split('\n');
+    out.push({ version: head.trim(), notes: rest.map((l) => l.replace(/^\s*[-*]\s+/, '').trim()).filter(Boolean) });
+  }
+  return out;
+};
+const storeEntries = [];
 const src = JSON.parse(fs.readFileSync(path.join(root, 'catalog.json'), 'utf8'));
 const dist = path.join(root, 'dist');
 const problems = [];
@@ -49,6 +65,26 @@ for (const e of src.extensions) {
     permissions: m.permissions || [], package: `${src.base}/dist/${file}`,
     sha256: crypto.createHash('sha256').update(buf).digest('hex'),
     homepage: m.homepage, status: e.status, noncommercial: e.noncommercial, minClackpad: m.minClackpad,
+    // Optional listing fields (the app ignores any it does not know): category, up to 5 short tags, package size, icon URL.
+    category: e.category, tags: (e.tags || []).slice(0, 5), size: buf.length,
+    icon: m.icon ? `${src.base}/${e.dir}/${m.icon}` : undefined,
+  });
+  if (!CATEGORIES.includes(e.category)) problems.push(`${e.dir}: catalog.json needs "category", one of ${CATEGORIES.join(', ')}`);
+  const shots = (e.screenshots || []).map((rel) => {
+    if (!fs.existsSync(path.join(root, rel))) problems.push(`${e.dir}: screenshot ${rel} does not exist`);
+    return `${src.base}/${rel}`;
+  });
+  const read = (f) => { try { return fs.readFileSync(path.join(dir, f), 'utf8'); } catch { return ''; } };
+  storeEntries.push({
+    id: m.id, name: m.name, version: m.version, author: m.author, summary: m.description,
+    category: e.category, tags: e.tags || [], status: e.status, noncommercial: !!e.noncommercial, license: m.license || null,
+    minAppVersionCode: m.minClackpad, homepage: m.homepage || null,
+    permissions: (m.permissions || []).map(describePerm),
+    icon: m.icon ? `${src.base}/${e.dir}/${m.icon}` : null,
+    screenshots: shots,
+    readme: read('README.md').slice(0, 8000),
+    changelog: parseChangelog(read('CHANGELOG.md')),
+    package: `${src.base}/dist/${file}`, size: buf.length, sha256: entries[entries.length - 1].sha256,
   });
   console.log(`${e.dir}: ${file}  ${buf.length} bytes  sha256 ${entries[entries.length - 1].sha256}`);
 }
@@ -61,13 +97,19 @@ try { // keep the old date while nothing in the list changed, so rebuilding is i
   const old = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
   if (JSON.stringify(old.extensions) === JSON.stringify(entries)) updated = old.updated;
 } catch { /* first build */ }
+const storePath = path.join(root, 'store.json');
+storeEntries.sort((a, b) => a.id.localeCompare(b.id));
+const store = { schema: 'asoc-extension-store/1', app: src.app, name: src.name, updated, extensions: storeEntries };
+const storeText = JSON.stringify(store, null, 2) + '\n';
 const index = { schema: 'clackpad-catalog/1', name: src.name, updated, extensions: entries };
 const text = JSON.stringify(index, null, 2) + '\n';
 if (check) {
   if (!fs.existsSync(indexPath) || fs.readFileSync(indexPath, 'utf8') !== text) { console.error('  - index.json is out of date: run ./build.sh'); process.exit(1); }
-  console.log('OK  dist/ and index.json are up to date');
+  if (!fs.existsSync(storePath) || fs.readFileSync(storePath, 'utf8') !== storeText) { console.error('  - store.json is out of date: run the build'); process.exit(1); }
+  console.log('OK  dist/, index.json and store.json are up to date');
 } else {
   fs.writeFileSync(indexPath, text);
+  fs.writeFileSync(storePath, storeText);
   console.log(`wrote index.json (${entries.length} extensions)`);
 }
 

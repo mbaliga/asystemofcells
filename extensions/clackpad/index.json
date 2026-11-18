@@ -17,7 +17,15 @@
       "homepage": "https://github.com/mbaliga/asystemofcells/tree/main/extensions/clackpad",
       "status": "fan-made",
       "noncommercial": true,
-      "minClackpad": 51
+      "minClackpad": 51,
+      "category": "typing",
+      "tags": [
+        "suggestions",
+        "frets",
+        "hardware-feel"
+      ],
+      "size": 6893,
+      "icon": "https://raw.githubusercontent.com/mbaliga/asystemofcells/main/extensions/clackpad/raised-frets/icon.png"
     },
     {
       "id": "dev.asystemofcells.sendto.obsidian",
@@ -36,7 +44,15 @@
       "homepage": "https://github.com/mbaliga/asystemofcells/tree/main/extensions/clackpad",
       "status": "community",
       "noncommercial": true,
-      "minClackpad": 50
+      "minClackpad": 50,
+      "category": "productivity",
+      "tags": [
+        "notes",
+        "obsidian",
+        "clipboard"
+      ],
+      "size": 6147,
+      "icon": "https://raw.githubusercontent.com/mbaliga/asystemofcells/main/extensions/clackpad/send-to-obsidian/icon.png"
     }
   ]
 }

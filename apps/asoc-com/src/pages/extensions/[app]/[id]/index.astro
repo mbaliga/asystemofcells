@@ -1,0 +1,123 @@
+---
+import ExtensionShell from '../../../../components/ExtensionShell.astro'
+import ExtensionIcon from '../../../../components/ExtensionIcon.astro'
+import ExtensionBadges from '../../../../components/ExtensionBadges.astro'
+import { loadStore, renderMarkdown, renderInline, formatSize, categoryLabel, screenshotHrefs, STATUS_HELP, RISK_LABEL } from '../../../../lib/extensions.js'
+
+export function getStaticPaths() {
+  return loadStore().extensions.map((e) => ({ params: { app: e.app, id: e.id }, props: { ext: e } }))
+}
+const { ext } = Astro.props
+const readmeHtml = renderMarkdown(ext.readme)
+const shots = screenshotHrefs(ext)
+const pkgName = ext.package ? decodeURIComponent(ext.package.split('/').pop() || '') : ''
+const listHref = `/extensions/?app=${encodeURIComponent(ext.app)}`
+---
+<ExtensionShell
+  title={`${ext.name} (${ext.appName} extension): asystemofcells`}
+  description={ext.summary.slice(0, 200)}
+  backHref={listHref}
+  backLabel={`${ext.appName} extensions`}
+>
+  <nav class="ext-crumbs" aria-label="Breadcrumb">
+    <a href="/extensions/">Extensions</a> <span aria-hidden="true">/</span> <a href={listHref}>{ext.appName}</a>
+  </nav>
+
+  <header class="ext-head">
+    <ExtensionIcon ext={ext} size={96} large />
+    <div>
+      <h1>{ext.name}</h1>
+      <p class="ext-head__meta">Version {ext.version} &middot; by {ext.author || 'unknown author'} &middot; for {ext.appName} &middot; {categoryLabel(ext.category)}</p>
+      <ExtensionBadges ext={ext} />
+    </div>
+  </header>
+
+  <p class="ext-lead">{ext.summary}</p>
+  <p class="ext-note"><strong>{ext.status === 'fan-made' ? 'Fan-made' : ext.status === 'community' ? 'Community' : 'Official'}.</strong> {STATUS_HELP[ext.status]}{ext.noncommercial ? ' Non-commercial: free to use, not to be resold.' : ''}</p>
+
+  <section aria-labelledby="install">
+    <h2 id="install">Install</h2>
+    {ext.package ? (
+      <>
+        <p><a class="ext-button" href={ext.package} rel="noopener noreferrer" download>Download {pkgName || 'the package'}</a></p>
+        <dl class="ext-facts">
+          {ext.size != null && (<><dt>Size</dt><dd>{formatSize(ext.size)}</dd></>)}
+          {ext.sha256 && (<><dt>SHA-256</dt><dd><code class="ext-hash">{ext.sha256}</code></dd></>)}
+        </dl>
+        <p class="ext-small">The file is hosted in the public repository. Compare its SHA-256 with the one above if you want to check you got the same bytes.</p>
+      </>
+    ) : (
+      <p>No package is published for this extension yet.</p>
+    )}
+    <ol class="ext-steps">
+      <li>In {ext.appName}, open <strong>Extensions</strong> and choose <strong>Browse</strong>, then pick {ext.name} and review its permissions. The app downloads it only when you choose to install it.</li>
+      <li>Or download the file above, then in {ext.appName} choose <strong>Extensions</strong> &rarr; <strong>From file</strong> and select it.</li>
+      <li>Installing never switches an extension on. Open it and enable it yourself; you can switch it off at any time.</li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="permissions">
+    <h2 id="permissions">Permissions</h2>
+    {ext.permissions.length === 0 ? (
+      <p>This extension asks for no permissions.</p>
+    ) : (
+      <ul class="ext-perms">
+        {ext.permissions.map((p) => (
+          <li class="ext-perm">
+            <div class="ext-perm__head">
+              <span class="ext-perm__label">{p.label}</span>
+              <span class={`ext-badge ext-risk ext-risk--${p.risk}`}><span aria-hidden="true">{p.risk === 'low' ? '○' : p.risk === 'medium' ? '◐' : '●'}</span> {RISK_LABEL[p.risk]}</span>
+            </div>
+            <p>{p.summary}</p>
+            <code class="ext-perm__id">{p.id}</code>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+
+  {shots.length > 0 && (
+    <section aria-labelledby="screens">
+      <h2 id="screens">Screenshots</h2>
+      <ul class="ext-shots">
+        {shots.map((s) => (
+          <li><img src={s.src} alt={`${ext.name} screenshot ${s.n + 1}`} loading="lazy" decoding="async" /></li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {readmeHtml && (
+    <section aria-labelledby="about">
+      <h2 id="about">About this extension</h2>
+      <div class="ext-readme" set:html={readmeHtml} />
+    </section>
+  )}
+
+  {ext.changelog.length > 0 && (
+    <section aria-labelledby="changelog">
+      <h2 id="changelog">Changelog</h2>
+      {ext.changelog.map((c) => (
+        <>
+          <h3>{c.version}</h3>
+          <ul>{c.notes.map((n) => <li set:html={renderInline(n)} />)}</ul>
+        </>
+      ))}
+    </section>
+  )}
+
+  <section aria-labelledby="details">
+    <h2 id="details">Details</h2>
+    <dl class="ext-facts">
+      <dt>Version</dt><dd>{ext.version}</dd>
+      <dt>Author</dt><dd>{ext.author || 'Not stated'}</dd>
+      <dt>Licence</dt><dd>{ext.license || 'Not stated'}</dd>
+      {ext.minAppVersionCode != null && (<><dt>Minimum {ext.appName}</dt><dd>version code {ext.minAppVersionCode} or newer</dd></>)}
+      {ext.tags.length > 0 && (<><dt>Tags</dt><dd>{ext.tags.join(', ')}</dd></>)}
+      {ext.homepage && (<><dt>Homepage</dt><dd><a href={ext.homepage} rel="noopener noreferrer">{ext.homepage}</a></dd></>)}
+      <dt>Id</dt><dd><code>{ext.id}</code></dd>
+    </dl>
+    <p class="ext-small">Independent projects are not affiliated with, or endorsed by, any third-party app or brand they mention. There are no ratings or install counts: the apps collect no telemetry.</p>
+    <p><a href={listHref}>&larr; All {ext.appName} extensions</a></p>
+  </section>
+</ExtensionShell>
