@@ -1,0 +1,7 @@
+{
+  "$comment": "A `contributes.theme` entry points at a clackpad-theme/1 pack. The theme format is owned by the theme engine (ThemeRegistry/ThemeStore); its schema is linked here rather than copied so the two cannot drift. Until it is published, extensions only need `\"format\": \"clackpad-theme/1\"` plus the engine's own fields; the host validates the pack when it registers it.",
+  "$id": "https://asystemofcells.dev/clackpad/schemas/theme.schema.link.json",
+  "type": "object",
+  "required": ["format", "id", "name"],
+  "properties": { "format": { "const": "clackpad-theme/1" }, "id": { "type": "string" }, "name": { "type": "string" } }
+}

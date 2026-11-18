@@ -1,0 +1,9 @@
+{
+  "name": "Clackpad extensions",
+  "updated": "2026-11-03",
+  "base": "https://raw.githubusercontent.com/mbaliga/asystemofcells/main/extensions/clackpad",
+  "extensions": [
+    { "dir": "raised-frets", "status": "fan-made", "noncommercial": true },
+    { "dir": "send-to-obsidian", "status": "community", "noncommercial": true }
+  ]
+}
