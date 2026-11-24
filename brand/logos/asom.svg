@@ -1,0 +1,36 @@
+<svg width="550" height="550" viewBox="0 0 550 550" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="550" height="550" rx="80" fill="black"/>
+<ellipse opacity="0.3" cx="276.211" cy="477.314" rx="19.3833" ry="12.1145" fill="white"/>
+<ellipse opacity="0.3" cx="276.211" cy="72.6888" rx="19.3833" ry="12.1145" fill="white"/>
+<ellipse opacity="0.3" cx="477.31" cy="275.003" rx="12.1145" ry="19.3833" fill="white"/>
+<ellipse opacity="0.3" cx="72.6848" cy="275.003" rx="12.1145" ry="19.3833" fill="white"/>
+<ellipse opacity="0.3" cx="14.2572" cy="8.20863" rx="14.2572" ry="8.20863" transform="matrix(-0.258819 0.965926 0.965926 0.258819 76.3125 192.965)" fill="white"/>
+<ellipse opacity="0.3" cx="470.761" cy="209.736" rx="14.2572" ry="8.20863" transform="rotate(75 470.761 209.736)" fill="white"/>
+<ellipse opacity="0.3" cx="211.068" cy="79.3365" rx="14.2572" ry="8.20863" transform="rotate(-15 211.068 79.3365)" fill="white"/>
+<ellipse opacity="0.3" cx="80.5514" cy="340.577" rx="14.2572" ry="8.20863" transform="rotate(-105 80.5514 340.577)" fill="white"/>
+<ellipse opacity="0.3" cx="14.2572" cy="8.20863" rx="14.2572" ry="8.20863" transform="matrix(0.258819 -0.965926 -0.965926 -0.258819 475 357.348)" fill="white"/>
+<ellipse opacity="0.3" cx="14.2572" cy="8.20863" rx="14.2572" ry="8.20863" transform="matrix(-0.965926 -0.258819 -0.258819 0.965926 358.68 75.0977)" fill="white"/>
+<ellipse opacity="0.3" cx="14.2572" cy="8.20863" rx="14.2572" ry="8.20863" transform="matrix(0.965926 0.258819 0.258819 -0.965926 195.172 473.66)" fill="white"/>
+<ellipse opacity="0.3" cx="342.784" cy="469.421" rx="14.2572" ry="8.20863" transform="rotate(165 342.784 469.421)" fill="white"/>
+<ellipse opacity="0.5" cx="276.209" cy="124.787" rx="31.4978" ry="23.0176" fill="white"/>
+<ellipse opacity="0.5" cx="276.209" cy="425.225" rx="31.4978" ry="23.0176" fill="white"/>
+<ellipse opacity="0.5" cx="125.982" cy="276.213" rx="23.0176" ry="31.4978" fill="white"/>
+<ellipse opacity="0.5" cx="426.428" cy="276.213" rx="23.0176" ry="31.4978" fill="white"/>
+<ellipse opacity="0.5" cx="418.342" cy="196.662" rx="26.7428" ry="21.9285" transform="rotate(45 418.342 196.662)" fill="white"/>
+<ellipse opacity="0.5" cx="353.029" cy="131.334" rx="26.7428" ry="21.9285" transform="rotate(45 353.029 131.334)" fill="white"/>
+<ellipse opacity="0.5" cx="26.7428" cy="21.9285" rx="26.7428" ry="21.9285" transform="matrix(0.707107 -0.707107 -0.707107 -0.707107 349.625 454.074)" fill="white"/>
+<ellipse opacity="0.5" cx="23.5204" cy="14.7007" rx="23.5204" ry="14.7007" transform="matrix(0.707107 -0.707107 -0.707107 -0.707107 404.82 433.707)" fill="white"/>
+<ellipse opacity="0.5" cx="411.049" cy="143.327" rx="23.5204" ry="14.7007" transform="rotate(45 411.049 143.327)" fill="white"/>
+<ellipse opacity="0.5" cx="137.271" cy="406.681" rx="23.5204" ry="14.7007" transform="rotate(-135 137.271 406.681)" fill="white"/>
+<ellipse opacity="0.5" cx="23.5204" cy="14.7007" rx="23.5204" ry="14.7007" transform="matrix(-0.707107 0.707107 0.707107 0.707107 143.492 116.301)" fill="white"/>
+<ellipse opacity="0.5" cx="26.7428" cy="21.9285" rx="26.7428" ry="21.9285" transform="matrix(-0.707107 0.707107 0.707107 0.707107 198.938 96.918)" fill="white"/>
+<ellipse opacity="0.5" cx="195.533" cy="419.658" rx="26.7428" ry="21.9285" transform="rotate(-135 195.533 419.658)" fill="white"/>
+<ellipse opacity="0.5" cx="26.7428" cy="21.9285" rx="26.7428" ry="21.9285" transform="matrix(-0.707107 0.707107 0.707107 0.707107 136.047 162.34)" fill="white"/>
+<ellipse opacity="0.5" cx="26.7428" cy="21.9285" rx="26.7428" ry="21.9285" transform="matrix(0.707107 -0.707107 -0.707107 -0.707107 415.039 386.23)" fill="white"/>
+<ellipse opacity="0.5" cx="132.541" cy="351.908" rx="26.7428" ry="21.9285" transform="rotate(-135 132.541 351.908)" fill="white"/>
+<circle opacity="0.7" cx="199.886" cy="198.679" r="26.652" fill="white"/>
+<circle opacity="0.7" cx="199.886" cy="348.906" r="26.652" fill="white"/>
+<circle opacity="0.7" cx="350.105" cy="198.679" r="26.652" fill="white"/>
+<circle opacity="0.7" cx="350.105" cy="348.906" r="26.652" fill="white"/>
+<path d="M289.597 226.491C286.336 211.952 265.736 212.056 262.603 226.609L262.255 228.226C258.414 246.065 244.376 259.654 226.871 262.751C211.897 265.399 211.897 287.028 226.871 289.676C244.376 292.773 258.414 306.361 262.255 324.2L262.603 325.818C265.736 340.371 286.336 340.474 289.597 325.935L290.019 324.052C294.005 306.281 308.059 292.795 325.534 289.703C340.537 287.05 340.537 265.378 325.534 262.724C308.059 259.632 294.005 246.146 290.019 228.375L289.597 226.491Z" fill-rule="evenodd" clip-rule="evenodd" fill="white"/>
+</svg>

@@ -1,0 +1,23 @@
+<svg width="550" height="550" viewBox="0 0 550 550" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="550" height="550" rx="82.5" fill="black"/>
+<path d="M466.125 170.5C466.125 206.989 432.216 233.75 397.375 233.75V220C426.323 220 452.375 197.8 452.375 170.5H397.375V101.75H466.125V170.5Z" fill="white"/>
+<mask id="stroke0_413_3206" maskUnits="userSpaceOnUse" x="366.375" y="70.75" width="130" height="194" fill="black">
+<rect fill="white" x="366.375" y="70.75" width="130" height="194"/>
+<path d="M466.125 170.5C466.125 206.989 432.216 233.75 397.375 233.75V220C426.323 220 452.375 197.8 452.375 170.5H397.375V101.75H466.125V170.5Z"/>
+</mask>
+<path d="M466.125 170.5C466.125 206.989 432.216 233.75 397.375 233.75V220C426.323 220 452.375 197.8 452.375 170.5H397.375V101.75H466.125V170.5Z" stroke-width="60.5" stroke="black" mask="url(#stroke0_413_3206)"/>
+<path d="M386.375 170.5C386.375 206.989 352.466 233.75 317.625 233.75V220C346.573 220 372.625 197.8 372.625 170.5H317.625V101.75H386.375V170.5Z" fill="white"/>
+<mask id="stroke1_413_3206" maskUnits="userSpaceOnUse" x="306.625" y="90.75" width="91" height="154" fill="black">
+<rect fill="white" x="306.625" y="90.75" width="91" height="154"/>
+<path d="M386.375 170.5C386.375 206.989 352.466 233.75 317.625 233.75V220C346.573 220 372.625 197.8 372.625 170.5H317.625V101.75H386.375V170.5Z"/>
+</mask>
+<path d="M386.375 170.5C386.375 206.989 352.466 233.75 317.625 233.75V220C346.573 220 372.625 197.8 372.625 170.5H317.625V101.75H386.375V170.5Z" stroke-width="22" stroke="black" mask="url(#stroke1_413_3206)"/>
+<path d="M258.5 249.562V322.438" stroke-width="13.75" stroke="white"/>
+<path d="M222.062 286H294.938" stroke-width="13.75" stroke="white"/>
+<path d="M118.25 143V215.875" stroke-width="13.75" stroke="white"/>
+<path d="M112.75 148.5H185.625" stroke-width="13.75" stroke="white"/>
+<path d="M118.25 419.375V346.5" stroke-width="13.75" stroke="white"/>
+<path d="M112.75 413.875H185.625" stroke-width="13.75" stroke="white"/>
+<path d="M402.875 419.375V346.5" stroke-width="13.75" stroke="white"/>
+<path d="M408.375 413.875H335.5" stroke-width="13.75" stroke="white"/>
+</svg>

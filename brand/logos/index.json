@@ -1,0 +1,134 @@
+{
+ "$comment": "Every app logo, from asoc_logos.zip. brand/logos holds the originals (SVG + 1100px PNG); apps/asoc-com/src/assets/logos holds 512px PNGs the site uses. A logo is shown on a product page when its slug matches a roster cell.",
+ "logos": [
+  {
+   "slug": "asom",
+   "name": "ASOM",
+   "inRoster": true
+  },
+  {
+   "slug": "alloy",
+   "name": "Alloy",
+   "inRoster": true
+  },
+  {
+   "slug": "animalcules",
+   "name": "Animalcules",
+   "inRoster": true
+  },
+  {
+   "slug": "argonautica",
+   "name": "Argonautica",
+   "inRoster": false
+  },
+  {
+   "slug": "assay",
+   "name": "Assay",
+   "inRoster": true
+  },
+  {
+   "slug": "bocal",
+   "name": "Bocal",
+   "inRoster": true
+  },
+  {
+   "slug": "brwzr",
+   "name": "Brwzr",
+   "inRoster": false
+  },
+  {
+   "slug": "clackpad",
+   "name": "Clackpad",
+   "inRoster": true
+  },
+  {
+   "slug": "clavis",
+   "name": "Clavis",
+   "inRoster": false
+  },
+  {
+   "slug": "crocodyl",
+   "name": "Crocodyl",
+   "inRoster": true
+  },
+  {
+   "slug": "ebbflow",
+   "name": "EbbFlow",
+   "inRoster": true
+  },
+  {
+   "slug": "fonebrew",
+   "name": "Fonebrew",
+   "inRoster": true
+  },
+  {
+   "slug": "fotoz",
+   "name": "Fotoz",
+   "inRoster": true
+  },
+  {
+   "slug": "fylz",
+   "name": "Fylz",
+   "inRoster": true
+  },
+  {
+   "slug": "hafx",
+   "name": "HAfx Studio",
+   "inRoster": true
+  },
+  {
+   "slug": "liftoff",
+   "name": "LIftoff",
+   "inRoster": false
+  },
+  {
+   "slug": "nooz",
+   "name": "Nooz",
+   "inRoster": true
+  },
+  {
+   "slug": "odyssey",
+   "name": "Odyssey",
+   "inRoster": true
+  },
+  {
+   "slug": "orrery",
+   "name": "Orrery",
+   "inRoster": true
+  },
+  {
+   "slug": "picture-this",
+   "name": "Picture This",
+   "inRoster": false
+  },
+  {
+   "slug": "ping",
+   "name": "Ping",
+   "inRoster": false
+  },
+  {
+   "slug": "runout",
+   "name": "Runout",
+   "inRoster": true
+  },
+  {
+   "slug": "typewright",
+   "name": "Typewright",
+   "inRoster": true
+  },
+  {
+   "slug": "youve-got-mail",
+   "name": "You've got Mail",
+   "inRoster": false
+  }
+ ],
+ "rosterCellsWithoutLogo": [
+  "counter",
+  "figma-suite",
+  "globe",
+  "hyle",
+  "hyle-deco",
+  "sphere",
+  "timely"
+ ]
+}
