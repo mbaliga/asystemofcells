@@ -12,6 +12,8 @@
 // hairline display line, never body or UI text.
 import BaseLayout from './BaseLayout.astro'
 import HouseFooter from '../components/HouseFooter.astro'
+import Crumbs from '../components/Crumbs.astro'
+import { crumbsForCell, crumbsForPath } from '../scripts/crumbs.js'
 import '../styles/house-shell.css'
 
 const {
@@ -29,10 +31,11 @@ if (!['apps', 'cabinet', 'architecture', 'prints'].includes(wing)) {
   throw new Error(`WingLayout: unknown wing "${wing}"`)
 }
 const hasFaq = Astro.slots.has('faq')
+const crumbs = wing === 'apps' ? crumbsForCell(Astro.url.pathname) : crumbsForPath(Astro.url.pathname)
 ---
 <BaseLayout title={title} description={description} canonical={canonical} jsonLd={jsonLd} noindex={noindex} analytics={analytics} noChrome>
   <div class={`wing-page wing-page--${wing}`} style={`--wing-accent:${accent}`}>
-    <a class="back-link" href="/">&larr; asystemofcells</a>
+    <Crumbs crumbs={crumbs} />
     <main class="wing-main">
       <header class="wing-head">
         {eyebrow && <p class="wing-eyebrow">{eyebrow}</p>}

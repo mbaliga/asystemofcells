@@ -1,34 +1,24 @@
 ---
 // The fixed simple footer shared by every white page (SimplePageLayout and
-// WingLayout). One copy of the markup. With `wing` set it also carries the
-// wing switcher, left of the brand name; the current wing is weighted and
-// marked with the "open" cell glyph in the house violet (a glyph and a weight,
-// never colour alone). Styles live in styles/house-shell.css.
+// WingLayout). One copy of the markup. Styles live in styles/house-shell.css.
 //
 // Slot "links" adds page-specific links (e.g. a product's own privacy page)
 // ahead of the house Privacy link.
-import CellMark from '@asoc/kit/CellMark.astro'
-import { getWings } from '@asoc/roster'
+import { ICONS } from '../scripts/social-icons.js'
 
-const { wing = null } = Astro.props
-const wings = wing ? getWings() : []
+// Social profiles are icon-only: the label lives in aria-label and title.
+// `wing` is still accepted by callers but no longer draws a wing switcher: a
+// page shows the way back (the top-left trail), not the sections it is not in.
+const SOCIAL = [
+  { key: 'instagram', label: 'Instagram', href: 'https://www.instagram.com/asystemofcells' },
+  { key: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/company/asystemofcells' },
+  { key: 'github', label: 'GitHub', href: 'https://github.com/mbaliga' },
+  { key: 'kofi', label: 'Ko-fi', href: 'https://ko-fi.com/asystemofcells' },
+]
 ---
 <footer class="site-foot">
   <div class="wrap foot-simple">
     <div class="foot-lead">
-      {wings.length > 0 && (
-        <nav class="wing-switch" aria-label="Wings of the house">
-          {wings.map((w) => {
-            const current = w.slug === wing
-            return (
-              <a href={w.href} aria-current={current ? 'page' : undefined} class:list={['wing-switch__link', current && 'is-current']}>
-                {current && <CellMark variant="open" size={12} />}
-                <span>{w.name}</span>
-              </a>
-            )
-          })}
-        </nav>
-      )}
       <a class="foot-brand-name" href="/">asystemofcells</a>
     </div>
     <!-- site pages first, then the house's own profiles; GitHub is the
@@ -43,10 +33,11 @@ const wings = wing ? getWings() : []
       <a href="/privacy">Privacy</a>
       <a href="/contact">Contact</a>
       <span class="foot-sep" aria-hidden="true"></span>
-      <a href="https://www.instagram.com/asystemofcells" target="_blank" rel="noopener noreferrer">Instagram</a>
-      <a href="https://www.linkedin.com/company/asystemofcells" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-      <a href="https://github.com/mbaliga" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="https://ko-fi.com/asystemofcells" target="_blank" rel="noopener noreferrer">Ko-fi</a>
+      {SOCIAL.map((x) => (
+        <a class="foot-icon" href={x.href} target="_blank" rel="noopener noreferrer" aria-label={x.label} title={x.label}>
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d={ICONS[x.key]} /></svg>
+        </a>
+      ))}
     </nav>
     <span class="foot-rights">&copy; 2026 asystemofcells</span>
   </div>
