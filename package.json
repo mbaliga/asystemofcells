@@ -12,7 +12,8 @@
     "dev:counter": "pnpm build && node scripts/counter-dev.mjs",
     "e2e:cabinet": "node scripts/e2e-cabinet.mjs",
     "e2e:prints": "node scripts/e2e-prints.mjs",
-    "e2e:practice": "node scripts/e2e-practice.mjs"
+    "e2e:practice": "node scripts/e2e-practice.mjs",
+    "e2e:home": "node scripts/e2e-home.mjs"
   },
   "dependencies": {
     "@mozilla/readability": "^0.5.0",

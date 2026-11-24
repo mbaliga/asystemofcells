@@ -19,16 +19,17 @@
 // it in the corners the train never crosses - the four section names
 // top-right, the link list and wordmark bottom-left - plus a small copyright
 // centre-bottom, and the centre-slot item's name and details written beside
-// the centre card. The motion is driven from JS (one clock,
-// one rAF) rather than per-card CSS animations because the whole train has
-// to step in lockstep, pause together on hover, and "in focus" is then
-// plain arithmetic (the lane nearest slot 0).
+// the centre card. The motion is driven from JS (one rAF, one position per
+// stream) rather than per-card CSS animations because the whole train has
+// to move in lockstep and "in focus" is then plain arithmetic (the lane
+// nearest slot 0).
 //
-// Sections. Apps (the roster), Architecture, Shop and Prints each have their
-// own tiles. Choosing one from the nav shifts the train: every lane runs one
-// lap along its own track (nearer lanes faster, for parallax), picking up the
-// new section's tiles as it wraps off-screen, and lands back on the same rigid
-// pattern. See startShift() for why the arithmetic works out.
+// Sections. Apps (the roster), Practice, The Cabinet and Alloy prints each
+// have their own stream: a train like this one with its own position, laid
+// out beside the others across the line. Choosing one from the nav pans the
+// view across to the stream next door (nearer lanes a little further, for
+// parallax); the train you left stays where you left it. You move a stream by
+// hand (wheel, drag, arrow keys); left alone it goes lean-back and drifts.
 //
 // Mobile - the reel. A vertical list of names, one per screen-sixth, the
 // one on the centre line bright and the rest dimming by distance,
@@ -713,11 +714,90 @@ const lanes = LANES.map((lane, k) => {
     outline-offset: 3px;
   }
 
-  /* While the tiles are shifting between sections nothing on the stage is a
-     target (a moving card can't be clicked, and a hover would pause a clock
-     that is deliberately held). */
-  .flow-stage.is-shifting {
+  /* While the view pans to another stream nothing on the stage is a target
+     (a moving card can't be clicked). The stage is dragged by hand, so the
+     browser must not take the gesture for a scroll. */
+  .flow-stage {
+    touch-action: none;
+  }
+  .flow-stage.is-panning {
     pointer-events: none;
+  }
+
+  /* ------------------------------------------------------- lean-back --- */
+  /* After a while with no input the page leans back: the chrome fades away,
+     the ground goes to true black, the stream drifts on its own, and what is
+     left is the wordmark, the stream and the name of the centred item,
+     enlarged. Any input reverses all of it at once (the engine drops the
+     class). The fade out is slow so it reads as a mode, not a glitch; the
+     fade back is quick so the page answers the hand. */
+  .home-card {
+    transition: background-color 0.5s var(--home-ease);
+  }
+  .home-sections,
+  .home-links,
+  .home-search-btn,
+  .home-rights,
+  .flow-focus__details {
+    transition: opacity 0.4s var(--home-ease);
+  }
+  .flow-focus__name {
+    transform-origin: left bottom;
+    transition: transform 0.5s var(--home-ease);
+  }
+  .home-outer.is-leanback {
+    --home-bg: #000;
+    cursor: none;
+  }
+  .home-outer.is-leanback .home-card {
+    transition-duration: 1.8s;
+  }
+  .home-outer.is-leanback .home-sections,
+  .home-outer.is-leanback .home-links,
+  .home-outer.is-leanback .home-search-btn,
+  .home-outer.is-leanback .home-rights,
+  .home-outer.is-leanback .flow-focus__details {
+    opacity: 0;
+    pointer-events: none;
+    transition-duration: 1.4s;
+  }
+  /* The name alone, enlarged. It is laid out at 1/1.55 of the block's width
+     and scaled up from its bottom-left corner, so its larger self just fills
+     the block and never runs off the right edge; it spans both columns of
+     the two-column layout, now that the details beside it are gone. The glow
+     is a drop-shadow on the block, not a text-shadow on the name, because
+     the name clips its overflow (a line clamp) and would cut a text-shadow
+     off in a visible rectangle. */
+  .home-outer.is-leanback .flow-focus__name {
+    transform: scale(1.55);
+    width: calc(100% / 1.55);
+    grid-column: 1 / -1;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow-wrap: break-word;
+    transition-duration: 1.4s;
+  }
+  .flow-focus__body {
+    transition: filter 1.4s var(--home-ease);
+  }
+  .home-outer.is-leanback .flow-focus__body {
+    filter: drop-shadow(0 0 22px color-mix(in srgb, var(--focus-accent) 70%, transparent));
+  }
+  .home-outer.is-leanback .home-brand-wordmark {
+    opacity: 1;
+  }
+  @media (max-width: 880px) {
+    /* The phone's backdrop is the item's own colour; in lean-back it goes dark
+       and the names of the list stay. */
+    .reel-bg {
+      transition:
+        opacity 420ms var(--home-ease),
+        filter 0.5s var(--home-ease);
+    }
+    .home-outer.is-leanback .reel-bg {
+      filter: brightness(0.06);
+      transition-duration: 420ms, 1.8s;
+    }
   }
 
   .flow-fallback {
@@ -1257,6 +1337,52 @@ const lanes = LANES.map((lane, k) => {
   const sceneDesktopEl = document.getElementById('sceneDesktop')
   const sceneMobileEl = document.getElementById('sceneMobile')
 
+  // ---- idle and lean-back ----------------------------------------------------
+  // Nothing moves on its own while you are here. After IDLE_MS with no input
+  // the page goes lean-back: the chrome fades, the ground goes to black, and
+  // the stream (desktop) or the list (phone) drifts on its own, one card every
+  // AUTO_MS, with only the wordmark and the name of the centred item left.
+  // Any input brings everything back at once. (window.__asocIdleMs and
+  // __asocAutoMs exist so the tests do not have to wait nine seconds.)
+  const IDLE_MS = Number(window.__asocIdleMs) || 9000
+  const AUTO_MS = Number(window.__asocAutoMs) || 4200
+  const homeEl = document.querySelector('.home-outer')
+  const searchOverlayEl = document.getElementById('searchOverlay')
+  const searchIsOpen = () => !!searchOverlayEl && searchOverlayEl.classList.contains('open')
+  let leanBack = false
+  let lastInput = performance.now()
+  function setLeanBack(on) {
+    if (on === leanBack) return
+    leanBack = on
+    homeEl.classList.toggle('is-leanback', on)
+    // The first drift comes a moment after the fade starts, not a full period later.
+    if (on) {
+      lastAutoStep = performance.now() - AUTO_MS + 1300
+      lastAuto = performance.now() - AUTO_MS + 1300
+    }
+  }
+  function activity() {
+    lastInput = performance.now()
+    if (leanBack) setLeanBack(false)
+  }
+  function idleCheck(ts) {
+    if (!leanBack && !document.hidden && !reducedQuery.matches && !searchIsOpen() && ts - lastInput > IDLE_MS) setLeanBack(true)
+  }
+  let lastX = -1
+  let lastY = -1
+  window.addEventListener(
+    'pointermove',
+    (e) => {
+      if (Math.hypot(e.clientX - lastX, e.clientY - lastY) > 4) {
+        lastX = e.clientX
+        lastY = e.clientY
+        activity()
+      }
+    },
+    { passive: true },
+  )
+  for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchstart', 'focusin']) window.addEventListener(ev, activity, { passive: true, capture: true })
+
   function applyLink(el, item) {
     // An empty section's tiles are plain glass: no destination, so no href
     // (never '#').
@@ -1273,8 +1399,16 @@ const lanes = LANES.map((lane, k) => {
   }
 
   // ======================================================================
-  // Desktop: the conveyor
+  // Desktop: the conveyor - one stream per section, side by side
   // ======================================================================
+  // Each section is its own stream: a train of cards on the same diagonal,
+  // with its own position, laid out beside the others across the line (the
+  // perpendicular, NRM). Choosing a section does not make this train run
+  // faster to somewhere else; the view pans across to the stream next door,
+  // which has been standing where you left it. You move a stream by hand
+  // (wheel, drag, arrow keys) and it settles on a card; left alone for a
+  // while the page goes lean-back and the stream drifts on its own (see
+  // the idle logic above, and the .is-leanback rules in the styles).
   const stageEl = document.getElementById('flowStage')
   const cardEls = Array.from(stageEl.querySelectorAll('.flow-card'))
   const focusEl = document.getElementById('flowFocus')
@@ -1285,105 +1419,70 @@ const lanes = LANES.map((lane, k) => {
   const focusLinkEl = document.getElementById('flowFocusLink')
   const focusMoreEl = document.getElementById('flowFocusMore')
 
-  // One step every 5/7s: the reference's 5s loop is seven steps.
-  const PERIOD = 5000 / 7
-  // The step's motion profile, as measured off the reference frame by
-  // frame (u = fraction of the step elapsed, y = fraction of the move done):
-  // a slow start, a whip through the middle (half the distance by u=0.23),
-  // then a long settling tail into a hold. Piecewise-linear between these
-  // points; the source itself is only 60fps.
-  const EASE = [
-    [0, 0], [0.05, 0.008], [0.09, 0.03], [0.13, 0.083], [0.18, 0.225], [0.2, 0.35], [0.21, 0.37],
-    [0.225, 0.49], [0.235, 0.51], [0.25, 0.6], [0.27, 0.674], [0.28, 0.69], [0.32, 0.785],
-    [0.37, 0.855], [0.43, 0.915], [0.47, 0.935], [0.55, 0.978], [0.62, 0.99], [0.7, 0.997],
-    [0.8, 1], [1, 1],
-  ]
-  function easeStep(u) {
-    if (u <= 0) return 0
-    if (u >= 1) return 1
-    let i = 1
-    while (EASE[i][0] < u) i++
-    const [u0, y0] = EASE[i - 1]
-    const [u1, y1] = EASE[i]
-    return y0 + ((y1 - y0) * (u - u0)) / (u1 - u0)
-  }
-
-  let laneCount = 9
-  let cardH = 300
-  const laneLap = new Array(LANES.length).fill(null)
-  const laneItem = new Array(LANES.length).fill(null)
-  let focusedLane = -1
-  let swapTimer = null
-
-  // What the lanes show, and how a lane's lap maps to an item. Lane k on lap
-  // L shows cItems[(k + L*n - cBase) mod cTotal]; at rest the lane nearest the
-  // centre has k + L*n equal to the train's integer position, so cBase is
-  // simply "the position at which this section's item 0 sits at the centre".
-  // Changing section changes cItems and cBase and nothing else - a lane
-  // re-reads its item only when its lap changes (it wraps, off-screen), so
-  // the cards on screen keep their old tint until they have left.
-  let cItems = items
-  let cTotal = cItems.length
-  let cBase = 0
-  let conveyorSection = 'apps'
-  // Integer slots the whole train has been advanced by completed shifts
-  // (always a multiple of n, so adding it changes nothing about the layout),
-  // and each lane's extra advance while a shift is in flight.
-  let shiftOffset = 0
-  const extra = new Array(LANES.length).fill(0)
-  let shift = null
-  let queuedSection = null
-  let curS = 0 // the clock's position in slots, as of the latest frame
-  let compactMode = false
-  // The name block is hidden while the tile stepping in sweeps through the
-  // space it occupies: from this fraction of a step to that one (the whip
-  // and the first part of its tail; see easeStep).
-  const HIDE_FROM = 0.09
-  const HIDE_TO = 0.38
-  let blockHidden = false
-
-  // The shift: the whole train runs one lap along its own track - old tiles
-  // leave up-left, the new section's arrive from the bottom-right - and lands
-  // exactly where it started (a lap is a whole number of slots), with every
-  // lane carrying a tile of the new section. Lanes with a higher z are nearer
-  // the viewer and finish sooner: that spread of speeds is the parallax. The
-  // measured per-step whip is no use at this scale (a lap is ~10 steps in one
-  // second), so this is a plain symmetric ease.
-  const SHIFT_MS = 1100
+  // Motion. A hand move settles with a firm critically-damped spring; the
+  // lean-back drift uses a much softer one, so a tile glides rather than
+  // whips, then holds for most of AUTO_MS.
+  const SPRING_HAND = 64
+  const SPRING_AUTO = 12
+  const ZETA = 1.05
+  const WHEEL_SLOTS_PER_PX = 0.0045 // a mouse-wheel notch (~100px) is about half a slot
+  const WHEEL_SNAP_MS = 150
+  const PAN_MS = 900 // one stream over; a longer hop takes a little longer
   function easeInOutCubic(p) {
     return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2
   }
 
+  let laneCount = 9
+  let cardH = 300
+  let compactMode = false
+  let gap = 2.6 // distance between streams, in card heights, set from the viewport
+  let activeIdx = 0
+  let cam = 0 // which stream the view is on, continuous; an integer at rest
+  let pan = null
+  let lastAutoStep = 0
+
+  const streams = SECTION_ORDER.map((slug, j) => {
+    const its = SECTIONS_DATA[slug].items
+    const cards = j === 0 ? cardEls : cardEls.map((c) => {
+      const el = c.cloneNode(false)
+      el.dataset.stream = String(j)
+      el.style.display = 'none'
+      stageEl.append(el)
+      return el
+    })
+    return { slug, j, items: its, total: its.length, pos: 0, target: 0, vel: 0, cards, lap: new Array(LANES.length).fill(null), item: new Array(LANES.length).fill(null), shown: j === 0, focused: -1 }
+  })
+  const mod = (a, n) => ((a % n) + n) % n
+  let focusedStream = -1
+  let focusedLane = -1
+  let swapTimer = null
+  let blockHidden = false
+
   // How many lanes this viewport needs: enough that the point where a lane
-  // wraps from the far top-left back to the far bottom-right (slot +n/2 ->
-  // -n/2) is always past the stage edge plus a card, so the wrap is never
-  // seen. Odd, like the reference's seven, and never more lanes than roster
-  // items (two lanes would then show the same item at once).
+  // wraps from the far top-left back to the far bottom-right is always past
+  // the stage edge plus a card, so the wrap is never seen. Odd, like the
+  // reference's seven.
   function layout() {
     const w = stageEl.clientWidth
     const h = stageEl.clientHeight
     cardH = cardEls[0].offsetHeight / LANES[0].scale || cardH
     const halfExtent = (w / 2) * Math.abs(DIR.x) + (h / 2) * Math.abs(DIR.y)
     const need = 2 * Math.ceil((halfExtent + 0.7 * cardH) / (STEP_H * cardH)) + 1
-    // Never fewer than the reference's seven, never more than there are
-    // lanes - and, now that the item list changes with the section, never
-    // dependent on how many items a section has (a short section simply
-    // repeats its tiles; the lane count must not move mid-shift).
     const n = Math.max(7, Math.min(LANES.length, need))
     if (n !== laneCount) {
       laneCount = n
-      laneLap.fill(null)
-      // A lap is n slots; if n changed, a shift in flight no longer lands
-      // on the rigid pattern, so drop it (the section is already set).
-      if (shift) abortShift()
+      for (const st of streams) st.lap.fill(null)
     }
-    cardEls.forEach((el, k) => {
-      el.style.display = k < laneCount ? '' : 'none'
-    })
+    // The next stream sits just past the edge of the screen across the
+    // line: the half-extent of the viewport along the perpendicular, plus
+    // the card's own reach and some air. Parallax (below) only ever pushes
+    // a lane further out, so at rest no neighbour is in view.
+    const halfAcross = ((w / 2) * Math.abs(NRM.x) + (h / 2) * Math.abs(NRM.y)) / cardH
+    gap = halfAcross + 0.9
+    focusedLane = -1
     // The name and details start 0.56 card heights right of centre. If what
     // is left of the viewport to their right is too narrow to read, they move
-    // up to the corner under the section names instead (and, away from the
-    // train, no longer need to hide while a tile passes).
+    // up to the corner under the section names instead.
     const room = w * (0.5 - 0.034) - 0.56 * cardH
     compactMode = room < 220
     sceneDesktopEl.classList.toggle('is-compact', compactMode)
@@ -1402,7 +1501,7 @@ const lanes = LANES.map((lane, k) => {
   function setArrowLabel(a, label) {
     const arrow = document.createElement('span')
     arrow.setAttribute('aria-hidden', 'true')
-    arrow.textContent = '\u2192'
+    arrow.textContent = '→'
     a.replaceChildren(document.createTextNode(`${label} `), arrow)
   }
 
@@ -1423,42 +1522,59 @@ const lanes = LANES.map((lane, k) => {
     }
   }
 
-  function setFocus(k) {
+  function setFocus(st, k) {
+    focusedStream = st.j
     focusedLane = k
-    const item = laneItem[k]
+    const item = st.item[k]
     focusEl.classList.add('is-swapping')
     clearTimeout(swapTimer)
     swapTimer = setTimeout(() => {
       writeFocus(item)
-      // While tiles are shifting the label stays hidden; landing re-reads it.
-      if (!shift) focusEl.classList.remove('is-swapping')
+      // While the view is panning the label stays hidden; landing re-reads it.
+      if (!pan) focusEl.classList.remove('is-swapping')
     }, 110)
   }
 
-  // s = the train's progress in slots (whole steps taken + the eased
-  // fraction of the current one). Lane k sits at slot -k (+ its nudge) + s,
-  // wrapped into [-n/2, n/2); each time it wraps (off-screen, far top-left
-  // to far bottom-right) it takes the next roster item, n further on, so
-  // the centre slot sees the roster in order and no two lanes share an item.
-  function render(s) {
+  // Lay one stream out. Lane k sits at slot -k + pos (wrapped into [-n/2,
+  // n/2)); each time it wraps (off-screen) it takes the item n further on,
+  // so the centre slot sees the section's items in order and no two lanes
+  // share one. `across` is how many streams this one is from the view.
+  function renderStream(st, across) {
     const n = laneCount
+    const visible = Math.abs(across) < 1.2
+    if (!visible) {
+      if (st.shown) {
+        st.shown = false
+        for (const el of st.cards) el.style.display = 'none'
+      }
+      return null
+    }
+    if (!st.shown) st.shown = true
     let bestK = 0
     let bestAbs = Infinity
-    for (let k = 0; k < n; k++) {
+    for (let k = 0; k < LANES.length; k++) {
+      const el = st.cards[k]
+      if (k >= n) {
+        if (el.style.display !== 'none') el.style.display = 'none'
+        continue
+      }
+      if (el.style.display === 'none') el.style.display = ''
       const L = LANES[k]
-      const el = cardEls[k]
-      const raw = -k + L.frac + s + shiftOffset + extra[k]
+      const raw = -k + L.frac + st.pos
       const lap = Math.floor((raw + n / 2) / n)
       const along = raw - lap * n
-      if (lap !== laneLap[k]) {
-        laneLap[k] = lap
-        const item = cItems[(((k + lap * n - cBase) % cTotal) + cTotal) % cTotal]
-        laneItem[k] = item
+      if (lap !== st.lap[k]) {
+        st.lap[k] = lap
+        const item = st.items[mod(k + lap * n, st.total)]
+        st.item[k] = item
         applyLink(el, item)
         el.style.setProperty('--accent', item.color)
       }
-      el.style.setProperty('--kx', (STEP_H * along * DIR.x + L.lat * NRM.x).toFixed(4))
-      el.style.setProperty('--ky', (STEP_H * along * DIR.y + L.lat * NRM.y).toFixed(4))
+      // The pan moves the lanes of nearer depth a little further than the far
+      // ones: the parallax of looking across rather than sliding a flat sheet.
+      const lat = L.lat + across * gap * (1 + 0.045 * (L.z - 2))
+      el.style.setProperty('--kx', (STEP_H * along * DIR.x + lat * NRM.x).toFixed(4))
+      el.style.setProperty('--ky', (STEP_H * along * DIR.y + lat * NRM.y).toFixed(4))
       el.style.setProperty('--r', `${(L.rate * along).toFixed(2)}deg`)
       const a = Math.abs(along)
       if (a < bestAbs) {
@@ -1466,101 +1582,168 @@ const lanes = LANES.map((lane, k) => {
         bestK = k
       }
     }
-    if (bestK !== focusedLane && !shift) setFocus(bestK)
+    return bestK
   }
 
-  // --- changing section ---------------------------------------------------
-  function abortShift() {
-    extra.fill(0)
-    shift = null
-    stageEl.classList.remove('is-shifting')
-    queuedSection = null
-    focusedLane = -1
-  }
-
-  // Start flying to a section: swap the lists now (lanes pick the new one up
-  // as they wrap) and let every lane run one lap, forward when the target is
-  // to the right in the nav, backward when it is to the left.
-  function startShift(slug) {
-    const dir = SECTION_ORDER.indexOf(slug) > SECTION_ORDER.indexOf(conveyorSection) ? 1 : -1
-    const n = laneCount
-    cItems = SECTIONS_DATA[slug].items
-    cTotal = cItems.length
-    // Position (in whole slots) at which the lap lands; item 0 sits at the
-    // centre there. The clock is held for the flight, so this is exact.
-    cBase = Math.round(curS + shiftOffset) + dir * n
-    hoverPaused = false
-    stageEl.classList.add('is-shifting')
+  // --- changing section: pan across to the next stream ---------------------
+  function switchStream(idx) {
+    if (idx === activeIdx) return
+    const dist = Math.abs(idx - cam)
+    pan = { from: cam, to: idx, start: null, dur: PAN_MS + 220 * Math.max(0, dist - 1) }
+    activeIdx = idx
+    stageEl.classList.add('is-panning')
     focusEl.classList.add('is-swapping')
-    shift = { dir, n, slug, start: null, dur: LANES.map((L) => SHIFT_MS * (1.15 - 0.1 * L.z)) }
-  }
-
-  function advanceShift(ts) {
-    if (shift.start == null) shift.start = ts
-    const t = ts - shift.start
-    let done = true
-    for (let k = 0; k < LANES.length; k++) {
-      const p = Math.min(1, t / shift.dur[k])
-      if (p < 1) done = false
-      extra[k] = shift.dir * shift.n * easeInOutCubic(p)
-    }
-    if (done) landShift()
-  }
-
-  function landShift() {
-    // A whole lap changes nothing about where lanes sit, so fold it into the
-    // offset and zero the extras without a visible jump.
-    shiftOffset += shift.dir * shift.n
-    extra.fill(0)
-    conveyorSection = shift.slug
-    shift = null
-    stageEl.classList.remove('is-shifting')
-    focusedLane = -1 // the next render re-reads and reveals the label
-    const queued = queuedSection
-    queuedSection = null
-    if (queued && queued !== conveyorSection) startShift(queued)
-  }
-
-  // No flight: used for the first paint of a #section URL, for reduced
-  // motion, and to catch the conveyor up after the phone layout was live.
-  function applySectionInstant(slug) {
-    if (shift) abortShift()
-    cItems = SECTIONS_DATA[slug].items
-    cTotal = cItems.length
-    cBase = Math.round(curS + shiftOffset)
-    conveyorSection = slug
-    laneLap.fill(null)
     focusedLane = -1
   }
 
-  // One clock for the whole train. It only advances while the conveyor is
-  // actually the thing on screen, nothing is hovered, and the tab is
-  // visible - so hovering freezes every lane together (a moving target
-  // can't be clicked; a train that keeps going around a frozen card would
-  // break the rigid pattern), and a backgrounded tab resumes where it
-  // stopped rather than jumping ahead.
-  let elapsed = 0
+  // No pan: a #section URL on first paint, reduced motion, catching up after
+  // the phone layout was live.
+  function snapToSection(slug) {
+    activeIdx = Math.max(0, SECTION_ORDER.indexOf(slug))
+    cam = activeIdx
+    pan = null
+    stageEl.classList.remove('is-panning')
+    focusedLane = -1
+  }
+
+  // --- moving a stream by hand ----------------------------------------------
+  const activeStream = () => streams[activeIdx]
+  const settled = (st) => Math.abs(st.target - st.pos) < 0.02 && Math.abs(st.vel) < 0.05
+  function nudge(slots) {
+    const st = activeStream()
+    st.target = Math.round(st.target) + slots
+  }
+
+  let wheelTimer = 0
+  let wheelBase = null
+  sceneDesktopEl.addEventListener(
+    'wheel',
+    (e) => {
+      if (searchIsOpen()) return
+      e.preventDefault()
+      const st = activeStream()
+      const px = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY
+      if (wheelBase == null) wheelBase = Math.round(st.target)
+      st.target += Math.max(-300, Math.min(300, px)) * WHEEL_SLOTS_PER_PX
+      clearTimeout(wheelTimer)
+      // When the wheel stops, settle on a card: any real movement is at least
+      // one card, in the direction it was going.
+      wheelTimer = setTimeout(() => {
+        const d = st.target - wheelBase
+        st.target = wheelBase + (Math.abs(d) < 0.12 ? 0 : Math.sign(d) * Math.max(1, Math.round(Math.abs(d))))
+        wheelBase = null
+      }, WHEEL_SNAP_MS)
+    },
+    { passive: false },
+  )
+
+  window.addEventListener('keydown', (e) => {
+    if (!rafId || searchIsOpen() || e.metaKey || e.ctrlKey || e.altKey) return
+    const t = e.target
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'PageDown') (e.preventDefault(), nudge(1))
+    else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'PageUp') (e.preventDefault(), nudge(-1))
+  })
+
+  // Drag along the train. Up-left (the way the train travels) is forward.
+  let drag = null
+  let suppressStageClick = false
+  stageEl.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || pan) return
+    const st = activeStream()
+    drag = { x: e.clientX, y: e.clientY, startPos: st.pos, lastT: e.timeStamp, lastPos: st.pos, v: 0, moved: 0 }
+  })
+  window.addEventListener('pointermove', (e) => {
+    if (!drag) return
+    const st = activeStream()
+    const d = (e.clientX - drag.x) * DIR.x + (e.clientY - drag.y) * DIR.y
+    drag.moved = Math.max(drag.moved, Math.hypot(e.clientX - drag.x, e.clientY - drag.y))
+    if (drag.moved < 6) return
+    const want = drag.startPos + d / (STEP_H * cardH)
+    const dt = e.timeStamp - drag.lastT
+    if (dt > 0) drag.v = (want - drag.lastPos) / dt
+    drag.lastT = e.timeStamp
+    drag.lastPos = want
+    st.pos = want
+    st.target = want
+    st.vel = 0
+  })
+  function endStageDrag(e) {
+    if (!drag) return
+    const st = activeStream()
+    const moved = drag.moved
+    // A still-moving hand carries one card more at most; one that paused before lifting carries nothing.
+    const carry = e && e.timeStamp - drag.lastT < 80 ? Math.max(-1, Math.min(1, drag.v * 140)) : 0
+    drag = null
+    if (moved >= 6) {
+      suppressStageClick = true
+      st.target = Math.round(st.pos + carry)
+    }
+  }
+  window.addEventListener('pointerup', endStageDrag)
+  window.addEventListener('pointercancel', endStageDrag)
+  stageEl.addEventListener(
+    'click',
+    (e) => {
+      if (suppressStageClick) {
+        e.preventDefault()
+        e.stopPropagation()
+        suppressStageClick = false
+      }
+    },
+    true,
+  )
+
+  // --- the frame ---------------------------------------------------------------
   let lastTs = null
-  let hoverPaused = false
   let rafId = 0
   function frame(ts) {
-    if (lastTs != null) {
-      const dt = ts - lastTs
-      // The step clock is held while a shift flies, so the train lands in
-      // exactly the phase it left and resumes from there.
-      if (!hoverPaused && !document.hidden && !shift && dt < 500) elapsed += dt
-    }
+    const dt = lastTs == null ? 0 : Math.min(0.05, (ts - lastTs) / 1000)
     lastTs = ts
-    const steps = Math.floor(elapsed / PERIOD)
-    const phase = (elapsed - steps * PERIOD) / PERIOD
-    curS = steps + easeStep(phase)
-    const hide = !compactMode && !hoverPaused && !shift && phase > HIDE_FROM && phase < HIDE_TO
+    idleCheck(ts)
+    const st = activeStream()
+    // Lean-back: one card every AUTO_MS, once the last has settled.
+    if (leanBack && !document.hidden && !pan && ts - lastAutoStep > AUTO_MS && settled(st)) {
+      nudge(1)
+      lastAutoStep = ts
+    }
+    // Every stream settles on its own spring; the ones you are not on are at rest.
+    const K = leanBack ? SPRING_AUTO : SPRING_HAND
+    const c = 2 * ZETA * Math.sqrt(K)
+    for (const s of streams) {
+      if (drag && s === st && drag.moved >= 6) continue // the hand has it
+      s.vel += (K * (s.target - s.pos) - c * s.vel) * dt
+      s.pos += s.vel * dt
+      if (Math.abs(s.target - s.pos) < 0.0005 && Math.abs(s.vel) < 0.002) {
+        s.pos = s.target
+        s.vel = 0
+      }
+    }
+    if (pan) {
+      if (pan.start == null) pan.start = ts
+      const p = Math.min(1, (ts - pan.start) / pan.dur)
+      cam = pan.from + (pan.to - pan.from) * easeInOutCubic(p)
+      if (p >= 1) {
+        cam = pan.to
+        pan = null
+        stageEl.classList.remove('is-panning')
+        focusedLane = -1 // the next render re-reads and reveals the label
+      }
+    }
+    let bestK = -1
+    for (const s of streams) {
+      const k = renderStream(s, s.j - cam)
+      if (s === st) bestK = k
+    }
+    // The name block is hidden while a tile is in motion (the incoming tile
+    // sweeps through the space it occupies) and while the view pans.
+    const off = Math.abs(st.pos - Math.round(st.pos))
+    const hide = !compactMode && (!!pan || off > (blockHidden ? 0.06 : 0.1))
     if (hide !== blockHidden) {
       blockHidden = hide
       focusEl.classList.toggle('is-moving', hide)
     }
-    if (shift) advanceShift(ts)
-    render(curS)
+    if (bestK != null && bestK >= 0 && !pan && (focusedStream !== st.j || bestK !== focusedLane)) setFocus(st, bestK)
     rafId = requestAnimationFrame(frame)
   }
   function conveyorShouldRun() {
@@ -1578,25 +1761,18 @@ const lanes = LANES.map((lane, k) => {
     rafId = 0
     blockHidden = false
     focusEl.classList.remove('is-moving')
+    setLeanBack(false)
   }
   function syncConveyor() {
     if (conveyorShouldRun()) {
-      if (conveyorSection !== currentSection) applySectionInstant(currentSection)
+      if (SECTION_ORDER[activeIdx] !== currentSection) snapToSection(currentSection)
       startConveyor()
     } else stopConveyor()
   }
 
-  stageEl.addEventListener('pointerover', (e) => {
-    hoverPaused = !!e.target.closest('.flow-card')
-  })
-  stageEl.addEventListener('pointerleave', () => {
-    hoverPaused = false
-  })
-  // The details link is the one interactive bit beside the train: hold the
-  // clock while it is hovered or focused so the label can't change under a
-  // click.
-  for (const ev of ['pointerenter', 'focusin']) focusEl.addEventListener(ev, () => (hoverPaused = true))
-  for (const ev of ['pointerleave', 'focusout']) focusEl.addEventListener(ev, () => (hoverPaused = false))
+  // The details link is the one interactive bit beside the train: it is
+  // plain hover/focus now, and since the train no longer moves on its own
+  // while you are there, there is nothing to hold.
   new ResizeObserver(() => {
     if (rafId) layout()
   }).observe(stageEl)
@@ -1631,7 +1807,7 @@ const lanes = LANES.map((lane, k) => {
   let reelSection = 'apps'
 
   // Reference: one name every 1.25s.
-  const REEL_PERIOD = 1250
+  const REEL_PERIOD = 1250 // the reference's pace; lean-back drifts slower (AUTO_MS)
   // The list's spring, in slot units: stiff enough to arrive in well under
   // a second, damped past critical so it never overshoots - it pours into
   // place rather than snapping. (zeta > 1 = overdamped.)
@@ -1648,8 +1824,7 @@ const lanes = LANES.map((lane, k) => {
   let near = -1
   let bgVisible = bgAEl
   let bgItem = null
-  let interactUntil = 0
-  let lastAuto = 0
+  let lastAuto = 0 // when lean-back last stepped the reel
   let reelRaf = 0
   let reelLast = null
   let paintedLo = 0
@@ -1927,7 +2102,8 @@ const lanes = LANES.map((lane, k) => {
     const dt = Math.min(0.05, (ts - reelLast) / 1000)
     reelLast = ts
     const animate = !reducedQuery.matches
-    if (!document.hidden && animate && !dragging && ts > interactUntil && ts - lastAuto > REEL_PERIOD) {
+    idleCheck(ts)
+    if (leanBack && !document.hidden && animate && !dragging && ts - lastAuto > AUTO_MS) {
       target += 1
       lastAuto = ts
     }
@@ -1966,9 +2142,8 @@ const lanes = LANES.map((lane, k) => {
     reelRaf = 0
   }
 
-  function touched(ts) {
-    interactUntil = ts + 4000
-    lastAuto = interactUntil - REEL_PERIOD + 700
+  function touched() {
+    activity()
   }
 
   // Swipes drive the list by hand (touch-action: none on .reel hands every
@@ -2043,8 +2218,7 @@ const lanes = LANES.map((lane, k) => {
   trackEl.addEventListener('focusin', (e) => {
     const slot = e.target.closest('.pill-slot')
     if (!slot || slot.getAttribute('aria-hidden') === 'true') return
-    interactUntil = performance.now() + 6000
-    lastAuto = interactUntil
+    activity()
     target = total + Number(slot.dataset.index)
   })
   new ResizeObserver(() => {
@@ -2076,13 +2250,10 @@ const lanes = LANES.map((lane, k) => {
     // The conveyor isn't running (first paint, or it is stopped): syncConveyor
     // sets it straight when it starts.
     if (!rafId) return
-    if (!animate || reducedQuery.matches) return applySectionInstant(slug)
-    // Latest request wins; it starts the frame the current flight lands.
-    if (shift) {
-      queuedSection = slug
-      return
-    }
-    if (slug !== conveyorSection) startShift(slug)
+    if (!animate || reducedQuery.matches) return snapToSection(slug)
+    // Pan across to the stream next door (a new request mid-pan simply
+    // re-aims the pan from where the view is).
+    switchStream(SECTION_ORDER.indexOf(slug))
   }
 
   navEl.addEventListener('click', (e) => {
