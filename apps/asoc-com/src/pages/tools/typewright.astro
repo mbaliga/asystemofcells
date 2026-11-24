@@ -1,0 +1,125 @@
+---
+import SimplePageLayout from '../../layouts/SimplePageLayout.astro'
+---
+<!-- No analytics: a page where someone makes something (quiet). -->
+<SimplePageLayout title="Make a font: Typewright" description="Draw each letter with one constant stroke, space them, and download an installable TrueType font. Desktop only. Nothing is uploaded." quiet>
+  <p class="eyebrow">Typewright</p>
+  <h1>Make a font.</h1>
+  <p>Draw every letter with one constant stroke, space them, and download a font you can install. It runs on your computer, inside this page. Nothing is uploaded.</p>
+
+  <p id="tw-nope" class="tw-nope" hidden>This tool needs a desktop screen and a mouse or pen. It is not built for phones or tablets. Open this page on a computer.</p>
+
+  <div id="tw-app" class="tw" hidden>
+    <aside class="tw-left" aria-label="Characters">
+      <div class="tw-head"><strong>Characters</strong><span id="tw-count" class="tw-muted"></span></div>
+      <div id="tw-grid" class="tw-grid"></div>
+      <div id="tw-sets" class="tw-sets"></div>
+      <form id="tw-add" class="tw-add">
+        <label class="tw-muted" for="tw-chars">Add any characters (for example क or ñ)</label>
+        <div class="tw-row"><input id="tw-chars" autocomplete="off" /><button class="tw-btn" type="submit">Add</button></div>
+        <p id="tw-addmsg" class="tw-muted" role="status"></p>
+      </form>
+    </aside>
+
+    <section class="tw-mid" aria-label="Drawing">
+      <div class="tw-bar">
+        <span id="tw-cur" class="tw-cur"></span>
+        <button id="tw-undo" class="tw-btn" type="button">Undo</button>
+        <button id="tw-redo" class="tw-btn" type="button">Redo</button>
+        <button id="tw-clear" class="tw-btn" type="button">Clear letter</button>
+        <label class="tw-inline">Width <input id="tw-adv" type="number" min="0" max="3000" /></label>
+        <label class="tw-inline"><input id="tw-snap" type="checkbox" /> Snap</label>
+      </div>
+      <svg id="tw-svg" class="tw-svg" role="img" aria-label="Drawing surface. Draw with a mouse or pen."></svg>
+      <p class="tw-muted">Draw with the mouse or a pen. Lines show the baseline, x-height, capital height, ascender and descender, and the letter's width at the right.</p>
+      <div class="tw-prevbox">
+        <label class="tw-muted" for="tw-text">Preview, set in your font</label>
+        <input id="tw-text" value="The quick brown fox jumps over the lazy dog 0123456789" />
+        <div id="tw-prev" class="tw-prev" aria-live="off"></div>
+      </div>
+    </section>
+
+    <aside id="tw-form" class="tw-right" aria-label="Font settings">
+      <div class="tw-field"><label for="tw-family">Font name</label><input id="tw-family" /></div>
+      <div class="tw-field"><label for="tw-copy">Copyright line (optional)</label><input id="tw-copy" /></div>
+      <div class="tw-field"><label for="tw-width">Stroke width</label><input id="tw-width" type="range" min="20" max="220" /></div>
+      <div class="tw-grid2">
+        <div class="tw-field"><label for="tw-xh">x-height</label><input id="tw-xh" type="number" /></div>
+        <div class="tw-field"><label for="tw-cap">Cap height</label><input id="tw-cap" type="number" /></div>
+        <div class="tw-field"><label for="tw-asc">Ascender</label><input id="tw-asc" type="number" /></div>
+        <div class="tw-field"><label for="tw-desc">Descender</label><input id="tw-desc" type="number" /></div>
+      </div>
+      <div class="tw-field"><label for="tw-side">Side bearing for auto-spacing</label><input id="tw-side" type="number" /></div>
+      <button id="tw-space" class="tw-btn" type="button">Auto-space every letter</button>
+      <hr />
+      <details class="tw-under"><summary>Trace over a picture</summary>
+        <input id="tw-under" type="file" accept="image/*" />
+        <label>Opacity <input id="tw-uo" type="range" min="0" max="1" step="0.05" value="0.35" /></label>
+        <label>Size <input id="tw-us" type="range" min="0.2" max="3" step="0.05" value="1" /></label>
+        <label>Left or right <input id="tw-ux" type="range" min="-400" max="600" value="0" /></label>
+        <label>Up or down <input id="tw-uy" type="range" min="-400" max="600" value="0" /></label>
+        <button id="tw-clear-under" class="tw-btn" type="button">Remove picture</button>
+      </details>
+      <hr />
+      <button id="tw-ttf" class="tw-btn tw-primary" type="button">Download font (.ttf)</button>
+      <button id="tw-save" class="tw-btn" type="button">Save project</button>
+      <label class="tw-btn tw-file">Open project <input id="tw-open" type="file" accept=".json,application/json" /></label>
+      <p id="tw-msg" class="tw-muted" role="status"></p>
+    </aside>
+  </div>
+
+  <h2>What it does, and does not</h2>
+  <ul>
+    <li><strong>Monoline.</strong> Every letter uses the same stroke width, with round ends and joins. It suits a single-line face like Hyle Deco. It does not draw filled or contrasting shapes.</li>
+    <li><strong>Any character in the Basic Multilingual Plane,</strong> so Latin, Devanagari, kana and most other scripts work. Characters beyond it (emoji and some rare scripts) do not.</li>
+    <li><strong>Overlaps are left in.</strong> Each stroke is exported as overlapping shapes. The font draws correctly everywhere, but open it in FontForge or Glyphs and run Remove Overlap before editing the outlines.</li>
+    <li><strong>No kerning, no hinting, no ligatures, no variable axes.</strong> Spacing is each letter's width plus Auto-space.</li>
+    <li>Your work is kept in this browser only. Use Save project to keep a copy.</li>
+    <li>Check the licence of any picture you trace.</li>
+  </ul>
+</SimplePageLayout>
+
+<script>import '../../scripts/typewright/maker.js'</script>
+
+<style is:global>
+  .tw-nope { background: #282828; color: #f0ede6; padding: 18px 22px; border-radius: 12px; }
+  .tw-nope[hidden], .tw[hidden] { display: none; }
+  .tw { width: min(1500px, calc(100vw - 6vw)); margin: 28px 0 40px 50%; transform: translateX(-50%); display: grid; grid-template-columns: 300px minmax(0, 1fr) 300px; gap: 18px; align-items: start; color: #f0ede6; }
+  .tw > * { background: #282828; border-radius: 16px; padding: 18px; min-width: 0; }
+  .tw-muted { font-size: 12px; color: rgba(240,237,230,.6); margin: 6px 0 0; line-height: 1.5; }
+  .tw-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .tw-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-height: 52vh; overflow: auto; }
+  .tw-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0 3px; border-radius: 8px; border: 1px solid rgba(240,237,230,.14); background: #1c1c1c; color: inherit; cursor: pointer; font: inherit; }
+  .tw-cell canvas { width: 40px; height: 46px; }
+  .tw-cell span { font-size: 12px; opacity: .7; }
+  .tw-cell.is-done { border-color: rgba(240,237,230,.4); }
+  .tw-cell.is-cur { border-color: #08fed5; box-shadow: 0 0 0 1px #08fed5; }
+  .tw-sets, .tw-bar, .tw-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+  .tw-btn { font: inherit; font-size: 13px; padding: 7px 13px; border-radius: 999px; border: 1px solid rgba(240,237,230,.3); background: transparent; color: #f0ede6; cursor: pointer; }
+  .tw-btn:hover { background: rgba(240,237,230,.1); }
+  .tw-primary { background: #f0ede6; color: #0b0b0c; border-color: #f0ede6; font-weight: 600; }
+  .tw-primary:hover { background: #fff; }
+  .tw-file { position: relative; display: inline-block; }
+  .tw-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .tw input:not([type=checkbox]):not([type=range]):not([type=file]) { font: inherit; font-size: 13px; padding: 7px 9px; border-radius: 8px; border: 1px solid rgba(240,237,230,.25); background: #1c1c1c; color: #f0ede6; width: 100%; }
+  .tw-add input { flex: 1; }
+  .tw-cur { font-size: 1.5rem; font-weight: 600; margin-right: 8px; }
+  .tw-inline { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+  .tw-inline input[type=number] { width: 80px !important; }
+  .tw-svg { width: 100%; height: 56vh; min-height: 380px; background: #1c1c1c; border-radius: 10px; margin-top: 12px; cursor: crosshair; touch-action: none; display: block; -webkit-user-drag: none; }
+  .tw-guide { stroke: rgba(240,237,230,.18); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+  .tw-base { stroke: rgba(8,254,213,.6); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+  .tw-adv { stroke: rgba(240,237,230,.4); stroke-width: 1.5; stroke-dasharray: 6 5; vector-effect: non-scaling-stroke; }
+  .tw-stroke { fill: none; stroke: #f0ede6; stroke-linecap: round; stroke-linejoin: round; }
+  .tw-live { opacity: .7; }
+  .tw-svg, .tw-grid, .tw-bar, .tw-head { user-select: none; -webkit-user-select: none; }
+  .tw-prevbox { margin-top: 14px; }
+  .tw-prev { margin-top: 10px; font-size: 3rem; line-height: 1.25; min-height: 4rem; overflow-wrap: anywhere; }
+  .tw-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+  .tw-field label, .tw-under label { font-size: 12px; color: rgba(240,237,230,.7); }
+  .tw-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+  .tw-under { margin: 6px 0; font-size: 13px; }
+  .tw-under label { display: block; margin: 8px 0; }
+  .tw-right hr { border: 0; border-top: 1px solid rgba(240,237,230,.14); margin: 14px 0; }
+  .tw-right .tw-btn { margin: 0 6px 8px 0; }
+</style>
