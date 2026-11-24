@@ -51,6 +51,8 @@ const products = defineCollection({
       }),
       faq: z.array(z.object({ q: z.string().min(1), a: z.string().min(1) })).max(4).default([]),
       hub: z.boolean().optional(),
+      // A drifting wall of file extensions behind the hero, plus a link to the file viewer.
+      extensionWall: z.enum(['photo', 'files']).optional(),
       statusProposal: z.string().optional(),
       ownerNotes: z.array(z.string()).optional(),
     })

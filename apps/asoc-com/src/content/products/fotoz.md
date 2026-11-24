@@ -38,6 +38,7 @@ features:
   - title: "Remote AI, bring your own key"
     body: "Request shapes for OpenAI, OpenAI-compatible, Anthropic and Gemini endpoints are written, in the connect build only. Providers are off until you enable them one by one. It has not been checked against every provider."
     status: partial
+extensionWall: photo
 neverHappens:
   - "The offline build cannot reach a network. Its merged manifest removes INTERNET and ACCESS_NETWORK_STATE, and the build fails if either comes back."
   - "Only the connect build can go online, and only for bring-your-own-key AI, a model download and a street map. AI providers are off until you enable each one."

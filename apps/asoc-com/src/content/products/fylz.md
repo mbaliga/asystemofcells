@@ -26,6 +26,7 @@ features:
   - title: Batch rename
     body: A batch rename dialog is wired to the selection bar and its policy has unit tests. Rule-based templates and a dry-run review are in the plan, not built.
     status: partial
+extensionWall: files
 neverHappens:
   - "The manifest declares five permissions: INTERNET, FOREGROUND_SERVICE, FOREGROUND_SERVICE_DATA_SYNC, VIBRATE and MANAGE_EXTERNAL_STORAGE. INTERNET is there for network locations and the optional AI client."
   - No analytics or telemetry dependency is declared in the build file. Cleartext traffic is switched off in the manifest.

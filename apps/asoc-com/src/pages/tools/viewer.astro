@@ -1,0 +1,88 @@
+---
+import SimplePageLayout from '../../layouts/SimplePageLayout.astro'
+import { FORMATS, IDENTIFIED_ONLY } from '../../scripts/viewer/formats.js'
+const open = Object.keys(FORMATS).sort()
+---
+<!-- No analytics: this is a page where someone does something (quiet). -->
+<SimplePageLayout title="File viewer: asystemofcells" description="Drop a file you cannot open. It opens in your browser, on your device, and nothing is uploaded." quiet>
+  <p class="eyebrow">Tools</p>
+  <h1>Open a file.</h1>
+  <p>Drop a file you cannot open. It is read inside this page, on your device, and never uploaded. Where the format allows, make a small change and save a copy.</p>
+
+  <div class="viewer">
+    <label id="v-drop" class="v-drop" for="v-input">
+      <span class="v-drop-title">Drop a file here</span>
+      <span class="v-drop-sub">or choose one</span>
+      <input id="v-input" type="file" class="visually-hidden" />
+    </label>
+    <div id="v-crumbs" class="v-crumbs" hidden></div>
+    <p id="v-meta" class="v-meta" role="status"></p>
+    <div id="v-bar" class="v-bar"></div>
+    <div id="v-stage" class="v-stage"></div>
+  </div>
+
+  <h2>What it does</h2>
+  <ul>
+    <li><strong>Pictures</strong> (JPG, PNG, GIF, WebP, AVIF, BMP, ICO): rotate, flip, crop, resize, brightness and contrast, black and white, and save as PNG, JPEG or WebP. Saving removes the metadata, location included.</li>
+    <li><strong>Text, code, JSON, CSV, SVG:</strong> edit and save. JSON can be formatted or minified, CSV edited as a table.</li>
+    <li><strong>Video, audio, PDF:</strong> played or shown by your browser. Viewing only. This is not a PDF editor.</li>
+    <li><strong>ZIP and what is built on it</strong> (APK, EPUB, DOCX, XLSX, ODT and more): list what is inside and open or save any item. Word and OpenDocument text shows its words only.</li>
+    <li><strong>Fonts:</strong> drawn with the font, with a line you can type into.</li>
+    <li><strong>Everything else:</strong> identified from its first bytes, then shown as a hex dump. Nothing is ever run.</li>
+  </ul>
+  <h2>What it cannot do</h2>
+  <p>HEIC and camera raw files (such as DNG, CR2, NEF, ARW), TIFF, PSD, MKV, 7z, RAR and 3D models are recognised but not drawn. Your browser has no decoder for them, and this page adds none. They open as a hex dump. Whether a video or audio file plays depends on your browser's codecs. Large files can be slow in a browser tab.</p>
+  <details class="v-ext"><summary>Extensions it opens ({open.length})</summary><p>{open.join(' · ')}</p></details>
+  <details class="v-ext"><summary>Extensions it only identifies</summary><p>{IDENTIFIED_ONLY.join(' · ')}</p></details>
+</SimplePageLayout>
+
+<script>import '../../scripts/viewer/viewer.js'</script>
+
+<style is:global>
+  .viewer { width: min(1000px, calc(100vw - 10vw)); margin: 28px 0 40px 50%; transform: translateX(-50%); }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .v-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 240px; border-radius: 16px; background: #282828; color: #f0ede6; cursor: pointer; border: 1px dashed rgba(240,237,230,.35); transition: border-color .18s, background .18s; }
+  .v-drop[hidden] { display: none; }
+  .v-drop:hover, .v-drop.is-over, .v-drop:focus-within { border-color: #08fed5; background: #303030; }
+  .v-drop-title { font-size: 1.5rem; font-weight: 500; }
+  .v-drop-sub { font-size: 14px; color: rgba(240,237,230,.6); }
+  .v-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; margin-bottom: 6px; }
+  .v-crumbs[hidden] { display: none; }
+  .v-crumb::after { content: ' /'; }
+  .v-here { font-weight: 600; }
+  .v-meta { font-size: 13px; color: var(--muted, #666); margin: 4px 0 12px; overflow-wrap: anywhere; }
+  .v-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .v-btn { font: inherit; font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(0,0,0,.2); background: #fff; color: inherit; cursor: pointer; }
+  .v-btn:hover { background: #f2f2f2; }
+  .v-primary { background: #0b0b0c; color: #f0ede6; border-color: #0b0b0c; }
+  .v-primary:hover { background: #222; }
+  .v-ghost { margin-left: auto; }
+  .v-field { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+  .v-field input[type=number] { width: 80px; font: inherit; padding: 6px 8px; }
+  .v-stage { background: #282828; color: #f0ede6; border-radius: 16px; padding: clamp(14px, 3vw, 28px); min-height: 80px; }
+  .v-stage:empty { display: none; }
+  .v-note { font-size: 13px; line-height: 1.5; color: rgba(240,237,230,.65); margin: 12px 0 0; }
+  .v-canvaswrap { position: relative; display: inline-block; max-width: 100%; touch-action: none; }
+  .v-canvas { display: block; max-width: 100%; max-height: 70vh; height: auto; cursor: crosshair; background: repeating-conic-gradient(#3a3a3a 0 25%, #2e2e2e 0 50%) 0 0 / 16px 16px; }
+  .v-sel { position: absolute; border: 1px solid #08fed5; background: rgba(8,254,213,.12); pointer-events: none; }
+  .v-img { max-width: 100%; max-height: 50vh; background: #fff; border-radius: 6px; }
+  .v-split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .v-text { width: 100%; min-height: 360px; resize: vertical; font: 13px/1.5 ui-monospace, Menlo, monospace; background: #1c1c1c; color: #f0ede6; border: 1px solid rgba(240,237,230,.14); border-radius: 8px; padding: 12px; tab-size: 2; }
+  .v-media { width: 100%; max-height: 70vh; }
+  .v-pdf { width: 100%; height: 75vh; border-radius: 6px; background: #fff; }
+  .v-pre { margin: 0; max-height: 60vh; overflow: auto; font: 12px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; word-break: break-word; }
+  .v-hex { white-space: pre; word-break: normal; }
+  .v-h { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: rgba(240,237,230,.6); margin: 18px 0 8px; font-weight: 500; }
+  .v-tablewrap { overflow: auto; max-height: 60vh; }
+  .v-grid { border-collapse: collapse; font-size: 13px; width: 100%; }
+  .v-grid td { border: 1px solid rgba(240,237,230,.14); padding: 0; }
+  .v-grid input { width: 100%; min-width: 90px; font: inherit; background: transparent; color: inherit; border: 0; padding: 7px 9px; }
+  .v-list td { padding: 7px 10px; }
+  .v-list .v-btn { background: transparent; color: inherit; border-color: rgba(240,237,230,.3); padding: 4px 10px; }
+  .v-num { text-align: right; white-space: nowrap; }
+  .v-fontsample { font-family: 'ViewerFont', sans-serif; font-size: clamp(1.8rem, 5vw, 3.2rem); line-height: 1.2; outline: none; overflow-wrap: anywhere; }
+  .v-fontsmall { font-size: 1.3rem; margin: 14px 0 0; }
+  .v-ext { margin: 10px 0; font-size: 14px; }
+  .v-ext p { font-family: ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.8; }
+  @media (max-width: 700px) { .v-split { grid-template-columns: 1fr; } .v-ghost { margin-left: 0; } }
+</style>
