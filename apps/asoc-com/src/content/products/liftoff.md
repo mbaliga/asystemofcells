@@ -1,6 +1,6 @@
 ---
-headline: "Sphere Launcher is an Android home app with a coverflow row of apps and an all-apps globe one pinch away."
-lede: "Sphere Launcher is under construction. A debug build is available on GitHub, with no store listing and no licence file yet."
+headline: "Liftoff is an Android home app with a coverflow row of apps and an all-apps globe one pinch away."
+lede: "Liftoff, once called Sphere Launcher and BOS launcher, is under construction. A debug build is available on GitHub, with no store listing and no licence file yet."
 features:
   - title: "Coverflow equator"
     body: "Apps sit in a row with 3D perspective. A magnifying lens enlarges the tile at front centre, and tile spacing is computed from the lens curve. One row in landscape, two in portrait."
@@ -52,7 +52,7 @@ faq:
     a: "A launcher has to show your apps. The app reads the list through the LauncherApps system API, including work-profile apps, and sends it nowhere."
   - q: "Does it work in portrait?"
     a: "Yes, with two rows and the search keyboard. It is designed landscape first."
-statusProposal: "roster status should be building, not soon, because the repo has a debug-APK prerelease (v0.1.0-m1) and milestones M0 to M4 are done, though there is no store listing. The owner calls it stalled. The page is written for building: Watch the repo CTA, no install chooser."
+statusProposal: "(applied: the roster status is now building.) Reason:  the repo has a debug-APK prerelease (v0.1.0-m1) and milestones M0 to M4 are done, though there is no store listing. The owner calls it stalled. The page is written for building: Watch the repo CTA, no install chooser."
 ownerNotes:
   - "No images. The repo has no raster images and the manifest has no entries for the sphere imagery key. The prototype docs/spherelauncher13.html could be captured on Lane W, labelled Web or Rendered preview, never Captured on device. Real app imagery needs an owner-run landscape device capture."
   - "Licence: main has no LICENSE. PR #7 (open, unmerged at check time) proposes PolyForm Noncommercial 1.0.0 plus COMMERCIAL-LICENSE.md. Re-check the PR state before publishing and update openSource if it merges."
@@ -63,6 +63,6 @@ ownerNotes:
   - "The Hyle design system is not consumed; core-design imitates the palette. Nothing on the page claims otherwise."
   - "The pipeline survey listed this repo as private. It is public."
 ---
-Sphere Launcher is a home app for Android. It was built landscape first.
+Liftoff is a home app for Android, formerly called Sphere Launcher. It was built landscape first.
 
 The source is at v0.1.0-m1. The only release is a debug-build prerelease. Watching the repo is the sensible way to follow it.
