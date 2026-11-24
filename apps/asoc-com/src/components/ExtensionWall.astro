@@ -1,0 +1,39 @@
+---
+// A drifting wall of file extensions behind a landing hero. Decorative only:
+// pure CSS, no script, hidden from assistive tech. Extensions the file viewer
+// really opens are drawn a little brighter than those it only knows about, so
+// the wall never promises more than /tools/viewer/ does.
+import { WALLS, opens } from '../scripts/viewer/formats.js'
+const { set = 'files' } = Astro.props
+const exts = WALLS[set] || WALLS.files
+// Deterministic scatter (golden angle), so a build is reproducible.
+const items = exts.map((ext, i) => {
+  const a = i * 2.399963
+  const x = 50 + 46 * Math.sin(a) * (0.55 + 0.45 * ((i * 37) % 10) / 10)
+  const y = 6 + ((i * 61) % 88)
+  return {
+    ext, open: opens(ext),
+    x: x.toFixed(1), y: y.toFixed(1),
+    size: (0.95 + ((i * 7) % 9) * 0.28).toFixed(2),
+    dur: 16 + ((i * 5) % 14),
+    delay: -((i * 3) % 17),
+    dx: ((i * 11) % 5) - 2,
+  }
+})
+---
+<div class="ext-wall" aria-hidden="true">
+  {items.map((it) => (
+    <span class={`ext-tag${it.open ? ' is-open' : ''}`} style={`left:${it.x}%;top:${it.y}%;font-size:${it.size}rem;--dur:${it.dur}s;--delay:${it.delay}s;--dx:${it.dx * 10}px`}>.{it.ext}</span>
+  ))}
+</div>
+
+<style is:global>
+  .ext-wall { position: absolute; z-index: 0; top: -70px; bottom: -70px; left: 50%; width: 100vw; max-width: 100%; transform: translateX(-50%); overflow: hidden; pointer-events: none; user-select: none;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, rgba(0,0,0,.35), #000 85%); mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, rgba(0,0,0,.35), #000 85%); }
+  .ext-tag { position: absolute; font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; letter-spacing: .02em; color: currentColor; opacity: .09; white-space: nowrap; animation: ext-drift var(--dur) ease-in-out var(--delay) infinite alternate; }
+  .ext-tag.is-open { opacity: .15; color: var(--wing-accent, currentColor); }
+  @keyframes ext-drift { from { transform: translate(calc(var(--dx) * -1), 14px); } to { transform: translate(var(--dx), -22px); } }
+  @media (prefers-reduced-motion: reduce) { .ext-tag { animation: none; } }
+  .product-hero-wrap { position: relative; }
+  .product-hero-wrap > .product-hero { position: relative; z-index: 1; }
+</style>

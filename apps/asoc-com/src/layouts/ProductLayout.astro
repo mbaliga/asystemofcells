@@ -15,6 +15,7 @@
 // forms, canvases, workers and fetches (docs/handoff/tools/check-analytics-boundary.sh).
 import { Image } from 'astro:assets'
 import WingLayout from './WingLayout.astro'
+import ExtensionWall from '../components/ExtensionWall.astro'
 import CellMark from '@asoc/kit/CellMark.astro'
 import Provenance from '@asoc/kit/Provenance.astro'
 import { cellCta, displayName as nameOf, installLinks, STATUS_MEANING } from '@asoc/roster'
@@ -169,6 +170,8 @@ const hasBody = Astro.slots.has('default')
   analytics
 >
   <Fragment slot="hero">
+    <div class="product-hero-wrap">
+    {copy.extensionWall && <ExtensionWall set={copy.extensionWall} />}
     <div class="product-hero">
       {logo && <Image class="product-logo" src={logo} alt="" width={96} height={96} loading="eager" />}
       <h1>{displayName}</h1>
@@ -180,6 +183,7 @@ const hasBody = Astro.slots.has('default')
       <p class="product-headline">{copy.headline}</p>
       {copy.lede && <p class="product-lede">{copy.lede}</p>}
       <div class="product-cta">
+        {copy.extensionWall && <a class="btn btn--ghost" href="/tools/viewer/">Open a file you can't open</a>}
         {readerUrl && <a class="btn btn--primary" href={readerUrl}>{readerLabel}</a>}
         {primaryCta && (
           <a
@@ -199,6 +203,7 @@ const hasBody = Astro.slots.has('default')
       )}
       {/* The roster's 'building' meaning promises a repository link; show it only when the product file names a repo. */}
       {!primaryCta && !readerUrl && (cell.status !== 'building' || copy.openSource?.repo) && <p class="product-status-line">{STATUS_MEANING[cell.status]}</p>}
+    </div>
     </div>
   </Fragment>
 
