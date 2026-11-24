@@ -5,6 +5,3 @@ dist/
 .env.local
 *.log
 .DS_Store
-
-# Built extension packages are committed: the app downloads them straight from the repo.
-!extensions/*/dist/

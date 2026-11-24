@@ -20,6 +20,10 @@ import Provenance from '@asoc/kit/Provenance.astro'
 import { cellCta, displayName as nameOf, installLinks, STATUS_MEANING } from '@asoc/roster'
 import { getHero, getScreens } from '@asoc/roster/screens'
 
+// The app's logo, when assets/logos/<slug>.png exists (brand/logos/index.json lists which do).
+const logos = import.meta.glob('../assets/logos/*.png', { eager: true, import: 'default' })
+const logo = logos[`../assets/logos/${Astro.props.cell.slug}.png`]
+
 const { cell, product, title: pageTitle, description } = Astro.props
 const displayName = nameOf(cell)
 const TISSUE_LABEL = {
@@ -166,6 +170,7 @@ const hasBody = Astro.slots.has('default')
 >
   <Fragment slot="hero">
     <div class="product-hero">
+      {logo && <Image class="product-logo" src={logo} alt="" width={96} height={96} loading="eager" />}
       <h1>{displayName}</h1>
       <p class="product-status">
         <CellMark variant={cell.status} size={14} />
@@ -378,6 +383,7 @@ const hasBody = Astro.slots.has('default')
 </WingLayout>
 
 <style is:global>
+  .product-logo { width: 96px; height: 96px; border-radius: 22%; display: block; margin: 0 auto 18px; }
   .product-hero { max-width: 720px; margin: 0 auto; }
   .product-hero h1 { font-size: clamp(2.4rem, 6vw, 4.4rem); font-weight: 600; letter-spacing: -0.025em; line-height: 1.03; margin: 0 0 12px; }
   .product-status { display: inline-flex; align-items: center; gap: 0.5em; margin: 0 0 22px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
