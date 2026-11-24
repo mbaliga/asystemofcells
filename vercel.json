@@ -34,6 +34,16 @@
       "source": "/shop/:key/",
       "destination": "/cabinet/:key/",
       "permanent": true
+    },
+    {
+      "source": "/sphere",
+      "destination": "/liftoff",
+      "permanent": true
+    },
+    {
+      "source": "/sphere/",
+      "destination": "/liftoff/",
+      "permanent": true
     }
   ],
   "headers": [

@@ -327,21 +327,22 @@
       ]
     },
     {
-      "slug": "sphere",
-      "name": "Sphere Launcher",
+      "slug": "liftoff",
+      "name": "Liftoff",
       "tissue": "ambient-cells",
       "type": "B",
-      "status": "soon",
+      "status": "building",
       "accent": "#1E5AA8",
-      "oneLiner": "A launcher whose home is a globe or a ring, your choice, with apps that morph along its bands.",
+      "oneLiner": "An Android home app with a coverflow row of apps and an all-apps globe one pinch away.",
       "isHub": false,
-      "imagery": "sphere",
+      "imagery": "liftoff",
       "kind": "app",
       "verify": [
-        "private repo",
-        "owner calls it stalled — keep the page short",
-        "accent placeholder"
-      ]
+        "formerly Sphere Launcher and BOS launcher (owner, 2026-11-24)",
+        "accent placeholder",
+        "owner called it stalled before; repo pushed 2026-11-23"
+      ],
+      "repo": "mbaliga/BOS_launcher"
     },
     {
       "slug": "typewright",
@@ -426,6 +427,116 @@
       "verify": [
         "hidden from the conveyor; page exists for the privacy link",
         "repo mbaliga/asoc-counter-app does not exist yet; add `repo` when A8 creates it"
+      ]
+    },
+    {
+      "slug": "argonautica",
+      "name": "Argonautica",
+      "tissue": "daily-cells",
+      "type": "A",
+      "status": "soon",
+      "accent": "#C9892B",
+      "oneLiner": "A live wallpaper of Jason and the Argonauts' voyage, drawn on your home screen.",
+      "isHub": false,
+      "imagery": "argonautica",
+      "kind": "app",
+      "verify": [
+        "private repo (RTS-live-wallpapers, argo.html)",
+        "status unconfirmed: owner said \"another live wallpaper\"",
+        "accent placeholder"
+      ]
+    },
+    {
+      "slug": "brwzr",
+      "name": "Brwzr",
+      "tissue": "daily-cells",
+      "type": "A",
+      "status": "building",
+      "accent": "#2B6CB0",
+      "oneLiner": "A browser with no chrome: one orb in a corner that opens into the address bar, with ad and tracker blocking built in.",
+      "isHub": false,
+      "repo": "mbaliga/brwsr",
+      "packageId": "dev.aarso.brwsr",
+      "imagery": "brwzr",
+      "kind": "app",
+      "verify": [
+        "repo name is brwsr, product name Brwzr (owner spelling)",
+        "owner: \"ultra-minimalistic, privacy focused\"",
+        "accent placeholder"
+      ]
+    },
+    {
+      "slug": "clavis",
+      "name": "Clavis",
+      "tissue": "daily-cells",
+      "type": "A",
+      "status": "building",
+      "accent": "#222222",
+      "oneLiner": "Learn nine languages at once, as one connected system: comics, etymology and spaced repetition, offline.",
+      "isHub": false,
+      "repo": "mbaliga/Clavis",
+      "imagery": "clavis",
+      "kind": "app",
+      "verify": [
+        "repo is seeded with docs and a reference web prototype; native build not confirmed",
+        "accent placeholder"
+      ]
+    },
+    {
+      "slug": "picture-this",
+      "name": "Picture This",
+      "tissue": "daily-cells",
+      "type": "A",
+      "status": "soon",
+      "accent": "#2D2D2D",
+      "oneLiner": "A camera and photographic scene editor for Android, with AI in the loop.",
+      "isHub": false,
+      "repo": "mbaliga/picturethis",
+      "imagery": "picture-this",
+      "kind": "app",
+      "verify": [
+        "README: \"specification and prototype are being prepared\"",
+        "\"AI-augmented\" is the owner's wording, not in the README",
+        "licence PolyForm Noncommercial 1.0.0",
+        "accent placeholder"
+      ]
+    },
+    {
+      "slug": "ping",
+      "name": "Ping",
+      "tissue": "maker-cells",
+      "type": "C",
+      "status": "building",
+      "accent": "#2F6FED",
+      "oneLiner": "A phone-first support console: Play reviews, GitHub issues and support email in one place. AI suggests; you confirm every reply.",
+      "isHub": false,
+      "repo": "mbaliga/csapp",
+      "packageId": "com.mbaliga.csapp",
+      "imagery": "ping",
+      "kind": "app",
+      "verify": [
+        "repo is csapp (owner: \"Ping is CSapp\")",
+        "Apache-2.0",
+        "accent placeholder"
+      ]
+    },
+    {
+      "slug": "youve-got-mail",
+      "name": "You've got Mail",
+      "tissue": "daily-cells",
+      "type": "A",
+      "status": "building",
+      "accent": "#1F2E55",
+      "oneLiner": "An Android mail client with desktop-grade search, selection rules and automation, for any IMAP, POP3 or JMAP provider.",
+      "isHub": false,
+      "repo": "mbaliga/mail",
+      "packageId": "dev.aarso.mail",
+      "imagery": "youve-got-mail",
+      "kind": "app",
+      "verify": [
+        "no LICENSE file in the repo: licence unstated",
+        "status unconfirmed (no release found)",
+        "accent placeholder"
       ]
     }
   ]
