@@ -1,0 +1,22 @@
+---
+// The fixed top-left trail: asystemofcells / Section. Both parts go back: the
+// house home, and the section the page lives in.
+const { crumbs = [] } = Astro.props
+---
+<nav class="back-link crumbs" aria-label="Where you are">
+  <a href="/">asystemofcells</a>
+  {crumbs.map((c) => (
+    <>
+      <span class="crumb-sep" aria-hidden="true">/</span>
+      {c.current ? <span class="crumb-here" aria-current="page">{c.label}</span> : <a href={c.href}>{c.label}</a>}
+    </>
+  ))}
+</nav>
+
+<style is:global>
+  .crumbs { display: flex; align-items: center; gap: 0.5em; }
+  .crumbs a { text-decoration: none; }
+  .crumbs a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .crumb-sep { opacity: 0.45; }
+  .crumb-here { font-weight: 700; }
+</style>
