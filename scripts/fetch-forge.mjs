@@ -1,10 +1,10 @@
 // Builds Alloy Forge (the web CAD) from the pinned commit in forge.ref and copies it to
-// apps/asoc-com/public/forge/, so it ships at /forge/ as plain static files. Astro copies public/
+// apps/asoc-com/public/alloy/forge/, so it ships at /alloy/forge/ as plain static files. Astro copies public/
 // verbatim and never injects into it, so the analytics boundary (see README) holds: the tool is
 // never counted. The built output is gitignored; only the pin is committed.
 //
 // Failure policy: a broken Forge fetch must not take the whole marketing site down. By default a
-// failure prints a loud warning and exits 0 (the site deploys without /forge/). Set FORGE_STRICT=1
+// failure prints a loud warning and exits 0 (the site deploys without /alloy/forge/). Set FORGE_STRICT=1
 // to make it fatal. FORGE_SKIP=1 skips the step. FORGE_REPO overrides the git source (testing).
 import { execFileSync } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
@@ -13,7 +13,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const target = join(root, 'apps/asoc-com/public/forge')
+const target = join(root, 'apps/asoc-com/public/alloy/forge')
 const strict = process.env.FORGE_STRICT === '1'
 const repo = process.env.FORGE_REPO || 'https://github.com/mbaliga/Alloy.git'
 
@@ -53,7 +53,7 @@ function main() {
     rmSync(target, { recursive: true, force: true })
     mkdirSync(dirname(target), { recursive: true })
     cpSync(dist, target, { recursive: true })
-    console.log(`fetch-forge: Forge ${pin.slice(0, 9)} copied to apps/asoc-com/public/forge`)
+    console.log(`fetch-forge: Forge ${pin.slice(0, 9)} copied to apps/asoc-com/public/alloy/forge`)
   } finally {
     rmSync(work, { recursive: true, force: true })
   }
@@ -64,6 +64,6 @@ try {
 } catch (err) {
   console.error(`\nfetch-forge: FAILED: ${err.message}\n`)
   if (strict) process.exit(1)
-  console.error('fetch-forge: continuing without /forge/ (set FORGE_STRICT=1 to make this fatal)')
+  console.error('fetch-forge: continuing without /alloy/forge/ (set FORGE_STRICT=1 to make this fatal)')
   rmSync(target, { recursive: true, force: true })
 }

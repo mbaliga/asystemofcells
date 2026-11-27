@@ -1,3 +1,3 @@
-# Pinned Alloy commit for the Forge web app served at /forge/ (https://github.com/mbaliga/Alloy).
+# Pinned Alloy commit for the Forge web app served at /alloy/forge/ (https://github.com/mbaliga/Alloy).
 # Bump this to publish a newer Forge; scripts/fetch-forge.mjs builds exactly this commit.
 50bb150e4861bd1710aa5ba9642480b3e91b28bc

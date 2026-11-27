@@ -57,7 +57,7 @@
       ]
     },
     {
-      "source": "/forge/(.*)",
+      "source": "/alloy/forge/(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",
