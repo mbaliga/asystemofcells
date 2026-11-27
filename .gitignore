@@ -5,3 +5,4 @@ dist/
 .env.local
 *.log
 .DS_Store
+apps/asoc-com/public/forge/
