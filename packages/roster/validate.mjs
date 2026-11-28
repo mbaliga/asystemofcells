@@ -63,7 +63,7 @@ for (const c of roster.cells || []) {
   if (c.leaves !== undefined && !(c.leaves && isStr(c.leaves.heading) && isStr(c.leaves.body))) {
     fail(`${w}: leaves needs heading and body`)
   }
-  for (const f of ['privacyUrl', 'ctaUrl', 'readerUrl']) if (c[f] !== undefined && !isUri(c[f])) fail(`${w}: ${f} is not a URL`)
+  for (const f of ['privacyUrl', 'termsUrl', 'ctaUrl', 'readerUrl']) if (c[f] !== undefined && !isUri(c[f])) fail(`${w}: ${f} is not a URL`)
   if (c.hubUrl !== undefined && !isHttp(c.hubUrl)) fail(`${w}: hubUrl must be an http(s) URL`)
   if (c.isHub && !c.hubUrl) fail(`${w}: a hub cell needs hubUrl`)
   if (c.verify !== undefined && !(Array.isArray(c.verify) && c.verify.every((v) => typeof v === 'string'))) {

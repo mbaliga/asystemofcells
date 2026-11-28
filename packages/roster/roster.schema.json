@@ -53,6 +53,7 @@
           "properties": { "heading": { "type": "string" }, "body": { "type": "string" } }
         },
         "privacyUrl": { "$ref": "#/$defs/url" },
+        "termsUrl": { "$ref": "#/$defs/url" },
         "ctaLabel": { "type": "string" },
         "ctaUrl": { "$ref": "#/$defs/url" },
         "readerUrl": { "$ref": "#/$defs/url" },

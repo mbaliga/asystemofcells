@@ -380,6 +380,7 @@ const hasBody = Astro.slots.has('default')
   </section>
 
   {cell.privacyUrl && <a slot="footer-links" href={cell.privacyUrl}>{displayName} privacy</a>}
+  {cell.termsUrl && <a slot="footer-links" href={cell.termsUrl}>{displayName} terms</a>}
 </WingLayout>
 
 <style is:global>
