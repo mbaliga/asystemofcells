@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter @asoc/com dev",
-    "build": "bash docs/handoff/tools/check-analytics-boundary.sh && node packages/roster/validate.mjs && pnpm --filter @asoc/com build",
+    "build": "bash docs/handoff/tools/check-analytics-boundary.sh && node packages/roster/validate.mjs && node scripts/fetch-forge.mjs && pnpm --filter @asoc/com build",
     "dev:dev": "pnpm --filter @asoc/dev dev",
+    "forge:fetch": "node scripts/fetch-forge.mjs",
     "build:dev": "pnpm --filter @asoc/dev build",
     "roster:check": "node packages/roster/validate.mjs",
     "test": "node --test api/counter/__tests__/*.test.js docs/handoff/tools/*.test.mjs apps/asoc-com/src/scripts/prints/*.test.mjs apps/asoc-com/src/scripts/arch/*.test.mjs apps/asoc-com/src/scripts/counter-api.test.mjs",
